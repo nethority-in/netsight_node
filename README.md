@@ -37,7 +37,6 @@ node-server/
 │   ├── services/        # Business logic
 │   ├── middleware/      # Custom middleware
 │   └── utils/           # Utility functions
-├── .env.example         # Environment variables template
 ├── .gitignore          # Git ignore file
 ├── package.json        # Node.js dependencies
 └── README.md           # This file

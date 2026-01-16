@@ -1,65 +1,38 @@
 import express, { Request, Response, Router } from 'express';
-import { getDatabase } from '../config/database.js';
-import { NotificationLog } from '../types/notificationLog.js';
-import { NotificationSetting } from '../types/notificationSetting.js';
-import { Weidgets } from '../types/weidgets.js';
+import { NotificationLog } from '../models/NotificationLog.js';
+import { NotificationSetting } from '../models/NotificationSetting.js';
+import { Widget } from '../models/Widget.js';
+// COMMENTED OUT: User and Post routes (not needed for now)
+// import userRoutes from './userRoutes.js';
+// import postRoutes from './postRoutes.js';
 
 const router: Router = express.Router();
 
-// Example API route
+// Example API route - Test Sequelize connection
 router.get('/test', async (_req: Request, res: Response) => {
   try {
-    const db = getDatabase();
-    const [rows] = await db.query('SELECT 1 as test');
+    // Test Sequelize connection
+    await NotificationLog.sequelize?.authenticate();
     res.json({ 
       success: true, 
-      message: 'Node.js API is working',
-      database: rows 
+      message: 'Node.js API is working - Sequelize ODM connected successfully'
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
-    // Check if it's a database not initialized error
-    if (errorMessage.includes('Database not initialized')) {
-      res.status(503).json({ 
-        success: false, 
-        error: 'Database is not configured. Please set up database credentials.',
-        message: 'Server is running but database connection is not available'
-      });
-    } else {
-      res.status(500).json({ 
-        success: false, 
-        error: errorMessage 
-      });
-    }
+    res.status(500).json({ 
+      success: false, 
+      error: errorMessage 
+    });
   }
 });
 
-//http://localhost:3001/api/notification-logs
-// Get all notification logs
+//http://localhost:3002/api/notification-logs
+// Get all notification logs using Sequelize ORM
 router.get('/notification-logs', async (_req: Request, res: Response) => {
   try {
-    const db = getDatabase();
-    const [rows] = await db.query(
-      `SELECT 
-        id,
-        merchant_id,
-        notification_setting_id,
-        notification_type,
-        channel,
-        recipient,
-        status,
-        message,
-        error_message,
-        sent_at,
-        data,
-        created_at,
-        updated_at
-      FROM notification_logs
-      ORDER BY created_at DESC`
-    ) as [NotificationLog[], unknown];
-
-    const notificationLogs = rows as NotificationLog[];
+    const notificationLogs = await NotificationLog.findAll({
+      order: [['created_at', 'DESC']]
+    });
 
     res.json({
       success: true,
@@ -69,47 +42,22 @@ router.get('/notification-logs', async (_req: Request, res: Response) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
-    // Check if it's a database not initialized error
-    if (errorMessage.includes('Database not initialized')) {
-      res.status(503).json({ 
-        success: false, 
-        error: 'Database is not configured. Please set up database credentials.',
-        message: 'Server is running but database connection is not available'
-      });
-    } else {
-      console.error('Error fetching notification logs:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: errorMessage,
-        message: 'Failed to retrieve notification logs'
-      });
-    }
+    console.error('Error fetching notification logs:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: errorMessage,
+      message: 'Failed to retrieve notification logs'
+    });
   }
 });
 
-//http://localhost:3001/api/notification-settings
-// Get all notification settings
+//http://localhost:3002/api/notification-settings
+// Get all notification settings using Sequelize ORM
 router.get('/notification-settings', async (_req: Request, res: Response) => {
   try {
-    const db = getDatabase();
-    const [rows] = await db.query(
-      `SELECT 
-        id,
-        merchant_id,
-        notification_type,
-        is_active,
-        email_enabled,
-        whatsapp_enabled,
-        last_sent_at,
-        created_at,
-        updated_at,
-        frequencies
-      FROM notification_settings
-      ORDER BY created_at DESC`
-    ) as [NotificationSetting[], unknown];
-
-    const notificationSettings = rows as NotificationSetting[];
+    const notificationSettings = await NotificationSetting.findAll({
+      order: [['created_at', 'DESC']]
+    });
 
     res.json({
       success: true,
@@ -119,36 +67,42 @@ router.get('/notification-settings', async (_req: Request, res: Response) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
-    // Check if it's a database not initialized error
-    if (errorMessage.includes('Database not initialized')) {
-      res.status(503).json({ 
-        success: false, 
-        error: 'Database is not configured. Please set up database credentials.',
-        message: 'Server is running but database connection is not available'
-      });
-    } else {
-      console.error('Error fetching notification settings:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: errorMessage,
-        message: 'Failed to retrieve notification settings'
-      });
-    }
+    console.error('Error fetching notification settings:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: errorMessage,
+      message: 'Failed to retrieve notification settings'
+    });
   }
 });
 
-//http://localhost:3001/api/widgets
-// Get all widgets
+//http://localhost:3002/api/widgets
+// Get all widgets using Sequelize ORM
 router.get('/widgets', async (_req: Request, res: Response) => {
   try {
-    const db = getDatabase();
-    const [rows] = await db.query('SELECT * FROM widgets');
-    const widgets = rows as Weidgets[];
-    res.json({ success: true, message: 'Widgets retrieved successfully', data: widgets });
+    const widgets = await Widget.findAll({
+      order: [['sort_order', 'ASC'], ['created_at', 'DESC']]
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Widgets retrieved successfully',
+      count: widgets.length,
+      data: widgets 
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    res.status(500).json({ success: false, error: errorMessage, message: 'Failed to retrieve widgets' });
+    console.error('Error fetching widgets:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: errorMessage, 
+      message: 'Failed to retrieve widgets' 
+    });
   }
 });
+
+// COMMENTED OUT: User and Post routes (not needed for now)
+// router.use('/users', userRoutes);
+// router.use('/posts', postRoutes);
+
 export default router;
