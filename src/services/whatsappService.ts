@@ -5,13 +5,9 @@ dotenv.config();
 
 // WhatsApp API Configuration
 // Support both old and new env variable names
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || 
-                        process.env.User_Number_ID?.trim() || 
-                        '942341315626645';
-const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || 
-                    process.env['WhatsApp-Connection_string'] || 
-                    '';
-const GRAPH_VERSION = process.env.META_GRAPH_VERSION || 'v22.0';
+const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const GRAPH_VERSION = process.env.META_GRAPH_VERSION;
 const GRAPH_BASE_URL = `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
 
 // Meta Graph API Response Types
@@ -43,10 +39,10 @@ export interface WhatsAppServiceResponse {
 }
 
 export class WhatsAppService {
-  /**
-   * Validate phone number format
-   * Must be digits only, no +, no spaces
-   */
+  
+    // Validate phone number format
+    // Must be digits only, no +, no spaces
+  
   static validatePhoneNumber(phone: string): boolean {
     // Remove any whitespace
     const cleaned = phone.trim();
@@ -54,17 +50,17 @@ export class WhatsAppService {
     return /^\d{10,15}$/.test(cleaned);
   }
 
-  /**
-   * Send template message via WhatsApp Cloud API
-   */
+    // Send template message via WhatsApp Cloud API
+  
   static async sendTemplate(
     to: string,
     templateName: string,
     languageCode: string = 'en_US'
   ): Promise<WhatsAppServiceResponse> {
     try {
-      // Validate phone number
-      if (!this.validatePhoneNumber(to)) {
+      // Clean and validate phone number
+      const cleanedPhone = to.trim();
+      if (!this.validatePhoneNumber(cleanedPhone)) {
         return {
           ok: false,
           error: {
@@ -90,7 +86,7 @@ export class WhatsAppService {
       // Prepare Meta Graph API payload
       const payload = {
         messaging_product: 'whatsapp',
-        to: to,
+        to: cleanedPhone,
         type: 'template',
         template: {
           name: templateName,
@@ -99,6 +95,15 @@ export class WhatsAppService {
           }
         }
       };
+
+      // Log request details for debugging (without exposing full token)
+      console.log('📤 Sending WhatsApp template message:', {
+        to: cleanedPhone,
+        templateName,
+        languageCode,
+        url: GRAPH_BASE_URL,
+        tokenPrefix: ACCESS_TOKEN.substring(0, 10) + '...'
+      });
 
       // Send request to Meta Graph API
       const response = await axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
@@ -119,13 +124,13 @@ export class WhatsAppService {
     }
   }
 
-  /**
-   * Send text message via WhatsApp Cloud API
-   */
+    // Send text message via WhatsApp Cloud API
+  
   static async sendText(to: string, text: string): Promise<WhatsAppServiceResponse> {
     try {
-      // Validate phone number
-      if (!this.validatePhoneNumber(to)) {
+      // Clean and validate phone number
+      const cleanedPhone = to.trim();
+      if (!this.validatePhoneNumber(cleanedPhone)) {
         return {
           ok: false,
           error: {
@@ -151,12 +156,20 @@ export class WhatsAppService {
       // Prepare Meta Graph API payload
       const payload = {
         messaging_product: 'whatsapp',
-        to: to,
+        to: cleanedPhone,
         type: 'text',
         text: {
           body: text
         }
       };
+
+      // Log request details for debugging (without exposing full token)
+      console.log('📤 Sending WhatsApp text message:', {
+        to: cleanedPhone,
+        textLength: text.length,
+        url: GRAPH_BASE_URL,
+        tokenPrefix: ACCESS_TOKEN.substring(0, 10) + '...'
+      });
 
       // Send request to Meta Graph API
       const response = await axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
@@ -177,9 +190,8 @@ export class WhatsAppService {
     }
   }
 
-  /**
-   * Handle Meta Graph API errors
-   */
+    // Handle Meta Graph API errors
+  
   private static handleError(error: unknown): WhatsAppServiceResponse {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<MetaGraphError>;
@@ -188,15 +200,27 @@ export class WhatsAppService {
         // Meta API returned an error response
         const metaError = axiosError.response.data;
         const status = axiosError.response.status;
+        const errorCode = metaError?.error?.code;
 
         console.error('❌ WhatsApp API error:', metaError);
+
+        // Provide helpful messages for common errors
+        let errorMessage = metaError?.error?.message || 'Unknown error from Meta Graph API';
+        
+        if (errorCode === 131030) {
+          errorMessage = 'Recipient phone number not in allowed list. Please add the phone number to your Meta Business Manager recipient list. Go to: Meta Business Manager > WhatsApp > API Setup > Manage phone number list';
+        } else if (errorCode === 131026) {
+          errorMessage = 'Template name not found or not approved. Please use an approved template name from your Meta Business Manager.';
+        } else if (errorCode === 190) {
+          errorMessage = 'Invalid or expired access token. Please update WHATSAPP_ACCESS_TOKEN in your .env file.';
+        }
 
         return {
           ok: false,
           error: {
-            message: metaError?.error?.message || 'Unknown error from Meta Graph API',
+            message: errorMessage,
             status: status,
-            code: metaError?.error?.code || status,
+            code: errorCode || status,
             details: metaError?.error
           }
         };

@@ -1,0 +1,36 @@
+GNU nano 8.3                   /etc/nginx/sites-available/bridge.netsights.ai
+# Nginx Configuration for bridge.netsights.ai
+# Backend-only mode (no frontend yet)
+
+server {
+    listen 80;
+    server_name bridge.netsights.ai;
+
+    # Root URL  simple backend message
+    location = / {
+    add_header Content-Type text/plain;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;    
+    add_header Pragma "no-cache" always;
+    return 200 "Backend is running. Use /health or /api endpoints.\n";
+}
+
+
+    # Health & API & all other routes  Node.js
+    location / {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket safe
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}

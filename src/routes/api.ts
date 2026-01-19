@@ -3,7 +3,6 @@ import { NotificationLog } from '../models/NotificationLog.js';
 import { NotificationSetting } from '../models/NotificationSetting.js';
 import { Widget } from '../models/Widget.js';
 import whatsappRoutes from './whatsappRoutes.js';
-// COMMENTED OUT: User and Post routes (not needed for now)
 // import userRoutes from './userRoutes.js';
 // import postRoutes from './postRoutes.js';
 
@@ -167,9 +166,5 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
 
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);
-
-// COMMENTED OUT: User and Post routes (not needed for now)
-// router.use('/users', userRoutes);
-// router.use('/posts', postRoutes);
 
 export default router;

@@ -31,3 +31,6 @@ dist/
 build/
 
 orm.txt
+
+META_WHATSAPP_SETUP_COMPLETE.md
+WHATSAPP_TOKEN_SETUP.md

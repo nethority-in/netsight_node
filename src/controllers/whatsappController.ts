@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
 
 export class WhatsAppController {
-  /**
-   * Send template message
-   * POST /api/whatsapp/send-template
-   */
+    
+      // Send template message
+      // POST /api/whatsapp/send-template
+  
   static async sendTemplate(req: Request, res: Response): Promise<void> {
     try {
       const { to, templateName, languageCode } = req.body;
@@ -46,10 +46,9 @@ export class WhatsAppController {
     }
   }
 
-  /**
-   * Send text message
-   * POST /api/whatsapp/send-text
-   */
+    // Send text message
+    // POST /api/whatsapp/send-text
+  
   static async sendText(req: Request, res: Response): Promise<void> {
     try {
       const { to, text } = req.body;
