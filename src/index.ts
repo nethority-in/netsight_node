@@ -34,7 +34,12 @@ app.use(express.urlencoded({ extended: true }));
 const initializeSequelize = async (): Promise<void> => {
   try {
     if (process.env.DB_HOST || process.env.DB_USER || process.env.DB_DATABASE) {
-      await connectSequelize();
+      const isConnected = await connectSequelize();
+      
+      if (!isConnected) {
+        console.warn('⚠️  Database connection failed. API endpoints requiring database will return errors.');
+        return;
+      }
       
       // Import models for notification_logs, notification_settings, and widgets
       const { NotificationLog, NotificationSetting, Widget } = await import('./models/index.js');
