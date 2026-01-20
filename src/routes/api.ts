@@ -1,21 +1,19 @@
 import express, { Request, Response, Router } from 'express';
-import { NotificationLog } from '../models/NotificationLog.js';
-import { NotificationSetting } from '../models/NotificationSetting.js';
-import { Widget } from '../models/Widget.js';
+import { prisma, isDatabaseConnected } from '../config/prisma.js';
 import whatsappRoutes from './whatsappRoutes.js';
 // import userRoutes from './userRoutes.js';
 // import postRoutes from './postRoutes.js';
 
 const router: Router = express.Router();
 
-// Example API route - Test Sequelize connection
+// Example API route - Test Prisma connection
 router.get('/test', async (_req: Request, res: Response) => {
   try {
-    // Test Sequelize connection
-    await NotificationLog.sequelize?.authenticate();
+    // Test Prisma connection
+    await isDatabaseConnected();
     res.json({ 
       success: true, 
-      message: 'Node.js API is working - Sequelize ODM connected successfully'
+      message: 'Node.js API is working - Prisma ODM connected successfully'
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -27,11 +25,12 @@ router.get('/test', async (_req: Request, res: Response) => {
 });
 
 //http://localhost:3002/api/notification-logs
-// Get all notification logs using Sequelize ORM
+// Get all notification logs using Prisma ORM
 router.get('/notification-logs', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
-    if (!NotificationLog.sequelize) {
+    const connected = await isDatabaseConnected();
+    if (!connected) {
       res.status(503).json({ 
         success: false, 
         error: 'Database not connected',
@@ -40,8 +39,10 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
       return;
     }
 
-    const notificationLogs = await NotificationLog.findAll({
-      order: [['created_at', 'DESC']]
+    const notificationLogs = await prisma.notificationLog.findMany({
+      orderBy: {
+        created_at: 'desc'
+      }
     });
 
     res.json({
@@ -55,7 +56,7 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
     console.error('Error fetching notification logs:', error);
     
     // Check if it's a database connection error
-    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED')) {
+    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('P1001')) {
       res.status(503).json({ 
         success: false, 
         error: 'Database connection error',
@@ -73,11 +74,12 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
 });
 
 //http://localhost:3002/api/notification-settings
-// Get all notification settings using Sequelize ORM
+// Get all notification settings using Prisma ORM
 router.get('/notification-settings', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
-    if (!NotificationSetting.sequelize) {
+    const connected = await isDatabaseConnected();
+    if (!connected) {
       res.status(503).json({ 
         success: false, 
         error: 'Database not connected',
@@ -86,8 +88,10 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
       return;
     }
 
-    const notificationSettings = await NotificationSetting.findAll({
-      order: [['created_at', 'DESC']]
+    const notificationSettings = await prisma.notificationSetting.findMany({
+      orderBy: {
+        created_at: 'desc'
+      }
     });
 
     res.json({
@@ -101,7 +105,7 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
     console.error('Error fetching notification settings:', error);
     
     // Check if it's a database connection error
-    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED')) {
+    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('P1001')) {
       res.status(503).json({ 
         success: false, 
         error: 'Database connection error',
@@ -119,11 +123,12 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
 });
 
 //http://localhost:3002/api/widgets
-// Get all widgets using Sequelize ORM
+// Get all widgets using Prisma ORM
 router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
-    if (!Widget.sequelize) {
+    const connected = await isDatabaseConnected();
+    if (!connected) {
       res.status(503).json({ 
         success: false, 
         error: 'Database not connected',
@@ -132,8 +137,11 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const widgets = await Widget.findAll({
-      order: [['sort_order', 'ASC'], ['created_at', 'DESC']]
+    const widgets = await prisma.widget.findMany({
+      orderBy: [
+        { sort_order: 'asc' },
+        { created_at: 'desc' }
+      ]
     });
     
     res.json({ 
@@ -147,7 +155,7 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
     console.error('Error fetching widgets:', error);
     
     // Check if it's a database connection error
-    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED')) {
+    if (errorMessage.includes('Access denied') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('P1001')) {
       res.status(503).json({ 
         success: false, 
         error: 'Database connection error',

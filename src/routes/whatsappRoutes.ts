@@ -6,5 +6,6 @@ const router = Router();
 // WhatsApp API routes
 router.post('/send-template', WhatsAppController.sendTemplate);
 router.post('/send-text', WhatsAppController.sendText);
+router.post('/send-daily-kpi-snapshot', WhatsAppController.sendDailyKpiSnapshot);
 
 export default router;

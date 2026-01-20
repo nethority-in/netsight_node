@@ -55,7 +55,8 @@ export class WhatsAppService {
   static async sendTemplate(
     to: string,
     templateName: string,
-    languageCode: string = 'en_US'
+    languageCode: string = 'en_US',
+    parameters?: Array<{ type: string; text?: string }>
   ): Promise<WhatsAppServiceResponse> {
     try {
       // Clean and validate phone number
@@ -83,17 +84,37 @@ export class WhatsAppService {
         };
       }
 
+      // Prepare template object
+      const template: {
+        name: string;
+        language: { code: string };
+        components?: Array<{
+          type: string;
+          parameters: Array<{ type: string; text?: string }>;
+        }>;
+      } = {
+        name: templateName,
+        language: {
+          code: languageCode
+        }
+      };
+
+      // Add parameters if provided
+      if (parameters && parameters.length > 0) {
+        template.components = [
+          {
+            type: 'body',
+            parameters: parameters
+          }
+        ];
+      }
+
       // Prepare Meta Graph API payload
       const payload = {
         messaging_product: 'whatsapp',
         to: cleanedPhone,
         type: 'template',
-        template: {
-          name: templateName,
-          language: {
-            code: languageCode
-          }
-        }
+        template: template
       };
 
       // Log request details for debugging (without exposing full token)
@@ -101,6 +122,7 @@ export class WhatsAppService {
         to: cleanedPhone,
         templateName,
         languageCode,
+        parametersCount: parameters?.length || 0,
         url: GRAPH_BASE_URL,
         tokenPrefix: ACCESS_TOKEN.substring(0, 10) + '...'
       });
@@ -122,6 +144,29 @@ export class WhatsAppService {
     } catch (error) {
       return this.handleError(error);
     }
+  }
+
+  // Send daily KPI snapshot template
+  static async sendDailyKpiSnapshot(
+    to: string,
+    storeName: string,
+    date: string,
+    businessOverview: string,
+    marketingProfitability: string,
+    operationsCash: string,
+    keySignals: string
+  ): Promise<WhatsAppServiceResponse> {
+    // Prepare parameters for the template
+    const parameters = [
+      { type: 'text', text: storeName },
+      { type: 'text', text: date },
+      { type: 'text', text: businessOverview },
+      { type: 'text', text: marketingProfitability },
+      { type: 'text', text: operationsCash },
+      { type: 'text', text: keySignals }
+    ];
+
+    return this.sendTemplate(to, 'daily_kpi_snapshot', 'en', parameters);
   }
 
     // Send text message via WhatsApp Cloud API
@@ -211,6 +256,8 @@ export class WhatsAppService {
           errorMessage = 'Recipient phone number not in allowed list. Please add the phone number to your Meta Business Manager recipient list. Go to: Meta Business Manager > WhatsApp > API Setup > Manage phone number list';
         } else if (errorCode === 131026) {
           errorMessage = 'Template name not found or not approved. Please use an approved template name from your Meta Business Manager.';
+        } else if (errorCode === 132000) {
+          errorMessage = 'Number of parameters does not match the expected number of params. Please check that you are providing the correct number of template parameters.';
         } else if (errorCode === 190) {
           errorMessage = 'Invalid or expired access token. Please update WHATSAPP_ACCESS_TOKEN in your .env file.';
         }

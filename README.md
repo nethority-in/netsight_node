@@ -6,7 +6,7 @@ This folder contains Node.js server-side modules for the NetSight application. T
 
 1. **Install Dependencies**
    ```bash
-   cd node-server
+   cd netsight_node
    npm install
    ```
 
@@ -15,8 +15,37 @@ This folder contains Node.js server-side modules for the NetSight application. T
    cp .env.example .env
    ```
    Then edit `.env` with your database credentials and configuration.
+   
+   **Database Configuration:**
+   - Option 1: Use `DATABASE_URL` (Prisma standard format):
+     ```
+     DATABASE_URL="mysql://user:password@host:port/database"
+     ```
+   - Option 2: Use individual variables (backward compatible):
+     ```
+     DB_HOST=localhost
+     DB_USER=root
+     DB_PASSWORD=your_password
+     DB_DATABASE=net-sight-local
+     DB_PORT=3306
+     ```
 
-3. **Start the Server**
+3. **Generate Prisma Client**
+   ```bash
+   npx prisma generate
+   ```
+   This generates the Prisma Client based on your schema.
+
+4. **Run Database Migrations (Optional)**
+   ```bash
+   # Push schema to database (for development)
+   npm run prisma:push
+   
+   # Or create a migration (recommended for production)
+   npm run prisma:migrate
+   ```
+
+5. **Start the Server**
    ```bash
    # Development mode (with auto-reload)
    npm run dev
@@ -28,12 +57,14 @@ This folder contains Node.js server-side modules for the NetSight application. T
 ## Project Structure
 
 ```
-node-server/
+netsight_node/
+├── prisma/
+│   └── schema.prisma   # Prisma schema definition
 ├── src/
-│   ├── config/          # Configuration files (database, etc.)
+│   ├── config/          # Configuration files (Prisma client, etc.)
 │   ├── routes/          # API routes
 │   ├── controllers/     # Request handlers
-│   ├── models/          # Data models
+│   ├── models/          # TypeScript type exports (Prisma types)
 │   ├── services/        # Business logic
 │   ├── middleware/      # Custom middleware
 │   └── utils/           # Utility functions
@@ -45,10 +76,17 @@ node-server/
 ## Features
 
 - Express.js server
-- MySQL database connection
+- Prisma ORM with MySQL database connection
 - CORS enabled
 - Environment variable configuration
 - Modular structure for easy expansion
+
+## Prisma Commands
+
+- `npm run prisma:generate` - Generate Prisma Client
+- `npm run prisma:migrate` - Create and apply database migrations
+- `npm run prisma:push` - Push schema changes to database (development)
+- `npm run prisma:studio` - Open Prisma Studio (database GUI)
 
 ## API Endpoints
 
