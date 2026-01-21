@@ -24,7 +24,6 @@ router.get('/test', async (_req: Request, res: Response) => {
 });
 
 //http://localhost:3002/api/notification-logs
-// Get all notification logs using Prisma ORM
 router.get('/notification-logs', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
@@ -73,7 +72,6 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
 });
 
 //http://localhost:3002/api/notification-settings
-// Get all notification settings using Prisma ORM
 router.get('/notification-settings', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
@@ -122,7 +120,6 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
 });
 
 //http://localhost:3002/api/widgets
-// Get all widgets using Prisma ORM
 router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
   try {
     // Check if database is connected
@@ -175,6 +172,7 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
 router.get('/kpi/total-sales', ShopifyKpiController.getTotalSalesKpi);
 router.get('/kpi/total-orders', ShopifyKpiController.getTotalOrdersKpi);
 router.get('/kpi/net-sales', ShopifyKpiController.getNetSalesKpi);
+router.get('/kpi/gross-sales', ShopifyKpiController.getGrossSalesKpi);
 
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);

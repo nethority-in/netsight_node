@@ -516,4 +516,167 @@ export class ShopifyKpiController {
       });
     }
   }
+  
+  static async getGrossSalesKpi(req: Request, res: Response): Promise<void> {
+    try {
+      const shop = req.query.shop as string;
+      const dateFrom = req.query.date_from as string | undefined;
+      const dateTo = req.query.date_to as string | undefined;
+
+      if (!shop) {
+        res.status(400).json({ error: 'Shop parameter is required' });
+        return;
+      }
+
+      const merchant = await prisma.merchant.findFirst({
+        where: { shop }
+      });
+
+      if (!merchant) {
+        res.status(404).json({ error: 'Merchant not found' });
+        return;
+      }
+
+        //  Resolve current period
+      const now = new Date();
+
+      const currentPeriodStart = dateFrom
+        ? new Date(new Date(dateFrom).setHours(0, 0, 0, 0))
+        : new Date(new Date(now).setHours(0, 0, 0, 0));
+
+      const currentPeriodEnd = dateTo
+        ? new Date(new Date(dateTo).setHours(23, 59, 59, 999))
+        : new Date(new Date(now).setHours(23, 59, 59, 999));
+
+        //  Detect range & aggregation
+      const diffDays =
+        Math.ceil(
+          (currentPeriodEnd.getTime() - currentPeriodStart.getTime()) /
+            (1000 * 60 * 60 * 24)
+        ) + 1;
+
+      let aggregation: 'day' | 'week' | 'month' = 'day';
+      let rangeType: 'day' | 'week' | 'month' = 'day';
+
+      if (diffDays > 60) {
+        aggregation = 'month';
+        rangeType = 'month';
+      } else if (diffDays > 14) {
+        aggregation = 'week';
+        rangeType = 'week';
+      }
+
+        //  Previous period
+      const previousPeriodStart = new Date(currentPeriodStart);
+      const previousPeriodEnd = new Date(currentPeriodEnd);
+
+      previousPeriodStart.setDate(previousPeriodStart.getDate() - diffDays);
+      previousPeriodEnd.setDate(previousPeriodEnd.getDate() - diffDays);
+
+        //  Base where clause
+      const baseWhere = {
+        merchant_id: merchant.id,
+        financial_status: 'paid'
+      };
+
+        //  Gross sales totals
+      const [currentAgg, previousAgg] = await Promise.all([
+        prisma.order.aggregate({
+          where: {
+            ...baseWhere,
+            created_at_shopify: {
+              gte: currentPeriodStart,
+              lte: currentPeriodEnd
+            }
+          },
+          _sum: {
+            subtotal_price: true // GROSS SALES
+          }
+        }),
+        prisma.order.aggregate({
+          where: {
+            ...baseWhere,
+            created_at_shopify: {
+              gte: previousPeriodStart,
+              lte: previousPeriodEnd
+            }
+          },
+          _sum: {
+            subtotal_price: true
+          }
+        })
+      ]);
+
+      const currentTotal = Number(currentAgg._sum.subtotal_price ?? 0);
+      const previousTotal = Number(previousAgg._sum.subtotal_price ?? 0);
+      const comparison = currentTotal - previousTotal;
+
+        //  Bar chart aggregation
+   
+      const dateFormat =
+        aggregation === 'month'
+          ? '%Y-%m'
+          : aggregation === 'week'
+          ? '%Y-%u'
+          : '%Y-%m-%d';
+
+      const barChartCurrent = await prisma.$queryRawUnsafe<
+        { label: string; value: number }[]
+      >(`
+        SELECT
+          DATE_FORMAT(created_at_shopify, '${dateFormat}') as label,
+          CAST(SUM(subtotal_price) AS DECIMAL(15,4)) as value
+        FROM orders
+        WHERE merchant_id = ${merchant.id}
+          AND financial_status = 'paid'
+          AND created_at_shopify BETWEEN '${currentPeriodStart.toISOString()}'
+          AND '${currentPeriodEnd.toISOString()}'
+        GROUP BY label
+        ORDER BY label
+      `);
+
+      const barChartPrevious = await prisma.$queryRawUnsafe<
+        { label: string; value: number }[]
+      >(`
+        SELECT
+          DATE_FORMAT(created_at_shopify, '${dateFormat}') as label,
+          CAST(SUM(subtotal_price) AS DECIMAL(15,4)) as value
+        FROM orders
+        WHERE merchant_id = ${merchant.id}
+          AND financial_status = 'paid'
+          AND created_at_shopify BETWEEN '${previousPeriodStart.toISOString()}'
+          AND '${previousPeriodEnd.toISOString()}'
+        GROUP BY label
+        ORDER BY label
+      `);
+
+        //  Response
+      res.json({
+        total_gross_sales: currentTotal.toFixed(2),
+        comparison: {
+          value: Math.abs(comparison),
+          text: `${Math.abs(comparison).toFixed(2)} Vs previous period`,
+          is_positive: comparison >= 0,
+          percentage:
+            previousTotal > 0
+              ? Number(((comparison / previousTotal) * 100).toFixed(1))
+              : 0
+        },
+        daily_data: {
+          current_week: barChartCurrent,
+          previous_week: barChartPrevious
+        },
+        period: {
+          from: currentPeriodStart.toISOString().split('T')[0],
+          to: currentPeriodEnd.toISOString().split('T')[0],
+          aggregation,
+          range_type: rangeType
+        },
+        source: 'database'
+      });
+    } catch (error) {
+      console.error('Error in getGrossSalesKpi:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
