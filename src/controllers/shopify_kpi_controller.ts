@@ -621,7 +621,7 @@ export class ShopifyKpiController {
           : '%Y-%m-%d';
 
       const barChartCurrent = await prisma.$queryRawUnsafe<
-        { label: string; value: number }[]
+        Array<{ label: string; value: number }>
       >(`
         SELECT
           DATE_FORMAT(created_at_shopify, '${dateFormat}') as label,
@@ -636,7 +636,7 @@ export class ShopifyKpiController {
       `);
 
       const barChartPrevious = await prisma.$queryRawUnsafe<
-        { label: string; value: number }[]
+        Array<{ label: string; value: number }>
       >(`
         SELECT
           DATE_FORMAT(created_at_shopify, '${dateFormat}') as label,
@@ -675,8 +675,11 @@ export class ShopifyKpiController {
         source: 'database'
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error in getGrossSalesKpi:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: errorMessage 
+      });
     }
   }
 }
