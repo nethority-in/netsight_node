@@ -96,7 +96,7 @@ https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.
 
  http://localhost:3002/api/kpi/total-orders?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
 
-
+ http://localhost:3002/api/kpi/net-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
 
 # With date range
 curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15"

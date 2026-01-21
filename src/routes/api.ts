@@ -174,7 +174,7 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
 // KPI endpoints
 router.get('/kpi/total-sales', ShopifyKpiController.getTotalSalesKpi);
 router.get('/kpi/total-orders', ShopifyKpiController.getTotalOrdersKpi);
-
+router.get('/kpi/net-sales', ShopifyKpiController.getNetSalesKpi);
 
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);
