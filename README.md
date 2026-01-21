@@ -15,7 +15,7 @@ This folder contains Node.js server-side modules for the NetSight application. T
    cp .env.example .env
    ```
    Then edit `.env` with your database credentials and configuration.
-   
+
    **Database Configuration:**
    - Option 1: Use `DATABASE_URL` (Prisma standard format):
      ```

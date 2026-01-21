@@ -171,8 +171,11 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
-// KPI total sales endpoint
+// KPI endpoints
 router.get('/kpi/total-sales', ShopifyKpiController.getTotalSalesKpi);
+router.get('/kpi/total-orders', ShopifyKpiController.getTotalOrdersKpi);
+
+
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);
 

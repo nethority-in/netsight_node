@@ -92,6 +92,12 @@ POST http://localhost:3002/api/whatsapp/send-template
 
 # Basic request
 curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com"
+https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
+
+ http://localhost:3002/api/kpi/total-orders?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
+
+
 
 # With date range
 curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15"
+https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15

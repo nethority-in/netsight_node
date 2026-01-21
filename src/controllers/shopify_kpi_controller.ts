@@ -193,4 +193,172 @@ export class ShopifyKpiController {
       });
     }
   }
+
+  static async getTotalOrdersKpi(req: Request, res: Response): Promise<void> {
+    try {
+      const shop = req.query.shop as string;
+      const dateFrom = req.query.date_from as string | undefined;
+      const dateTo = req.query.date_to as string | undefined;
+
+      if (!shop) {
+        res.status(400).json({ error: 'Shop parameter is required' });
+        return;
+      }
+
+      const merchant = await prisma.merchant.findFirst({
+        where: { shop }
+      });
+
+      if (!merchant) {
+        res.status(404).json({ error: 'Merchant not found' });
+        return;
+      }
+
+      // Build base query conditions
+      const baseConditions: any = {
+        merchant_id: merchant.id
+      };
+
+      // Determine current period
+      let currentPeriodStart: Date;
+      let currentPeriodEnd: Date;
+
+      if (dateFrom || dateTo) {
+        currentPeriodStart = dateFrom 
+          ? new Date(new Date(dateFrom).setHours(0, 0, 0, 0))
+          : new Date(new Date().setHours(0, 0, 0, 0));
+        currentPeriodEnd = dateTo
+          ? new Date(new Date(dateTo).setHours(23, 59, 59, 999))
+          : new Date(new Date().setHours(23, 59, 59, 999));
+      } else {
+        const now = new Date();
+        currentPeriodStart = new Date(now.setHours(0, 0, 0, 0));
+        currentPeriodEnd = new Date(now.setHours(23, 59, 59, 999));
+      }
+      // Apply date filters to base conditions
+      if (dateFrom) {
+        baseConditions.created_at_shopify = {
+          ...baseConditions.created_at_shopify,
+          gte: new Date(dateFrom)
+        };
+      }
+      if (dateTo) {
+        baseConditions.created_at_shopify = {
+          ...baseConditions.created_at_shopify,
+          lte: new Date(new Date(dateTo).setHours(23, 59, 59, 999))
+        };
+      }
+
+      // Calculate current period orders count
+      const currentOrdersCount = await prisma.order.count({
+        where: {
+          ...baseConditions,
+          created_at_shopify: {
+            gte: currentPeriodStart,
+            lte: currentPeriodEnd
+          }
+        }
+      });
+
+      // Calculate previous period (same length immediately before current period)
+      const daysDiff = Math.ceil((currentPeriodEnd.getTime() - currentPeriodStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const previousPeriodStart = new Date(currentPeriodStart);
+      previousPeriodStart.setDate(previousPeriodStart.getDate() - daysDiff);
+      const previousPeriodEnd = new Date(currentPeriodEnd);
+      previousPeriodEnd.setDate(previousPeriodEnd.getDate() - daysDiff);
+
+      const previousOrdersCount = await prisma.order.count({
+        where: {
+          ...baseConditions,
+          created_at_shopify: {
+            gte: previousPeriodStart,
+            lte: previousPeriodEnd
+          }
+        }
+      });
+
+      // Calculate comparison
+      const comparison = currentOrdersCount - previousOrdersCount;
+      const comparisonText = `${Math.abs(comparison)} Vs Same Week Last Week`;
+      const isPositive = comparison >= 0;
+
+      // Get daily orders data for the chart
+      const dailyOrders: Array<{ day: string; orders: number }> = [];
+      const dailyPrevious: Array<{ day: string; orders: number }> = [];
+
+      const cursor = new Date(currentPeriodStart);
+      const prevCursor = new Date(previousPeriodStart);
+
+      while (cursor <= currentPeriodEnd) {
+        const dayStart = new Date(cursor);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(cursor);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        const prevDayStart = new Date(prevCursor);
+        prevDayStart.setHours(0, 0, 0, 0);
+        const prevDayEnd = new Date(prevCursor);
+        prevDayEnd.setHours(23, 59, 59, 999);
+
+        const dayOrdersCount = await prisma.order.count({
+          where: {
+            ...baseConditions,
+            created_at_shopify: {
+              gte: dayStart,
+              lte: dayEnd
+            }
+          }
+        });
+
+        const prevDayOrdersCount = await prisma.order.count({
+          where: {
+            ...baseConditions,
+            created_at_shopify: {
+              gte: prevDayStart,
+              lte: prevDayEnd
+            }
+          }
+        });
+
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        dailyOrders.push({
+          day: dayNames[cursor.getDay()],
+          orders: dayOrdersCount
+        });
+
+        dailyPrevious.push({
+          day: dayNames[prevCursor.getDay()],
+          orders: prevDayOrdersCount
+        });
+
+        cursor.setDate(cursor.getDate() + 1);
+        prevCursor.setDate(prevCursor.getDate() + 1);
+      }
+
+      res.json({
+        total_orders: currentOrdersCount,
+        comparison: {
+          value: Math.abs(comparison),
+          text: comparisonText,
+          is_positive: isPositive,
+          percentage: previousOrdersCount > 0 ? parseFloat(((comparison / previousOrdersCount) * 100).toFixed(1)) : 0
+        },
+        daily_data: {
+          current_week: dailyOrders,
+          previous_week: dailyPrevious
+        },
+        period: {
+          from: currentPeriodStart.toISOString().split('T')[0],
+          to: currentPeriodEnd.toISOString().split('T')[0]
+        }
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error in getTotalOrdersKpi:', error);
+      res.status(500).json({
+        error: errorMessage
+      });
+    }
+  }
+
 }
