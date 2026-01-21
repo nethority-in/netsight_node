@@ -1,4 +1,4 @@
-import { Widget as PrismaWidget } from '@prisma/client';
+import type { Widget as PrismaWidget } from '@prisma/client';
 
 // Re-export Prisma types for Widget
 export type Widget = PrismaWidget;

@@ -2,14 +2,10 @@ import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
 
 export class WhatsAppController {
-    
-      // Send template message
       // POST /api/whatsapp/send-template
-  
   static async sendTemplate(req: Request, res: Response): Promise<void> {
     try {
       const { to, templateName, languageCode, parameters } = req.body;
-
       // Validate required fields
       if (!to || !templateName) {
         res.status(400).json({
@@ -22,10 +18,8 @@ export class WhatsAppController {
         });
         return;
       }
-
       // Use default language code if not provided
       const langCode = languageCode || 'en_US';
-
       // Convert parameters array to the format expected by WhatsApp API
       let templateParameters: Array<{ type: string; text?: string }> | undefined;
       if (parameters && Array.isArray(parameters)) {
@@ -34,11 +28,8 @@ export class WhatsAppController {
           text: param
         }));
       }
-
       // Send template message
       const result = await WhatsAppService.sendTemplate(to, templateName, langCode, templateParameters);
-
-      // Return appropriate status code based on result
       const statusCode = result.ok ? 200 : (result.error?.status || 500);
       res.status(statusCode).json(result);
     } catch (error) {
@@ -54,7 +45,6 @@ export class WhatsAppController {
       });
     }
   }
-
   // Send daily KPI snapshot template
   static async sendDailyKpiSnapshot(req: Request, res: Response): Promise<void> {
     try {
@@ -80,7 +70,6 @@ export class WhatsAppController {
         });
         return;
       }
-
       // Send daily KPI snapshot template
       const result = await WhatsAppService.sendDailyKpiSnapshot(
         to,
@@ -108,15 +97,11 @@ export class WhatsAppController {
       });
     }
   }
-
-    // Send text message
     // POST /api/whatsapp/send-text
-  
   static async sendText(req: Request, res: Response): Promise<void> {
     try {
       const { to, text } = req.body;
 
-      // Validate required fields
       if (!to || !text) {
         res.status(400).json({
           ok: false,
@@ -128,10 +113,8 @@ export class WhatsAppController {
         });
         return;
       }
-
       // Send text message
       const result = await WhatsAppService.sendText(to, text);
-
       // Return appropriate status code based on result
       const statusCode = result.ok ? 200 : (result.error?.status || 500);
       res.status(statusCode).json(result);

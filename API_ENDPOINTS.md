@@ -89,3 +89,9 @@ POST http://localhost:3002/api/whatsapp/send-template
     "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
   ]
 }
+
+# Basic request
+curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com"
+
+# With date range
+curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15"

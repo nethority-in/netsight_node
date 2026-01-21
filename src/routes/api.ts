@@ -1,8 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { prisma, isDatabaseConnected } from '../config/prisma.js';
 import whatsappRoutes from './whatsappRoutes.js';
-// import userRoutes from './userRoutes.js';
-// import postRoutes from './postRoutes.js';
+import { ShopifyKpiController } from '../controllers/shopify_kpi_controller.js';
 
 const router: Router = express.Router();
 
@@ -172,6 +171,8 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
+// KPI total sales endpoint
+router.get('/kpi/total-sales', ShopifyKpiController.getTotalSalesKpi);
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);
 

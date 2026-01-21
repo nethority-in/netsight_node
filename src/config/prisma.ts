@@ -3,8 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Construct DATABASE_URL from individual env vars if DATABASE_URL is not set
-// This maintains backward compatibility with existing DB_HOST, DB_USER, etc. env vars
 if (!process.env.DATABASE_URL) {
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbUser = process.env.DB_USER || 'root';
@@ -13,7 +11,6 @@ if (!process.env.DATABASE_URL) {
   const dbPort = process.env.DB_PORT || '3306';
   
   // Construct MySQL connection URL
-  // Format: mysql://user:password@host:port/database
   const passwordPart = dbPassword ? `:${encodeURIComponent(dbPassword)}` : '';
   process.env.DATABASE_URL = `mysql://${dbUser}${passwordPart}@${dbHost}:${dbPort}/${dbDatabase}`;
 }

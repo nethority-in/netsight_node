@@ -1,4 +1,4 @@
-import { NotificationSetting as PrismaNotificationSetting } from '@prisma/client';
+import type { NotificationSetting as PrismaNotificationSetting } from '@prisma/client';
 
 // Re-export Prisma types for NotificationSetting
 export type NotificationSetting = PrismaNotificationSetting;
