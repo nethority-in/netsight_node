@@ -1,9 +1,13 @@
 import express, { Request, Response, Router } from 'express';
 import { prisma, isDatabaseConnected } from '../config/prisma.js';
 import whatsappRoutes from './whatsappRoutes.js';
-import { ShopifyKpiController } from '../controllers/shopify_kpi_controller.js';
+import emailRoutes from './emailRoutes.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router: Router = express.Router();
+
+// Apply authentication middleware to ALL routes
+router.use(authenticateToken);
 
 // Example API route - Test Prisma connection
 router.get('/test', async (_req: Request, res: Response) => {
@@ -78,7 +82,7 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
     const connected = await isDatabaseConnected();
     if (!connected) {
       res.status(503).json({ 
-        success: false, 
+        success: false,
         error: 'Database not connected',
         message: 'Database connection is not available. Please check your database configuration.'
       });
@@ -168,13 +172,10 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
-// KPI endpoints
-router.get('/kpi/total-sales', ShopifyKpiController.getTotalSalesKpi);
-router.get('/kpi/total-orders', ShopifyKpiController.getTotalOrdersKpi);
-router.get('/kpi/net-sales', ShopifyKpiController.getNetSalesKpi);
-router.get('/kpi/gross-sales', ShopifyKpiController.getGrossSalesKpi);
-
 // WhatsApp routes
 router.use('/whatsapp', whatsappRoutes);
+
+// Email routes
+router.use('/email', emailRoutes);
 
 export default router;

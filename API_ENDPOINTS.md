@@ -90,7 +90,7 @@ POST http://localhost:3002/api/whatsapp/send-template
   ]
 }
 
-# Basic request
+# local request
  http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
 
  https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
@@ -101,8 +101,205 @@ POST http://localhost:3002/api/whatsapp/send-template
 
  http://localhost:3002/api/kpi/gross-sales?shop=prativacollection.myshopify.com
 
-# With date range
-curl "http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15"
-https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
+# server request
+
+# Total Sales
+https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
+
+# Total Orders
+https://bridge.netsights.ai/api/kpi/total-orders?shop=celebrity-drapes.myshopify.com
+
+# Net Sales
+https://bridge.netsights.ai/api/kpi/net-sales?shop=celebrity-drapes.myshopify.com
+
+# Gross Sales
+https://bridge.netsights.ai/api/kpi/gross-sales?shop=celebrity-drapes.myshopify.com
 
 
+# Mail
+POST http://localhost:3002/api/email/send-template
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "templateName": "simple_message",
+  "templateVariables": {
+    "subject": "Hello",
+    "message": "This is a test message"
+  }
+}
+# cc & bcc
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "templateName": "simple_message",
+  "templateVariables": {
+    "subject": "Test Email",
+    "message": "This is a test message"
+  },
+  "cc": ["cc1@example.com", "cc2@example.com"],
+  "bcc": ["bcc1@example.com", "bcc2@example.com"]
+}
+
+POST http://localhost:3002/api/email/send-daily-kpi-snapshot
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "storeName": "My Store",
+  "date": "2024-01-15",
+  "businessOverview": "Sales are up 20%",
+  "marketingProfitability": "ROI: 150%",
+  "operationsCash": "Cash flow positive",
+  "keySignals": "All systems operational"
+}
+daily-kpi-snapshot same as we writtern in send-template for cc&bcc
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "storeName": "My Store",
+  "date": "2024-01-15",
+  "businessOverview": "Sales are up 20%",
+  "marketingProfitability": "ROI: 150%",
+  "operationsCash": "Cash flow positive",
+  "keySignals": "All systems operational",
+  "cc": ["manager@example.com"],
+  "bcc": ["archive@example.com"]
+}
+http://localhost:3002/api/email/send
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "subject": "Custom Email Subject",
+  "htmlContent": "<h1>Hello</h1><p>This is a custom HTML email.</p>",
+  "textContent": "Hello\nThis is a custom text email.",
+  "cc": ["cc1@example.com", "cc2@example.com"],
+  "bcc": ["bcc@example.com"]
+}
+
+#get template 
+http://localhost:3002/api/email/templates
+
+# register (only use for save template at code level)
+http://localhost:3002/api/whatsapp/templates/register
+
+  # sam code as given in custom template
+
+# create 
+http://localhost:3002/api/whatsapp/templates/create
+```json
+{
+  "templateName": "template_name"
+}
+```
+
+# custom template
+http://localhost:3002/api/whatsapp/templates/create-custom
+{
+  "name": "daily_info_update",
+  "category": "UTILITY",
+  "language": "en",
+  "description": "Daily informational update template for users",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hello {{1}},\n\nThis is your daily update:\n{{2}}\n\nDate: {{3}}\nReference ID: {{4}}\nStatus: {{5}}\n\nThank you for your attention.",
+      "example": {
+        "body_text": [
+          [
+            "Rohit Sharma",
+            "Your account balance has been updated",
+            "2024-01-22",
+            "REF-4587",
+            "Completed"
+          ]
+        ]
+      }
+    }
+  ]
+}
+# send message 
+{
+  "to": "918698673161",
+  "templateName": "daily_info_update",
+  "languageCode": "en",
+  "components": {
+    "body": [
+      "Rohit Sharma",
+      "Your account balance has been updated",
+      "2024-01-22",
+      "REF-4587",
+      "Completed"
+    ]
+  }
+}
+OR
+{
+  "to": "918698673161",
+  "templateName": "daily_info_update",
+  "languageCode": "en",
+  "parameters": [
+    "Rohit Sharma",
+    "Your account balance has been updated",
+    "2024-01-22",
+    "REF-4587",
+    "Completed"
+  ]
+}
+
+# Check Template Status
+
+http://localhost:3002/api/whatsapp/templates/meta
+
+# Get All Templates from Code
+
+http://localhost:3002/api/whatsapp/templates
+
+# Get Specific Template Details
+
+http://localhost:3002/api/whatsapp/templates/templateName
+
+# Send Message Using Template
+
+http://localhost:3002/api/whatsapp/send-dynamic
+
+{
+  "to": "1234567890",
+  "templateName": "product_alert",
+  "languageCode": "en",
+  "parameters": {
+    "customerName": "John",
+    "productName": "iPhone 15",
+    "price": "$999",
+    "stock": "In Stock"
+  }
+}
+
+# Edit the template
+http://localhost:3002/api/whatsapp/templates/create-custom-edit
+
+{
+  "templateId": "1374048857227941",
+  "template": {
+    "name": "daily_info_update",
+    "category": "UTILITY",
+    "language": "en",
+    "description": "Updated daily informational update template",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Hello {{1}},\n\nThis is your updated daily update:\n{{2}}\n\nDate: {{3}}\nReference ID: {{4}}\nStatus: {{5}}\n\nThank you!",
+        "example": {
+          "body_text": [
+            [
+              "Rohit Sharma",
+              "Your account balance has been updated",
+              "2024-01-22",
+              "REF-4587",
+              "Completed"
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}
+
+# delete template  just need to add templateId
+http://localhost:3002/api/whatsapp/templates/create-custom-delete
+{
+  "templateId": "1374048857227941"
+}

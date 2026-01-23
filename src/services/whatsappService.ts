@@ -10,7 +10,6 @@ const GRAPH_BASE_URL = `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMB
 
 // Token Configuration
 // System_User_TOKEN: Production, automated messaging, business-initiated messages, long-term operations
-// WHATSAPP_ACCESS_TOKEN: Development, testing, prototyping
 const SYSTEM_USER_TOKEN = process.env.SYSTEM_USER_TOKEN;
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -45,13 +44,6 @@ export interface WhatsAppServiceResponse {
 }
 
 export class WhatsAppService {
-  
-  /**
-   * Get the appropriate access token based on environment
-   * Production: System_User_TOKEN (preferred) -> WHATSAPP_ACCESS_TOKEN (fallback)
-   * Development: WHATSAPP_ACCESS_TOKEN (preferred) -> System_User_TOKEN (fallback)
-   * @returns {string | null} The access token to use, or null if none available
-   */
   private static getAccessToken(): string | null {
     if (IS_PRODUCTION) {
       // Production: Prefer System User Token (long-lived, stable)
@@ -80,10 +72,6 @@ export class WhatsAppService {
     return null;
   }
 
-  /**
-   * Validate that an access token is configured
-   * @returns {string | null} The access token if available, null otherwise
-   */
   private static validateAccessToken(): string | null {
     const token = this.getAccessToken();
     
@@ -101,12 +89,12 @@ export class WhatsAppService {
     // Validate phone number format
     // Must be digits only, no +, no spaces
   
-  static validatePhoneNumber(phone: string): boolean {
-    // Remove any whitespace
-    const cleaned = phone.trim();
-    // Check if it's digits only and has reasonable length (10-15 digits)
-    return /^\d{10,15}$/.test(cleaned);
-  }
+    static validatePhoneNumber(phone: string): boolean {
+      // Remove any whitespace
+      const cleaned = phone.trim();
+      // Check if it's digits only and has reasonable length (10-12 digits)
+      return /^\d{10,12}$/.test(cleaned);
+    }
 
     // Send template message via WhatsApp Cloud API
   
@@ -114,7 +102,12 @@ export class WhatsAppService {
     to: string,
     templateName: string,
     languageCode: string = 'en_US',
-    parameters?: Array<{ type: string; text?: string }>
+    components?: Array<{
+      type: string;
+      parameters?: Array<{ type: string; text?: string; payload?: string }>;
+      sub_type?: string;
+      index?: number;
+    }>
   ): Promise<WhatsAppServiceResponse> {
     try {
       // Clean and validate phone number
@@ -153,7 +146,9 @@ export class WhatsAppService {
         language: { code: string };
         components?: Array<{
           type: string;
-          parameters: Array<{ type: string; text?: string }>;
+          parameters?: Array<{ type: string; text?: string; payload?: string }>;
+          sub_type?: string;
+          index?: number;
         }>;
       } = {
         name: templateName,
@@ -162,14 +157,9 @@ export class WhatsAppService {
         }
       };
 
-      // Add parameters if provided
-      if (parameters && parameters.length > 0) {
-        template.components = [
-          {
-            type: 'body',
-            parameters: parameters
-          }
-        ];
+      // Add components if provided (header, body, buttons)
+      if (components && components.length > 0) {
+        template.components = components;
       }
 
       // Prepare Meta Graph API payload
@@ -186,7 +176,8 @@ export class WhatsAppService {
         to: cleanedPhone,
         templateName,
         languageCode,
-        parametersCount: parameters?.length || 0,
+        componentsCount: components?.length || 0,
+        components: components?.map(c => ({ type: c.type, paramsCount: c.parameters?.length || 0 })),
         url: GRAPH_BASE_URL,
         tokenType,
         tokenPrefix: accessToken.substring(0, 10) + '...'
@@ -211,28 +202,6 @@ export class WhatsAppService {
     }
   }
 
-  // Send daily KPI snapshot template
-  static async sendDailyKpiSnapshot(
-    to: string,
-    storeName: string,
-    date: string,
-    businessOverview: string,
-    marketingProfitability: string,
-    operationsCash: string,
-    keySignals: string
-  ): Promise<WhatsAppServiceResponse> {
-    // Prepare parameters for the template
-    const parameters = [
-      { type: 'text', text: storeName },
-      { type: 'text', text: date },
-      { type: 'text', text: businessOverview },
-      { type: 'text', text: marketingProfitability },
-      { type: 'text', text: operationsCash },
-      { type: 'text', text: keySignals }
-    ];
-
-    return this.sendTemplate(to, 'daily_kpi_snapshot', 'en', parameters);
-  }
 
     // Send text message via WhatsApp Cloud API
   
