@@ -129,49 +129,92 @@ const templates: Record<string, EmailTemplate> = {
         </div>
       </body>
       </html>
-    `,
-    text: `
-Daily KPI Snapshot - {{storeName || "My Store"}} - {{date || "2024-01-15"}}
-{{#if businessOverview}}
-Business Overview:
-{{businessOverview}}
-{{/if}}
-{{#if marketingProfitability}}
-Marketing Profitability:
-{{marketingProfitability}}
-{{/if}}
-{{#if operationsCash}}
-Operations & Cash:
-{{operationsCash}}
-{{/if}}
-{{#if keySignals}}
-Key Signals:
-{{keySignals}}
-{{/if}}
-{{#if revenue}}
-Revenue:
-{{revenue}}
-{{/if}}
-{{#if expenses}}
-Expenses:
-{{expenses}}
-{{/if}}
-{{#if profit}}
-Profit:
-{{profit}}
-{{/if}}
-{{#if newCustomers}}
-New Customers:
-{{newCustomers}}
-{{/if}}
-{{#if returns}}
-Returns:
-{{returns}}
-{{/if}}
-{{#if loyaltyPoints}}
-Loyalty Points:
-{{loyaltyPoints}}
-{{/if}}
+    `
+  },
+
+  // Daily Store Performance Summary 
+  // POST /api/email/send-dynamic with templateName
+  daily_store_performance_summary: {
+    subject: '📊 Daily Performance Update – {{storeName || "Store"}} – {{date || ""}}',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Daily Performance Update – {{storeName || "Store"}}</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); padding: 28px; border-radius: 10px 10px 0 0; color: white;">
+          <h1 style="margin: 0; font-size: 24px;">📊 Daily Performance Summary</h1>
+          <p style="margin: 10px 0 0 0; font-size: 15px; opacity: 0.95;">{{storeName || "Store"}} · {{date || ""}}</p>
+        </div>
+        <div style="background-color: #f8fafc; padding: 28px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0 0 20px 0; color: #475569;">Good day {{recipientName}},</p>
+          <p style="margin: 0 0 24px 0; color: #475569;">This is an automated performance update for <strong>{{storeName}}</strong> for <strong>{{date}}</strong>.</p>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <h2 style="color: #0f766e; margin: 0 0 12px 0; font-size: 16px;">💼 Overall Business Performance</h2>
+            <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+              <tr><td style="padding:4px 0; color:#64748b;">Revenue:</td><td style="padding:4px 0; font-weight:600;">{{revenue}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Orders:</td><td style="padding:4px 0;">{{orders}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Average Order Value:</td><td style="padding:4px 0;">{{avgOrderValue}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Revenue Change vs Prior Day:</td><td style="padding:4px 0; color:#059669;">{{revenueChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Orders Change vs Prior Day:</td><td style="padding:4px 0; color:#059669;">{{ordersChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Conversion Rate:</td><td style="padding:4px 0;">{{conversionRate}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Revenue per Visitor:</td><td style="padding:4px 0;">{{revenuePerVisitor}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">CR Change:</td><td style="padding:4px 0;">{{crChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">RPV Change:</td><td style="padding:4px 0;">{{rpvChange}}</td></tr>
+            </table>
+          </div>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <h2 style="color: #0f766e; margin: 0 0 12px 0; font-size: 16px;">📈 Marketing Performance Summary</h2>
+            <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+              <tr><td style="padding:4px 0; color:#64748b;">ROAS (1-day):</td><td style="padding:4px 0;">{{roas}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Customer Acquisition Cost:</td><td style="padding:4px 0;">{{cac}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">ROAS Change:</td><td style="padding:4px 0;">{{roasChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">CAC Change:</td><td style="padding:4px 0;">{{cacChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Contribution Margin:</td><td style="padding:4px 0;">{{contributionMargin}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Contribution Margin Change:</td><td style="padding:4px 0;">{{contributionMarginChange}}</td></tr>
+            </table>
+          </div>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <h2 style="color: #0f766e; margin: 0 0 12px 0; font-size: 16px;">✅ Operations & Fulfilment Health</h2>
+            <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+              <tr><td style="padding:4px 0; color:#64748b;">Returns:</td><td style="padding:4px 0;">{{returns}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">RTO:</td><td style="padding:4px 0;">{{rto}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">Returns Change:</td><td style="padding:4px 0;">{{returnsChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">RTO Change:</td><td style="padding:4px 0;">{{rtoChange}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">SLA Adherence:</td><td style="padding:4px 0;">{{slaAdherence}}</td></tr>
+              <tr><td style="padding:4px 0; color:#64748b;">SLA Change:</td><td style="padding:4px 0;">{{slaChange}}</td></tr>
+            </table>
+          </div>
+
+          <div style="background-color: #ecfdf5; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+            <h2 style="color: #047857; margin: 0 0 8px 0; font-size: 15px;">📈 Key Positive Movements</h2>
+            <ul style="margin: 0; padding-left: 20px; color: #065f46;">
+              <li><strong>{{positiveMetric1}}</strong> improved by {{positiveChange1}}</li>
+              <li><strong>{{positiveMetric2}}</strong> improved by {{positiveChange2}}</li>
+            </ul>
+          </div>
+
+          <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #ef4444;">
+            <h2 style="color: #b91c1c; margin: 0 0 8px 0; font-size: 15px;">📉 Metrics to Monitor</h2>
+            <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+              <li><strong>{{monitorMetric1}}</strong> declined by {{monitorChange1}}</li>
+              <li><strong>{{monitorMetric2}}</strong> declined by {{monitorChange2}}</li>
+            </ul>
+          </div>
+
+          <p style="margin: 0; color: #64748b;">Regards,<br><strong>Netsights.ai</strong></p>
+        </div>
+        <div style="margin-top: 24px; text-align: center; color: #94a3b8; font-size: 12px;">
+          <p>This is an automated performance report from Netsights.ai</p>
+        </div>
+      </body>
+      </html>
     `
   },
 

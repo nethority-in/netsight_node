@@ -25,7 +25,6 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   
   let token: string | undefined;
 
-  // Check Authorization header (Bearer token format) - MANDATORY
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.substring(7).trim();
   }

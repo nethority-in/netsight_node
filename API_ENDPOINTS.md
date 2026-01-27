@@ -160,6 +160,54 @@ daily-kpi-snapshot same as we writtern in send-template for cc&bcc
   "cc": ["manager@example.com"],
   "bcc": ["archive@example.com"]
 }
+
+# Send Daily Store Performance Summary via Email (same payload shape as WhatsApp)
+POST http://localhost:3002/api/email/send-dynamic
+{
+  "to": "sarangchaudhari8699@gmail.com",
+  "templateName": "daily_store_performance_summary",
+  "subject": "Optional custom subject (omit to use template default)",
+  "cc": ["manager@example.com"],
+  "bcc": ["archive@example.com"],
+  "components": {
+    "body": [
+      "Sarang",
+      "ABC Store",
+      "22 Jan 2024",
+      "₹5,00,000",
+      "320",
+      "₹1,560",
+      "+8%",
+      "+5%",
+      "2.4%",
+      "₹120",
+      "+0.2%",
+      "+6%",
+      "3.2",
+      "₹950",
+      "+0.4",
+      "-3%",
+      "28%",
+      "+2%",
+      "12",
+      "6%",
+      "-1%",
+      "-0.5%",
+      "98%",
+      "+1%",
+      "Revenue",
+      "+8%",
+      "ROAS",
+      "+0.4",
+      "CAC",
+      "-5%",
+      "RTO",
+      "-1%"
+    ]
+  }
+}
+Add "subject", "cc", "bcc" in this same JSON body when needed. "cc" and "bcc" are arrays of email strings.
+
 http://localhost:3002/api/email/send
 {
   "to": "sarangchaudhari8699@gmail.com",
@@ -272,9 +320,9 @@ http://localhost:3002/api/whatsapp/send-dynamic
 http://localhost:3002/api/whatsapp/templates/create-custom-edit
 
 {
-  "templateId": "1374048857227941",
+  "templateId": "2666208380425785",
   "template": {
-    "name": "daily_info_update",
+    "name": "daily_info",
     "category": "UTILITY",
     "language": "en",
     "description": "Updated daily informational update template",
@@ -285,11 +333,11 @@ http://localhost:3002/api/whatsapp/templates/create-custom-edit
         "example": {
           "body_text": [
             [
-              "Rohit Sharma",
-              "Your account balance has been updated",
-              "2024-01-22",
+              "ruturaj Sharma",
+              "Your balance has been updated",
+              "2024-01-26",
               "REF-4587",
-              "Completed"
+              "pending"
             ]
           ]
         }

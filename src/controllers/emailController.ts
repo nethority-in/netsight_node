@@ -185,9 +185,10 @@ export class EmailController {
   }
 
   // POST /api/email/send-dynamic - Flexible template with dynamic parameters
+  // For daily_store_performance_summary, accepts same format as WhatsApp: components: { body: string[] } (32 values in order)
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, parameters, subject, cc, bcc } = req.body;
+      const { to, templateName, parameters, components, subject, cc, bcc } = req.body;
 
       if (!to || !templateName) {
         res.status(400).json({
@@ -201,7 +202,23 @@ export class EmailController {
         return;
       }
 
-      const params = parameters || {};
+      let params: Record<string, any> = parameters != null ? { ...parameters } : {};
+
+      // Same payload as WhatsApp: components.body array (32 values) for daily_store_performance_summary
+      if (templateName === 'daily_store_performance_summary' && components?.body && Array.isArray(components.body)) {
+        const { getTemplateConfig } = await import('../config/templateConfigs.js');
+        const config = getTemplateConfig(templateName);
+        const fieldOrder = config?.fieldOrder ?? [
+          'recipientName', 'storeName', 'date', 'revenue', 'orders', 'avgOrderValue', 'revenueChange', 'ordersChange',
+          'conversionRate', 'revenuePerVisitor', 'crChange', 'rpvChange', 'roas', 'cac', 'roasChange', 'cacChange',
+          'contributionMargin', 'contributionMarginChange', 'returns', 'rto', 'returnsChange', 'rtoChange',
+          'slaAdherence', 'slaChange', 'positiveMetric1', 'positiveChange1', 'positiveMetric2', 'positiveChange2',
+          'monitorMetric1', 'monitorChange1', 'monitorMetric2', 'monitorChange2'
+        ];
+        fieldOrder.forEach((key, i) => {
+          if (i < components.body.length) params[key] = components.body[i];
+        });
+      }
 
       const { TemplateBuilder } = await import('../services/templateBuilder.js');
       const { getTemplateConfig } = await import('../config/templateConfigs.js');
