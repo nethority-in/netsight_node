@@ -164,9 +164,6 @@ export class WhatsAppController {
   }
 
   // POST /api/whatsapp/send-dynamic - Flexible template with dynamic parameters
-  // Accepts either:
-  // - components: { body: string[], header?: array, buttons?: array } — passed through to WhatsApp (e.g. for templates with {{1}}..{{32}})
-  // - parameters: object — used with TemplateBuilder + template config (named fields)
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
       const { to, templateName, languageCode, parameters, components } = req.body;
