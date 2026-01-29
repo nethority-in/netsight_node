@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { EmailController } from '../controllers/emailController.js';
+import { notificationRateLimiter } from '../middleware/rateLimit.js';
+import { duplicateMessageMiddleware } from '../middleware/duplicateMessage.js';
 
 const router = Router();
+
+// Rate limiting & idempotency for send endpoints (abuse protection, duplicate send protection)
+router.use(notificationRateLimiter);
+router.use(duplicateMessageMiddleware);
 
 // Email API routes
 router.post('/send-template', EmailController.sendTemplate);

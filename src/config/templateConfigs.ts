@@ -19,6 +19,26 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     optionalFields: ['subject', 'title', 'footer'],
     fieldOrder: ['subject', 'title', 'content', 'footer']
   },
+  // WhatsApp Meta-approved: daily_business_insights – 28 body params in order
+/*  daily_business_insights: {
+    name: 'daily_business_insights',
+    requiredFields: ['recipientName', 'storeName', 'date'],
+    optionalFields: [
+      'revenue', 'orders', 'avgOrderValue', 'revenueChange', 'ordersChange', 'roas', 'cac',
+      'roasChange', 'cacChange', 'contributionMargin', 'contributionMarginChange', 'returns',
+      'rto', 'returnsChange', 'rtoChange', 'slaAdherence', 'slaChange', 'positiveMetric1',
+      'positiveChange1', 'positiveMetric2', 'positiveChange2', 'monitorMetric1', 'monitorChange1',
+      'monitorMetric2', 'monitorChange2'
+    ],
+    fieldOrder: [
+      'recipientName', 'storeName', 'date', 'revenue', 'orders', 'avgOrderValue', 'revenueChange', 'ordersChange',
+      'roas', 'cac', 'roasChange', 'cacChange', 'contributionMargin', 'contributionMarginChange',
+      'returns', 'rto', 'returnsChange', 'rtoChange', 'slaAdherence', 'slaChange',
+      'positiveMetric1', 'positiveChange1', 'positiveMetric2', 'positiveChange2',
+      'monitorMetric1', 'monitorChange1', 'monitorMetric2', 'monitorChange2'
+    ]
+  },
+*/
   // Matches WhatsApp daily_store_performance_summary – 32 body params in order
   daily_store_performance_summary: {
     name: 'daily_store_performance_summary',

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { WhatsAppTemplateService } from '../services/whatsappTemplateService.js';
 import { getWhatsAppTemplate, getAllWhatsAppTemplates, registerWhatsAppTemplate, WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
+import { ErrorHandler } from '../utils/errorHandler.js';
 
 export class WhatsAppTemplateController {
   // POST /api/whatsapp/templates/create - Create template in Meta Business Manager
@@ -9,44 +10,20 @@ export class WhatsAppTemplateController {
       const { templateName } = req.body;
 
       if (!templateName) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required field: "templateName" is required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required field: "templateName" is required');
         return;
       }
 
       const template = getWhatsAppTemplate(templateName);
       if (!template) {
-        res.status(404).json({
-          ok: false,
-          error: {
-            message: `Template "${templateName}" not found in code. Please define it first.`,
-            status: 404,
-            code: 404
-          }
-        });
+        ErrorHandler.sendNotFoundError(res, `Template "${templateName}" not found in code. Please define it first.`);
         return;
       }
 
       const result = await WhatsAppTemplateService.createTemplate(template);
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in createTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in createTemplate', 500);
     }
   }
 
@@ -56,35 +33,21 @@ export class WhatsAppTemplateController {
       const templateData = req.body as WhatsAppTemplateDefinition;
 
       if (!templateData.name || !templateData.category || !templateData.language || !templateData.components) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "name", "category", "language", and "components" are required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required fields: "name", "category", "language", and "components" are required');
         return;
       }
 
-      // Step 1: Save template in code
       registerWhatsAppTemplate(templateData);
       console.log(`✅ Template "${templateData.name}" registered in code`);
 
-      // Step 2: Create template in Meta
       const result = await WhatsAppTemplateService.createTemplate(templateData);
-      
+
       if (result.ok) {
-        res.status(200).json({
-          ok: true,
+        ErrorHandler.sendSuccess(res, {
           message: `Template "${templateData.name}" saved in code and created in Meta successfully. Waiting for approval.`,
-          data: {
-            ...result.data,
-            codeRegistered: true
-          }
+          data: { ...result.data, codeRegistered: true }
         });
       } else {
-        // Even if Meta creation fails, template is saved in code
         const statusCode = result.error?.status || 500;
         res.status(statusCode).json({
           ok: false,
@@ -94,16 +57,7 @@ export class WhatsAppTemplateController {
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in createCustomTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in createCustomTemplate', 500);
     }
   }
 
@@ -118,24 +72,11 @@ export class WhatsAppTemplateController {
         description: templates[name].description
       }));
 
-      res.status(200).json({
-        ok: true,
-        data: {
-          templates: templateList,
-          count: templateList.length
-        }
+      ErrorHandler.sendSuccess(res, {
+        data: { templates: templateList, count: templateList.length }
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in getTemplates controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in getTemplates', 500);
     }
   }
 
@@ -146,38 +87,17 @@ export class WhatsAppTemplateController {
       const template = getWhatsAppTemplate(templateName);
 
       if (!template) {
-        res.status(404).json({
-          ok: false,
-          error: {
-            message: `Template "${templateName}" not found`,
-            status: 404,
-            code: 404
-          }
-        });
+        ErrorHandler.sendNotFoundError(res, `Template "${templateName}"`);
         return;
       }
 
-      // Get the payload that will be sent to Meta
       const payload = WhatsAppTemplateService.getTemplatePayload(template);
 
-      res.status(200).json({
-        ok: true,
-        data: {
-          template,
-          metaPayload: payload
-        }
+      ErrorHandler.sendSuccess(res, {
+        data: { template, metaPayload: payload }
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in getTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in getTemplate', 500);
     }
   }
 
@@ -187,37 +107,18 @@ export class WhatsAppTemplateController {
       const templateData = req.body as WhatsAppTemplateDefinition;
 
       if (!templateData.name || !templateData.category || !templateData.language || !templateData.components) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "name", "category", "language", and "components" are required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required fields: "name", "category", "language", and "components" are required');
         return;
       }
 
       registerWhatsAppTemplate(templateData);
 
-      res.status(200).json({
-        ok: true,
+      ErrorHandler.sendSuccess(res, {
         message: `Template "${templateData.name}" registered successfully. Use /api/whatsapp/templates/create to create it in Meta.`,
-        data: {
-          template: templateData
-        }
+        data: { template: templateData }
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in registerTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in registerTemplate', 500);
     }
   }
 
@@ -225,19 +126,9 @@ export class WhatsAppTemplateController {
   static async getTemplatesFromMeta(_req: Request, res: Response): Promise<void> {
     try {
       const result = await WhatsAppTemplateService.getTemplatesFromMeta();
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in getTemplatesFromMeta controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in getTemplatesFromMeta', 500);
     }
   }
 
@@ -247,47 +138,26 @@ export class WhatsAppTemplateController {
       const { templateId, template } = req.body;
 
       if (!templateId) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required field: "templateId" is required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required field: "templateId" is required');
         return;
       }
 
       if (!template || !template.name || !template.category || !template.language || !template.components) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "template" object with "name", "category", "language", and "components" is required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required fields: "template" object with "name", "category", "language", and "components" is required');
         return;
       }
 
-      // Step 1: Update template in code
       registerWhatsAppTemplate(template);
       console.log(`✅ Template "${template.name}" updated in code`);
 
-      // Step 2: Update template in Meta
       const result = await WhatsAppTemplateService.updateTemplate(templateId, template);
-      
+
       if (result.ok) {
-        res.status(200).json({
-          ok: true,
+        ErrorHandler.sendSuccess(res, {
           message: `Template "${template.name}" updated in code and Meta successfully.`,
-          data: {
-            ...result.data,
-            codeUpdated: true
-          }
+          data: { ...result.data, codeUpdated: true }
         });
       } else {
-        // Even if Meta update fails, template is updated in code
         const statusCode = result.error?.status || 500;
         res.status(statusCode).json({
           ok: false,
@@ -297,16 +167,7 @@ export class WhatsAppTemplateController {
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in editTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in editTemplate', 500);
     }
   }
 
@@ -316,31 +177,14 @@ export class WhatsAppTemplateController {
       const { templateId } = req.body;
 
       if (!templateId) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required field: "templateId" is required',
-            status: 400,
-            code: 400
-          }
-        });
+        ErrorHandler.sendValidationError(res, 'Missing required field: "templateId" is required');
         return;
       }
 
       const result = await WhatsAppTemplateService.deleteTemplate(templateId);
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in deleteTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in deleteTemplate', 500);
     }
   }
 }

@@ -351,3 +351,43 @@ http://localhost:3002/api/whatsapp/templates/create-custom-delete
 {
   "templateId": "1374048857227941"
 }
+
+api/whatsapp/send-dynamic
+with emoji and professional output for whatsapp
+{
+  "to": "918605749752",
+  "templateName": "daily_business_insights",
+  "languageCode": "en",
+  "components": {
+    "body": [
+      "Sarang",          
+      "ABC Store",       
+      "22 Jan 2024",     
+      "5,00,000",        
+      "320",             
+      "1,560",           
+      "+8%",             
+      "+5%",             
+      "3.2",             
+      "950",             
+      "+0.4",            
+      "-3%",             
+      "28%",             
+      "+2%",             
+      "12",              
+      "-1%",             
+      "6%",              
+      "-0.5%",           
+      "98%",             
+      "+1%",             
+      "Revenue",         
+      "+8%",             
+      "ROAS",            
+      "+0.4",            
+      "Customer Retention", 
+      "-5%",             
+      "RTO",             
+      "-1%"              
+    ]
+  }
+}

@@ -1,5 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import dotenv from 'dotenv';
+import { ErrorHandler } from '../utils/errorHandler.js';
+import { retryWithBackoff } from '../utils/retry.js';
 
 dotenv.config();
 
@@ -96,6 +98,17 @@ export class WhatsAppService {
       return /^\d{10,12}$/.test(cleaned);
     }
 
+    /** Validates that WhatsApp API URL can be built (env vars set). */
+    private static validateApiConfig(): { valid: boolean; message?: string } {
+      if (!PHONE_NUMBER_ID || PHONE_NUMBER_ID === 'undefined') {
+        return { valid: false, message: 'WHATSAPP_PHONE_NUMBER_ID is not set in .env. Required for WhatsApp API.' };
+      }
+      if (!GRAPH_VERSION || GRAPH_VERSION === 'undefined') {
+        return { valid: false, message: 'META_GRAPH_VERSION is not set in .env. Required for WhatsApp API.' };
+      }
+      return { valid: true };
+    }
+
     // Send template message via WhatsApp Cloud API
   
   static async sendTemplate(
@@ -113,31 +126,24 @@ export class WhatsAppService {
       // Clean and validate phone number
       const cleanedPhone = to.trim();
       if (!this.validatePhoneNumber(cleanedPhone)) {
-        return {
-          ok: false,
-          error: {
-            message: 'Invalid phone number format. Must be digits only (10-15 digits), no + or spaces.',
-            status: 400,
-            code: 400
-          }
-        };
+        return ErrorHandler.toServiceError('Invalid phone number format. Must be digits only (10-12 digits), no + or spaces.', 400) as WhatsAppServiceResponse;
       }
 
-      // Validate access token
+      const apiConfig = this.validateApiConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+      }
+
+      if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
+        return ErrorHandler.toServiceError('Template name is required and must be a non-empty string.', 400) as WhatsAppServiceResponse;
+      }
+
       const accessToken = this.validateAccessToken();
       if (!accessToken) {
-        const envMessage = IS_PRODUCTION 
+        const envMessage = IS_PRODUCTION
           ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
           : 'Set WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in .env';
-        
-        return {
-          ok: false,
-          error: {
-            message: `WhatsApp access token not configured. ${envMessage}`,
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError(`WhatsApp access token not configured. ${envMessage}`, 500) as WhatsAppServiceResponse;
       }
 
       // Prepare template object
@@ -183,13 +189,17 @@ export class WhatsAppService {
         tokenPrefix: accessToken.substring(0, 10) + '...'
       });
 
-      // Send request to Meta Graph API
-      const response = await axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Send request to Meta Graph API with retry on transient failures
+      const response = await retryWithBackoff(
+        () =>
+          axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }),
+        { maxAttempts: 3, initialDelayMs: 1000, maxDelayMs: 10000 }
+      );
 
       console.log('✅ WhatsApp template message sent successfully:', response.data);
 
@@ -210,31 +220,32 @@ export class WhatsAppService {
       // Clean and validate phone number
       const cleanedPhone = to.trim();
       if (!this.validatePhoneNumber(cleanedPhone)) {
-        return {
-          ok: false,
-          error: {
-            message: 'Invalid phone number format. Must be digits only (10-15 digits), no + or spaces.',
-            status: 400,
-            code: 400
-          }
-        };
+        return ErrorHandler.toServiceError('Invalid phone number format. Must be digits only (10-12 digits), no + or spaces.', 400) as WhatsAppServiceResponse;
       }
 
-      // Validate access token
+      if (text == null || typeof text !== 'string') {
+        return ErrorHandler.toServiceError('Message text is required and must be a string.', 400) as WhatsAppServiceResponse;
+      }
+      const trimmedText = text.trim();
+      if (trimmedText.length === 0) {
+        return ErrorHandler.toServiceError('Message text cannot be empty or whitespace only.', 400) as WhatsAppServiceResponse;
+      }
+      const WHATSAPP_TEXT_MAX_LENGTH = 4096;
+      if (trimmedText.length > WHATSAPP_TEXT_MAX_LENGTH) {
+        return ErrorHandler.toServiceError(`Message text must not exceed ${WHATSAPP_TEXT_MAX_LENGTH} characters. Current length: ${trimmedText.length}.`, 400) as WhatsAppServiceResponse;
+      }
+
+      const apiConfig = this.validateApiConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+      }
+
       const accessToken = this.validateAccessToken();
       if (!accessToken) {
-        const envMessage = IS_PRODUCTION 
+        const envMessage = IS_PRODUCTION
           ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
           : 'Set WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in .env';
-        
-        return {
-          ok: false,
-          error: {
-            message: `WhatsApp access token not configured. ${envMessage}`,
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError(`WhatsApp access token not configured. ${envMessage}`, 500) as WhatsAppServiceResponse;
       }
 
       // Prepare Meta Graph API payload
@@ -243,7 +254,7 @@ export class WhatsAppService {
         to: cleanedPhone,
         type: 'text',
         text: {
-          body: text
+          body: trimmedText
         }
       };
 
@@ -251,19 +262,23 @@ export class WhatsAppService {
       const tokenType = IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN';
       console.log('📤 Sending WhatsApp text message:', {
         to: cleanedPhone,
-        textLength: text.length,
+        textLength: trimmedText.length,
         url: GRAPH_BASE_URL,
         tokenType,
         tokenPrefix: accessToken.substring(0, 10) + '...'
       });
 
-      // Send request to Meta Graph API
-      const response = await axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Send request to Meta Graph API with retry on transient failures
+      const response = await retryWithBackoff(
+        () =>
+          axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }),
+        { maxAttempts: 3, initialDelayMs: 1000, maxDelayMs: 10000 }
+      );
 
       console.log('✅ WhatsApp text message sent successfully:', response.data);
 
@@ -306,40 +321,32 @@ export class WhatsAppService {
           errorMessage = tokenMessage;
         }
 
-        return {
-          ok: false,
-          error: {
-            message: errorMessage,
-            status: status,
-            code: errorCode || status,
-            details: metaError?.error
-          }
-        };
+        return ErrorHandler.toServiceError(errorMessage, status, errorCode || status, metaError?.error) as WhatsAppServiceResponse;
       } else if (axiosError.request) {
-        // Request was made but no response received
+        // Request was made but no response received (timeout, network, etc.)
+        const code = (axiosError as NodeJS.ErrnoException).code;
+        let msg = 'No response from Meta Graph API. Check your internet connection.';
+        if (code === 'ECONNRESET') msg = 'Connection reset by Meta Graph API. Please retry.';
+        if (code === 'ETIMEDOUT') msg = 'Request to Meta Graph API timed out. Please retry.';
+        if (code === 'ENOTFOUND') msg = 'Could not resolve Meta Graph API host. Check DNS or network.';
         console.error('❌ WhatsApp API request failed - no response:', axiosError.message);
-        return {
-          ok: false,
-          error: {
-            message: 'No response from Meta Graph API. Check your internet connection.',
-            status: 503,
-            code: 503
-          }
-        };
+        return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
       }
     }
 
-    // Unknown error
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'ECONNRESET' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
+        const msg = code === 'ECONNRESET' ? 'Connection reset. Please retry.'
+          : code === 'ETIMEDOUT' ? 'Request timed out. Please retry.'
+          : 'Could not resolve host. Check network.';
+        return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
+      }
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ WhatsApp service error:', errorMessage);
-    return {
-      ok: false,
-      error: {
-        message: errorMessage,
-        status: 500,
-        code: 500
-      }
-    };
+    return ErrorHandler.toServiceError(errorMessage, 500) as WhatsAppServiceResponse;
   }
 }
 

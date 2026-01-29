@@ -85,6 +85,42 @@ const whatsappTemplates: Record<string, WhatsAppTemplateDefinition> = {
         }
       }
     ]
+    /*
+  },
+
+  // Meta-approved template: Daily Business Insights (28 body params)
+  // Used for sending daily performance summary to user WhatsApp (e.g. 918698673161)
+  daily_business_insights: {
+    name: 'daily_business_insights',
+    category: 'MARKETING',
+    language: 'en',
+    description: 'Daily Business Insights – revenue, marketing, operations, highlights',
+    components: [
+      {
+        type: 'HEADER',
+        format: 'TEXT',
+        text: 'demo',
+        example: { header_text: ['demo'] }
+      },
+      {
+        type: 'BODY',
+        text: '👋 Hello dear {{1}},\n\n✨ **Daily Business Insights for {{2}}** ({{3}})\n\n💰 **Revenue & Sales:**\n• Total Revenue: ₹{{4}}\n• Orders: {{5}}\n• Average Order Value (AOV): ₹{{6}}\n• Revenue Change vs Previous Day: {{7}}\n• Orders Change vs Previous Day: {{8}}\n\n📈 **Marketing Performance:**\n• ROAS (1-day): {{9}}\n• Customer Acquisition Cost (CAC): ₹{{10}}\n• ROAS Change: {{11}}\n• CAC Change: {{12}}\n• Contribution Margin: {{13}} | Change: {{14}}\n\n🏭 **Operations & Fulfilment:**\n• Returns: {{15}} | Change: {{16}}\n• RTO: {{17}} | Change: {{18}}\n• SLA Adherence: {{19}} | Change: {{20}}\n\n🔝 **Top Highlights:**\n• {{21}} improved by {{22}} ⬆️\n• {{23}} improved by {{24}} ⬆️\n\n⚠️ **Attention Needed:**\n• {{25}} declined by {{26}} ⬇️\n• {{27}} declined by {{28}} ⬇️\n\n💡 Keep up the momentum and optimize where needed!\n\nRegards,\n**Netsights.ai** 🚀',
+        example: {
+          body_text: [
+            [
+              'ram', 'ABC Store', '22 Jan 2024', '₹5,00,000', '320', '₹1,560', '+8%', '+5%',
+              '3.2', '₹950', '+0.4', '-3%', '28%', '+2%', '12', '-1%', '6%', '-0.5%', '98%', '+1%',
+              'Revenue', '+8%', 'ROAS', '+0.4', 'Customer Retention', '-5%', 'RTO', '-1%'
+            ]
+          ]
+        }
+      },
+      {
+        type: 'FOOTER',
+        text: 'abc'
+      }
+    ]
+      */
   }
 };
 

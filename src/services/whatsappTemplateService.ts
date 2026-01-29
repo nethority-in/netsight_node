@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import dotenv from 'dotenv';
 import { WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
+import { ErrorHandler } from '../utils/errorHandler.js';
 
-// Ensure dotenv is loaded
 dotenv.config();
 
 export interface CreateTemplateResponse {
@@ -132,27 +132,13 @@ export class WhatsAppTemplateService {
           WHATSAPP_BUSINESS_ACCOUNT_ID: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID ? 'SET' : 'NOT SET'
         });
         
-        return {
-          ok: false,
-          error: {
-            message: 'WhatsApp access token not configured. Please check your .env file and ensure WHATSAPP_ACCESS_TOKEN or SYSTEM_USER_TOKEN is set.',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WhatsApp access token not configured. Please check your .env file and ensure WHATSAPP_ACCESS_TOKEN or SYSTEM_USER_TOKEN is set.', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
       if (!businessAccountId) {
         console.error('❌ WHATSAPP_BUSINESS_ACCOUNT_ID not found in environment');
-        return {
-          ok: false,
-          error: {
-            message: 'WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env', 500) as WhatsAppTemplateServiceResponse;
       }
 
       // Prepare template payload for Meta API
@@ -241,29 +227,15 @@ export class WhatsAppTemplateService {
   static async updateTemplate(templateId: string, template: WhatsAppTemplateDefinition): Promise<WhatsAppTemplateServiceResponse> {
     try {
       dotenv.config();
-      
+
       const accessToken = this.getAccessToken();
       if (!accessToken) {
-        return {
-          ok: false,
-          error: {
-            message: 'WhatsApp access token not configured',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WhatsApp access token not configured', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
       if (!businessAccountId) {
-        return {
-          ok: false,
-          error: {
-            message: 'WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env', 500) as WhatsAppTemplateServiceResponse;
       }
 
       console.log('📝 Updating WhatsApp template in Meta (Delete + Recreate):', {
@@ -317,15 +289,12 @@ export class WhatsAppTemplateService {
         
         // If it's a BSP template or permission issue, return error
         if (errorData?.code === 100 && errorData?.error_subcode === 33) {
-          return {
-            ok: false,
-            error: {
-              message: `Cannot update template. This template may be created by Business Solution Provider (BSP) and cannot be deleted/updated via API. BSP templates are managed by the provider and cannot be modified.`,
-              status: 400,
-              code: 100,
-              details: errorData
-            }
-          };
+          return ErrorHandler.toServiceError(
+            'Cannot update template. This template may be created by Business Solution Provider (BSP) and cannot be deleted/updated via API. BSP templates are managed by the provider and cannot be modified.',
+            400,
+            100,
+            errorData
+          ) as WhatsAppTemplateServiceResponse;
         }
         
         // If template doesn't exist, that's okay - we'll create new one
@@ -373,30 +342,16 @@ export class WhatsAppTemplateService {
       
       const accessToken = this.getAccessToken();
       if (!accessToken) {
-        return {
-          ok: false,
-          error: {
-            message: 'WhatsApp access token not configured',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WhatsApp access token not configured', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
       if (!businessAccountId) {
-        return {
-          ok: false,
-          error: {
-            message: 'WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const graphVersion = process.env.META_GRAPH_VERSION || 'v21.0';
-      
+
       // Step 1: Verify template exists and get its details
       let template: any = null;
       try {
@@ -415,14 +370,10 @@ export class WhatsAppTemplateService {
         template = templates.find((t: any) => t.id === templateId);
         
         if (!template) {
-          return {
-            ok: false,
-            error: {
-              message: `Template with ID "${templateId}" not found. The template may have been already deleted, or the ID is incorrect. Use GET /api/whatsapp/templates/meta to see all available templates.`,
-              status: 404,
-              code: 404
-            }
-          };
+          return ErrorHandler.toServiceError(
+            `Template with ID "${templateId}" not found. The template may have been already deleted, or the ID is incorrect. Use GET /api/whatsapp/templates/meta to see all available templates.`,
+            404
+          ) as WhatsAppTemplateServiceResponse;
         }
 
         console.log('📋 Template found:', {
@@ -508,26 +459,20 @@ export class WhatsAppTemplateService {
             if (errorData2?.code === 100 && errorData2?.error_subcode === 33) {
               // Check if template is REJECTED - REJECTED templates might need special handling
               if (template?.status === 'REJECTED') {
-                return {
-                  ok: false,
-                  error: {
-                    message: `Cannot delete REJECTED template. REJECTED templates should be edited and resubmitted rather than deleted. Use PUT /api/whatsapp/templates/create-custom-edit to edit and resubmit the template. If you need to delete it, you may need to do so manually through Meta Business Manager.`,
-                    status: 400,
-                    code: 100,
-                    details: errorData2
-                  }
-                };
+                return ErrorHandler.toServiceError(
+                  'Cannot delete REJECTED template. REJECTED templates should be edited and resubmitted rather than deleted. Use PUT /api/whatsapp/templates/create-custom-edit to edit and resubmit the template. If you need to delete it, you may need to do so manually through Meta Business Manager.',
+                  400,
+                  100,
+                  errorData2
+                ) as WhatsAppTemplateServiceResponse;
               }
-              
-              return {
-                ok: false,
-                error: {
-                  message: `Cannot delete template. Possible reasons: 1) Template was created by Business Solution Provider (BSP) and cannot be deleted via API, 2) Template status "${template?.status}" may not allow deletion, 3) Insufficient permissions - ensure your access token has 'whatsapp_business_management' permission, 4) Template ID is incorrect. Use GET /api/whatsapp/templates/meta to verify template exists and status.`,
-                  status: 400,
-                  code: 100,
-                  details: errorData2
-                }
-              };
+
+              return ErrorHandler.toServiceError(
+                `Cannot delete template. Possible reasons: 1) Template was created by Business Solution Provider (BSP) and cannot be deleted via API, 2) Template status "${template?.status}" may not allow deletion, 3) Insufficient permissions - ensure your access token has 'whatsapp_business_management' permission, 4) Template ID is incorrect. Use GET /api/whatsapp/templates/meta to verify template exists and status.`,
+                400,
+                100,
+                errorData2
+              ) as WhatsAppTemplateServiceResponse;
             }
             
             // Re-throw to be handled by handleError
@@ -550,26 +495,12 @@ export class WhatsAppTemplateService {
       
       const accessToken = this.getAccessToken();
       if (!accessToken) {
-        return {
-          ok: false,
-          error: {
-            message: 'WhatsApp access token not configured',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WhatsApp access token not configured', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
       if (!businessAccountId) {
-        return {
-          ok: false,
-          error: {
-            message: 'WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env',
-            status: 500,
-            code: 500
-          }
-        };
+        return ErrorHandler.toServiceError('WHATSAPP_BUSINESS_ACCOUNT_ID not configured in .env', 500) as WhatsAppTemplateServiceResponse;
       }
 
       const graphVersion = process.env.META_GRAPH_VERSION || 'v21.0';
@@ -624,27 +555,17 @@ export class WhatsAppTemplateService {
 
         console.error('❌ WhatsApp Template API error:', errorData);
 
-        return {
-          ok: false,
-          error: {
-            message,
-            status,
-            code: errorData?.error?.code || status,
-            details: errorData?.error
-          }
-        };
+        return ErrorHandler.toServiceError(
+          message,
+          status,
+          errorData?.error?.code || status,
+          errorData?.error
+        ) as WhatsAppTemplateServiceResponse;
       }
     }
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ WhatsApp Template Service error:', errorMessage);
-    return {
-      ok: false,
-      error: {
-        message: errorMessage,
-        status: 500,
-        code: 500
-      }
-    };
+    return ErrorHandler.toServiceError(errorMessage, 500) as WhatsAppTemplateServiceResponse;
   }
 }

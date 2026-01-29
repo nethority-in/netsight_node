@@ -1,8 +1,14 @@
 import { Router } from 'express';
 import { WhatsAppController } from '../controllers/whatsappController.js';
 import { WhatsAppTemplateController } from '../controllers/whatsappTemplateController.js';
+import { notificationRateLimiter } from '../middleware/rateLimit.js';
+import { duplicateMessageMiddleware } from '../middleware/duplicateMessage.js';
 
 const router = Router();
+
+// Rate limiting & idempotency for send endpoints (abuse protection, duplicate send protection)
+router.use(notificationRateLimiter);
+router.use(duplicateMessageMiddleware);
 
 // WhatsApp API routes
 router.post('/send-template', WhatsAppController.sendTemplate);
