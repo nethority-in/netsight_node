@@ -42,16 +42,3 @@
 This Node.js server can work alongside:
 - **React Frontend** (in the root directory)
 - **Node Backend** (separate node project)
-
-
-# PM2 restart करा
-pm2 restart netsight-api
-
-# किंवा
-pm2 restart 0
-
-# Status check करा
-pm2 status
-
-# Logs check करा
-pm2 logs netsight-api --lines 50
