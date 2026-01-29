@@ -1,25 +1,27 @@
 import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
+import { ErrorHandler } from '../utils/errorHandler.js';
 
 export class WhatsAppController {
       // POST /api/whatsapp/send-template
   static async sendTemplate(req: Request, res: Response): Promise<void> {
     try {
       const { to, templateName, languageCode, components } = req.body;
-      // Validate required fields
-      if (!to || !templateName) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to" and "templateName" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      if (to == null || to === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
+        return;
+      }
+      const toStr = String(to).trim();
+      if (toStr.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Recipient "to" cannot be empty or whitespace only.');
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
       // Use default language code if not provided
-      const langCode = languageCode || 'en';
+      const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
       
       // Support both old format (parameters array) and new format (components object)
       let templateComponents: Array<{
@@ -80,21 +82,10 @@ export class WhatsAppController {
         }];
       }
 
-      // Send template message
-      const result = await WhatsAppService.sendTemplate(to, templateName, langCode, templateComponents || undefined);
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents || undefined);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
     }
   }
   // Send daily KPI snapshot template - Now flexible with optional parameters (uses sendDynamic internally)
@@ -116,16 +107,9 @@ export class WhatsAppController {
         loyaltyPoints
       } = req.body;
 
-      // Only validate required fields
-      if (!to || !storeName || !date) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to", "storeName", and "date" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toStr = to != null ? String(to).trim() : '';
+      if (!toStr || !storeName || !date) {
+        ErrorHandler.sendValidationError(res, 'Missing required fields: "to", "storeName", and "date" are required. "to" cannot be empty.');
         return;
       }
 
@@ -146,20 +130,11 @@ export class WhatsAppController {
       if (returns) parameters.returns = returns;
       if (loyaltyPoints) parameters.loyaltyPoints = loyaltyPoints;
 
-      // Use sendDynamic internally
-      req.body = { to, templateName: 'daily_kpi_snapshot', languageCode: 'en', parameters };
-      return await this.sendDynamic(req, res);
+      // Use sendDynamic internally (call by class so "this" is correct when used as Express handler)
+      req.body = { to: toStr, templateName: 'daily_kpi_snapshot', languageCode: 'en', parameters };
+      return await WhatsAppController.sendDynamic(req, res);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendDailyKpiSnapshot controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDailyKpiSnapshot', 500);
     }
   }
 
@@ -168,19 +143,17 @@ export class WhatsAppController {
     try {
       const { to, templateName, languageCode, parameters, components } = req.body;
 
-      if (!to || !templateName) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to" and "templateName" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toStr = to != null ? String(to).trim() : '';
+      if (!toStr) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
 
-      const langCode = languageCode || 'en';
+      const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
 
       // When components is provided (body/header/buttons arrays), build WhatsApp components and send directly.
       // This supports templates like daily_store_performance_summary with many positional params.
@@ -222,9 +195,8 @@ export class WhatsAppController {
           });
         }
 
-        const result = await WhatsAppService.sendTemplate(to, templateName, langCode, templateComponents);
-        const statusCode = result.ok ? 200 : (result.error?.status || 500);
-        res.status(statusCode).json(result);
+        const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents);
+        ErrorHandler.sendServiceResult(res, result);
         return;
       }
 
@@ -237,14 +209,7 @@ export class WhatsAppController {
       if (config) {
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
-          res.status(400).json({
-            ok: false,
-            error: {
-              message: `Missing required fields: ${validation.missing.join(', ')}`,
-              status: 400,
-              code: 400
-            }
-          });
+          ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
           return;
         }
       }
@@ -256,54 +221,38 @@ export class WhatsAppController {
         fieldOrder: Object.keys(params)
       });
 
-      const result = await WhatsAppService.sendTemplate(to, templateName, langCode, builtComponents);
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, builtComponents);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendDynamic controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
     }
   }
     // POST /api/whatsapp/send-text
-  static async sendText(req: Request, res: Response): Promise<void> {
+    static async sendText(req: Request, res: Response): Promise<void> {
     try {
       const { to, text } = req.body;
 
-      if (!to || !text) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to" and "text" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toStr = to != null ? String(to).trim() : '';
+      if (!toStr) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
         return;
       }
-      // Send text message
-      const result = await WhatsAppService.sendText(to, text);
-      // Return appropriate status code based on result
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      if (text == null) {
+        ErrorHandler.sendValidationError(res, 'Missing required field: "text" (message body) is required');
+        return;
+      }
+      if (typeof text !== 'string') {
+        ErrorHandler.sendValidationError(res, 'Field "text" must be a string.');
+        return;
+      }
+      if (text.trim().length === 0) {
+        ErrorHandler.sendValidationError(res, 'Message "text" cannot be empty or whitespace only.');
+        return;
+      }
+      const result = await WhatsAppService.sendText(toStr, text);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendText controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendText', 500);
     }
   }
 }

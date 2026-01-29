@@ -6,6 +6,7 @@ import { connectPrisma, disconnectPrisma } from './config/prisma.js';
 // Import models to ensure they're loaded (NotificationLog, NotificationSetting, Widget)
 import './models/index.js';
 import apiRoutes from './routes/api.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
 dotenv.config();
@@ -59,10 +60,16 @@ process.on('SIGTERM', async () => {
 // Routes
 app.use('/api', apiRoutes);
 
-// Health check endpoint
+// Health check (before 404)
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Node.js server is running' });
 });
+
+// 404 - must be after all routes
+app.use(notFoundHandler);
+
+// Centralized error handler - must be last
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { EmailService } from '../services/emailService.js';
+import { ErrorHandler } from '../utils/errorHandler.js';
 
 export class EmailController {
   // POST /api/email/send-template
@@ -7,21 +8,18 @@ export class EmailController {
     try {
       const { to, templateName, templateVariables, subject, cc, bcc } = req.body;
 
-      if (!to || !templateName) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to" and "templateName" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+      if (toVal.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
 
-      // Send template email
       const result = await EmailService.sendTemplate(
-        to,
+        toVal.length === 1 ? toVal[0] : toVal,
         templateName,
         templateVariables || {},
         subject,
@@ -29,19 +27,9 @@ export class EmailController {
         bcc
       );
 
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendTemplate controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
     }
   }
 
@@ -66,16 +54,9 @@ export class EmailController {
         bcc
       } = req.body;
 
-      // Only validate required fields
-      if (!to || !storeName || !date) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to", "storeName", and "date" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+      if (toVal.length === 0 || !storeName || !date) {
+        ErrorHandler.sendValidationError(res, 'Missing required fields: "to", "storeName", and "date" are required. "to" cannot be empty.');
         return;
       }
 
@@ -97,19 +78,10 @@ export class EmailController {
       if (loyaltyPoints) parameters.loyaltyPoints = loyaltyPoints;
 
       // Use sendDynamic internally
-      req.body = { to, templateName: 'daily_kpi_snapshot', parameters, cc, bcc };
+      req.body = { to: toVal.length === 1 ? toVal[0] : toVal, templateName: 'daily_kpi_snapshot', parameters, cc, bcc };
       return await this.sendDynamic(req, res);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendDailyKpiSnapshot controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDailyKpiSnapshot', 500);
     }
   }
 
@@ -118,22 +90,22 @@ export class EmailController {
     try {
       const { to, subject, htmlContent, textContent, cc, bcc } = req.body;
 
-      // Validate required fields
-      if (!to || !subject || !htmlContent) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to", "subject", and "htmlContent" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+      if (toVal.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+        return;
+      }
+      if (subject == null || (typeof subject !== 'string') || subject.trim().length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "subject" is required and cannot be whitespace only');
+        return;
+      }
+      if (htmlContent == null || (typeof htmlContent !== 'string') || htmlContent.trim().length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "htmlContent" is required and cannot be whitespace only');
         return;
       }
 
-      // Send email
       const result = await EmailService.sendEmail(
-        to,
+        toVal.length === 1 ? toVal[0] : toVal,
         subject,
         htmlContent,
         textContent,
@@ -141,19 +113,9 @@ export class EmailController {
         bcc
       );
 
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendEmail controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendEmail', 500);
     }
   }
 
@@ -162,25 +124,11 @@ export class EmailController {
     try {
       const { getAvailableTemplates } = await import('../templates/emailTemplates.js');
       const templates = getAvailableTemplates();
-
-      res.status(200).json({
-        ok: true,
-        data: {
-          templates,
-          count: templates.length
-        }
+      ErrorHandler.sendSuccess(res, {
+        data: { templates, count: templates.length }
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in getTemplates controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in getTemplates', 500);
     }
   }
 
@@ -190,15 +138,13 @@ export class EmailController {
     try {
       const { to, templateName, parameters, components, subject, cc, bcc } = req.body;
 
-      if (!to || !templateName) {
-        res.status(400).json({
-          ok: false,
-          error: {
-            message: 'Missing required fields: "to" and "templateName" are required',
-            status: 400,
-            code: 400
-          }
-        });
+      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+      if (toVal.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
 
@@ -228,28 +174,14 @@ export class EmailController {
       if (config) {
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
-          res.status(400).json({
-            ok: false,
-            error: {
-              message: `Missing required fields: ${validation.missing.join(', ')}`,
-              status: 400,
-              code: 400
-            }
-          });
+          ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
           return;
         }
       }
 
       const template = getEmailTemplate(templateName);
       if (!template) {
-        res.status(404).json({
-          ok: false,
-          error: {
-            message: `Template "${templateName}" not found`,
-            status: 404,
-            code: 404
-          }
-        });
+        ErrorHandler.sendNotFoundError(res, `Template "${templateName}"`);
         return;
       }
 
@@ -257,20 +189,10 @@ export class EmailController {
       let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
 
-      const result = await EmailService.sendEmail(to, emailSubject, htmlContent, textContent, cc, bcc);
-      const statusCode = result.ok ? 200 : (result.error?.status || 500);
-      res.status(statusCode).json(result);
+      const result = await EmailService.sendEmail(toVal.length === 1 ? toVal[0] : toVal, emailSubject, htmlContent, textContent, cc, bcc);
+      ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error in sendDynamic controller:', error);
-      res.status(500).json({
-        ok: false,
-        error: {
-          message: errorMessage,
-          status: 500,
-          code: 500
-        }
-      });
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
     }
   }
 }
