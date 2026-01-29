@@ -42,8 +42,3 @@
 This Node.js server can work alongside:
 - **React Frontend** (in the root directory)
 - **Node Backend** (separate node project)
-<<<<<<< HEAD
-
-
-=======
->>>>>>> origin/feature-branch

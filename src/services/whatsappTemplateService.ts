@@ -23,9 +23,7 @@ export interface WhatsAppTemplateServiceResponse {
 }
 
 export class WhatsAppTemplateService {
-
     //Build template payload for Meta API (shared by create, update, and getTemplatePayload)
- 
   private static buildTemplatePayload(template: WhatsAppTemplateDefinition): any {
     return {
       name: template.name,

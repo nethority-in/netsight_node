@@ -10,7 +10,7 @@ export interface ErrorResponse {
   };
 }
 
-/** Result shape from WhatsApp/Email services: { ok, meta?|data?, error? } */
+ // Result shape from WhatsApp/Email services: { ok, meta?|data?, error? } 
 export interface ServiceResult {
   ok: boolean;
   meta?: unknown;
@@ -55,13 +55,13 @@ export class ErrorHandler {
     });
   }
 
-  /** Send service result (WhatsApp/Email { ok, meta/data, error? }) with correct status. */
+  // Send service result (WhatsApp/Email { ok, meta/data, error? }) with correct status. 
   static sendServiceResult(res: Response, result: ServiceResult): void {
     const statusCode = result.ok ? 200 : (result.error?.status ?? 500);
     res.status(statusCode).json(result);
   }
 
-  /** Send success response. Payload can be { message, data, ... }; defaults to { ok: true }. */
+  // Send success response. Payload can be { message, data, ... }; defaults to { ok: true }. 
   static sendSuccess(res: Response, payload?: Record<string, unknown>, status: number = 200): void {
     res.status(status).json(
       payload !== undefined && typeof payload === 'object'
@@ -70,7 +70,7 @@ export class ErrorHandler {
     );
   }
 
-    /** Send 429 Too Many Requests (rate limit / abuse). */
+    // Send 429 Too Many Requests (rate limit / abuse). 
   static sendRateLimitExceeded(res: Response, message: string = 'Too many requests. Please try again later.', retryAfterSeconds?: number): void {
     if (retryAfterSeconds !== undefined) {
       res.setHeader('Retry-After', String(retryAfterSeconds));
@@ -85,7 +85,7 @@ export class ErrorHandler {
     });
   }
 
-  /** Send 503 Unavailable (e.g. database down). */
+  // Send 503 Unavailable (e.g. database down). 
   static sendUnavailable(res: Response, message: string = 'Service temporarily unavailable'): void {
     res.status(503).json({
       ok: false,
@@ -97,10 +97,10 @@ export class ErrorHandler {
     });
   }
 
-  /**
-   * Build error result for services (no Response). Use when returning { ok: false, error } from service methods.
-   * Keeps error shape consistent with ErrorResponse / ServiceResult.
-   */
+  
+    // Build error result for services (no Response). Use when returning { ok: false, error } from service methods.
+    // Keeps error shape consistent with ErrorResponse / ServiceResult.
+   
   static toServiceError(
     message: string,
     status: number = 500,

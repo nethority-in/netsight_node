@@ -7,7 +7,7 @@ import { retryWithBackoff } from '../utils/retry.js';
 
 dotenv.config();
 
-// Optional: default country when number is entered without country code (e.g. 9876543210 → India). Use ISO 3166-1 alpha-2: IN, US, GB, etc.
+// Optional: default country when number is entered without country code (e.g. 9876543210 → India).
 const DEFAULT_PHONE_COUNTRY = (process.env.DEFAULT_PHONE_COUNTRY?.trim().toUpperCase() || 'IN') as CountryCode;
 
 // WhatsApp API Configuration
@@ -16,7 +16,7 @@ const GRAPH_VERSION = process.env.META_GRAPH_VERSION;
 const GRAPH_BASE_URL = `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
 
 // Token Configuration
-// System_User_TOKEN: Production, automated messaging, business-initiated messages, long-term operations
+// System_User_TOKEN: Production
 const SYSTEM_USER_TOKEN = process.env.SYSTEM_USER_TOKEN;
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -92,12 +92,9 @@ export class WhatsAppService {
     
     return token;
   }
-  
-  /**
-   * Validates and normalizes a phone number for WhatsApp (international).
-   * Accepts E.164 (+44...), with country code (447700...), or national format with default country (e.g. 9876543210 + DEFAULT_PHONE_COUNTRY=IN).
-   * Returns E.164 without '+' for Meta API; rejects invalid or non-mobile/fixed-line-or-mobile numbers.
-   */
+  // Accepts E.164 (+44...), with country code (447700...), or national format with default country (e.g. 9876543210 + DEFAULT_PHONE_COUNTRY=IN).
+  // Returns E.164 without '+' for Meta API; rejects invalid or non-mobile/fixed-line-or-mobile numbers.
+   
   static normalizePhoneForWhatsApp(phone: string): { ok: true; e164: string } | { ok: false; message: string } {
     const trimmed = phone.trim();
     if (!trimmed) {
