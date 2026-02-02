@@ -59,6 +59,7 @@ curl -X POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot \
 6. **WhatsApp Text**: `POST https://bridge.netsights.ai/api/whatsapp/send-text`
 7. **WhatsApp Template**: `POST https://bridge.netsights.ai/api/whatsapp/send-template`
 8. **WhatsApp Daily KPI Snapshot**: `POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot`
+9. **WhatsApp From Numbers**: List (GET) and Add in Meta (POST). **WhatsApp message send होण्यासाठी From number आणि To number दोन्ही add/set करावे लागतात** — From = sender (ज्या number वरून message जाईल), To = recipient (ज्या number ला message पाठवायचा).
 
 ### for local
 
@@ -88,6 +89,35 @@ POST http://localhost:3002/api/whatsapp/send-template
     "Returns: 8% | RTO: 6% | SLA: 96% | Net Cash: ₹9.1Cr",
     "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
   ]
+}
+
+# WhatsApp From Numbers & To Number
+# Message send होण्यासाठी From number आणि To number दोन्ही add/set करावे लागतात:
+# - From number = sender (Meta मध्ये add केलेला number; ज्या number वरून message जाईल)
+# - To number = recipient (request मध्ये "to" मध्ये द्यायचा number; ज्या number ला message पाठवायचा)
+
+# Add From number in Meta (register phone number to your WABA). Uses .env WHATSAPP_BUSINESS_ACCOUNT_ID and token.
+# Required: cc (country code, e.g. "91"), phone_number (e.g. "8698673161"). Optional: verified_name.
+# If you get "Phone numbers count exceeded limit per business": Meta allows only a limited number of phone numbers per WABA (often 2 by default). Either delete an existing number from WhatsApp Manager (Meta Business Suite > WhatsApp Manager) or request additional numbers from Meta. See: About phone number limits.
+
+POST http://localhost:3002/api/whatsapp/from-numbers
+{
+  "cc": "91",
+  "phone_number": "8698673161",
+  "verified_name": "My Business Name"
+}
+
+# List all From numbers registered in Meta for your WABA.
+GET http://localhost:3002/api/whatsapp/from-numbers
+
+# Send message: use fromNumberId = Meta phone_number_id ("id" from GET /from-numbers), and "to" = recipient number.
+POST http://localhost:3002/api/whatsapp/send-dynamic
+{
+  "to": "918605749752",
+  "fromNumberId": "942341315626645",
+  "templateName": "daily_business_insights",
+  "languageCode": "en",
+  "components": { "body": ["Sarang", "ABC Store", "22 Jan 2024", "..."] }
 }
 
 # local request

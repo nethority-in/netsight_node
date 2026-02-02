@@ -12,7 +12,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 dotenv.config();
 
 const app: Express = express();
-const PORT: number = parseInt(process.env.PORT || '3001', 10);
+const PORT: number = parseInt(process.env.PORT || '3002', 10);
 
 // Middleware
 app.use(cors());

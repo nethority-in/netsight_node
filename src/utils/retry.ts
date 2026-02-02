@@ -1,7 +1,5 @@
   // Retry logic with exponential backoff for email/WhatsApp API calls.
   // Retries on transient errors: 5xx, ECONNRESET, ETIMEDOUT, ENOTFOUND.
-
-
 export interface RetryOptions {
   maxAttempts?: number;
   initialDelayMs?: number;
@@ -27,9 +25,7 @@ const defaultIsRetryable = (error: unknown): boolean => {
   }
   return false;
 };
-
   // Execute an async function with retries and exponential backoff.
-
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}

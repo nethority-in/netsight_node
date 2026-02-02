@@ -129,7 +129,7 @@ export class WhatsAppService {
     }
   }
 
-    /** Validates that WhatsApp API URL can be built (env vars set). */
+     // Validates that WhatsApp API URL can be built (env vars set).
     private static validateApiConfig(): { valid: boolean; message?: string } {
       if (!PHONE_NUMBER_ID || PHONE_NUMBER_ID === 'undefined') {
         return { valid: false, message: 'WHATSAPP_PHONE_NUMBER_ID is not set in .env. Required for WhatsApp API.' };
@@ -140,8 +140,7 @@ export class WhatsAppService {
       return { valid: true };
     }
 
-    // Send template message via WhatsApp Cloud API
-  
+    // Send template message via WhatsApp Cloud API using Meta Graph API
   static async sendTemplate(
     to: string,
     templateName: string,
@@ -151,7 +150,8 @@ export class WhatsAppService {
       parameters?: Array<{ type: string; text?: string; payload?: string }>;
       sub_type?: string;
       index?: number;
-    }>
+    }>,
+    fromCredentials?: { phoneNumberId: string; accessToken: string }
   ): Promise<WhatsAppServiceResponse> {
     try {
       const phoneResult = this.normalizePhoneForWhatsApp(to);
@@ -160,16 +160,22 @@ export class WhatsAppService {
       }
       const cleanedPhone = phoneResult.e164;
 
-      const apiConfig = this.validateApiConfig();
-      if (!apiConfig.valid) {
-        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
-      }
-
       if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
         return ErrorHandler.toServiceError('Template name is required and must be a non-empty string.', 400) as WhatsAppServiceResponse;
       }
 
-      const accessToken = this.validateAccessToken();
+      const useFromNumber = fromCredentials?.phoneNumberId && fromCredentials?.accessToken;
+      let graphBaseUrl: string;
+      if (useFromNumber) {
+        graphBaseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${fromCredentials!.phoneNumberId}/messages`;
+      } else {
+        const apiConfig = this.validateApiConfig();
+        if (!apiConfig.valid) {
+          return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+        }
+        graphBaseUrl = GRAPH_BASE_URL;
+      }
+      const accessToken = useFromNumber ? fromCredentials!.accessToken : this.validateAccessToken();
       if (!accessToken) {
         const envMessage = IS_PRODUCTION
           ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
@@ -208,14 +214,14 @@ export class WhatsAppService {
       };
 
       // Log request details for debugging (without exposing full token)
-      const tokenType = IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN';
+      const tokenType = useFromNumber ? 'FromNumber (DB)' : (IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN');
       console.log('📤 Sending WhatsApp template message:', {
         to: cleanedPhone,
         templateName,
         languageCode,
         componentsCount: components?.length || 0,
         components: components?.map(c => ({ type: c.type, paramsCount: c.parameters?.length || 0 })),
-        url: GRAPH_BASE_URL,
+        url: graphBaseUrl,
         tokenType,
         tokenPrefix: accessToken.substring(0, 10) + '...'
       });
@@ -223,7 +229,7 @@ export class WhatsAppService {
       // Send request to Meta Graph API
       const response = await retryWithBackoff(
         () =>
-          axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
+          axios.post<MetaGraphResponse>(graphBaseUrl, payload, {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json'
@@ -246,7 +252,11 @@ export class WhatsAppService {
 
     // Send text message via WhatsApp Cloud API
   
-  static async sendText(to: string, text: string): Promise<WhatsAppServiceResponse> {
+  static async sendText(
+    to: string,
+    text: string,
+    fromCredentials?: { phoneNumberId: string; accessToken: string }
+  ): Promise<WhatsAppServiceResponse> {
     try {
       const phoneResult = this.normalizePhoneForWhatsApp(to);
       if (!phoneResult.ok) {
@@ -266,12 +276,18 @@ export class WhatsAppService {
         return ErrorHandler.toServiceError(`Message text must not exceed ${WHATSAPP_TEXT_MAX_LENGTH} characters. Current length: ${trimmedText.length}.`, 400) as WhatsAppServiceResponse;
       }
 
-      const apiConfig = this.validateApiConfig();
-      if (!apiConfig.valid) {
-        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+      const useFromNumber = fromCredentials?.phoneNumberId && fromCredentials?.accessToken;
+      let graphBaseUrl: string;
+      if (useFromNumber) {
+        graphBaseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${fromCredentials!.phoneNumberId}/messages`;
+      } else {
+        const apiConfig = this.validateApiConfig();
+        if (!apiConfig.valid) {
+          return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+        }
+        graphBaseUrl = GRAPH_BASE_URL;
       }
-
-      const accessToken = this.validateAccessToken();
+      const accessToken = useFromNumber ? fromCredentials!.accessToken : this.validateAccessToken();
       if (!accessToken) {
         const envMessage = IS_PRODUCTION
           ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
@@ -290,11 +306,11 @@ export class WhatsAppService {
       };
 
       // Log request details for debugging (without exposing full token)
-      const tokenType = IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN';
+      const tokenType = useFromNumber ? 'FromNumber (DB)' : (IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN');
       console.log('📤 Sending WhatsApp text message:', {
         to: cleanedPhone,
         textLength: trimmedText.length,
-        url: GRAPH_BASE_URL,
+        url: graphBaseUrl,
         tokenType,
         tokenPrefix: accessToken.substring(0, 10) + '...'
       });
@@ -302,7 +318,7 @@ export class WhatsAppService {
       // Send request to Meta Graph API with retry on transient failures
       const response = await retryWithBackoff(
         () =>
-          axios.post<MetaGraphResponse>(GRAPH_BASE_URL, payload, {
+          axios.post<MetaGraphResponse>(graphBaseUrl, payload, {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json'
@@ -378,6 +394,91 @@ export class WhatsAppService {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ WhatsApp service error:', errorMessage);
     return ErrorHandler.toServiceError(errorMessage, 500) as WhatsAppServiceResponse;
+  }
+
+  /** Get From numbers from Meta (WABA phone_numbers). Uses WHATSAPP_BUSINESS_ACCOUNT_ID and env token. */
+  static async getFromNumbersFromMeta(): Promise<{ ok: boolean; data?: Array<{ id: string; display_phone_number?: string; verified_name?: string }>; error?: { message: string; status: number; code: number } }> {
+    try {
+      const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
+      if (!businessAccountId || businessAccountId === 'undefined') {
+        return { ok: false, error: { message: 'WHATSAPP_BUSINESS_ACCOUNT_ID is not set in .env', status: 500, code: 500 } };
+      }
+      const accessToken = this.validateAccessToken();
+      if (!accessToken) {
+        return { ok: false, error: { message: 'WhatsApp access token not configured in .env', status: 500, code: 500 } };
+      }
+      const graphVersion = process.env.META_GRAPH_VERSION || 'v22.0';
+      const url = `https://graph.facebook.com/${graphVersion}/${businessAccountId}/phone_numbers`;
+      const response = await axios.get<{ data?: Array<{ id: string; display_phone_number?: string; verified_name?: string }> }>(url, {
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+      });
+      const list = response.data?.data ?? [];
+      return { ok: true, data: list };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        const metaError = error.response.data.error;
+        return {
+          ok: false,
+          error: {
+            message: metaError.message || 'Failed to fetch phone numbers from Meta',
+            status: error.response.status || 500,
+            code: metaError.code || error.response.status || 500
+          }
+        };
+      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { ok: false, error: { message, status: 500, code: 500 } };
+    }
+  }
+
+  /** Return credentials to send from a given Meta phone_number_id using env token. Use in send-dynamic/send-template/send-text as fromNumberId. */
+  static getCredentialsForPhoneNumberId(phoneNumberId: string): { phoneNumberId: string; accessToken: string } | null {
+    if (!phoneNumberId || String(phoneNumberId).trim() === '') return null;
+    const accessToken = this.getAccessToken();
+    if (!accessToken) return null;
+    return { phoneNumberId: String(phoneNumberId).trim(), accessToken };
+  }
+
+  /** Add a From number in Meta (register phone number to WABA). Uses WHATSAPP_BUSINESS_ACCOUNT_ID and env token. */
+  static async addFromNumberInMeta(cc: string, phone_number: string, verified_name?: string): Promise<{ ok: boolean; data?: { id: string }; error?: { message: string; status: number; code: number; details?: unknown } }> {
+    try {
+      const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
+      if (!businessAccountId || businessAccountId === 'undefined') {
+        return { ok: false, error: { message: 'WHATSAPP_BUSINESS_ACCOUNT_ID is not set in .env', status: 500, code: 500 } };
+      }
+      const accessToken = this.validateAccessToken();
+      if (!accessToken) {
+        return { ok: false, error: { message: 'WhatsApp access token not configured in .env', status: 500, code: 500 } };
+      }
+      const graphVersion = process.env.META_GRAPH_VERSION || 'v22.0';
+      const url = `https://graph.facebook.com/${graphVersion}/${businessAccountId}/phone_numbers`;
+      const body: Record<string, string> = { cc: String(cc).trim(), phone_number: String(phone_number).trim() };
+      if (verified_name != null && String(verified_name).trim() !== '') {
+        body.verified_name = String(verified_name).trim();
+      }
+      const response = await axios.post<{ id: string }>(url, body, {
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+      });
+      const id = response.data?.id;
+      return id ? { ok: true, data: { id } } : { ok: false, error: { message: 'Meta did not return phone number id', status: 500, code: 500 } };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        const metaError = error.response.data.error as { message?: string; code?: number; error_user_msg?: string; error_user_title?: string; [k: string]: unknown };
+        const userMsg = metaError.error_user_msg || metaError.error_user_title || metaError.message;
+        const message = userMsg || 'Failed to add phone number in Meta';
+        return {
+          ok: false,
+          error: {
+            message,
+            status: error.response.status || 500,
+            code: metaError.code || error.response.status || 500,
+            details: metaError
+          }
+        };
+      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { ok: false, error: { message, status: 500, code: 500 } };
+    }
   }
 }
 

@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
+import { appendWhatsAppLog } from '../utils/logApiResponse.js';
 
 export class WhatsAppController {
       // POST /api/whatsapp/send-template
   static async sendTemplate(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, languageCode, components } = req.body;
+      const { to, templateName, languageCode, components, fromNumberId } = req.body;
       if (to == null || to === '') {
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
         return;
@@ -82,7 +83,9 @@ export class WhatsAppController {
         }];
       }
 
-      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents || undefined);
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents || undefined, fromCredentials);
+      appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
@@ -141,7 +144,7 @@ export class WhatsAppController {
   // POST /api/whatsapp/send-dynamic - Flexible template with dynamic parameters
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, languageCode, parameters, components } = req.body;
+      const { to, templateName, languageCode, parameters, components, fromNumberId } = req.body;
 
       const toStr = to != null ? String(to).trim() : '';
       if (!toStr) {
@@ -195,7 +198,9 @@ export class WhatsAppController {
           });
         }
 
-        const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents);
+        const fromCredentials = resolveFromNumber(fromNumberId);
+        const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents, fromCredentials);
+        appendWhatsAppLog(req.body, result);
         ErrorHandler.sendServiceResult(res, result);
         return;
       }
@@ -221,7 +226,9 @@ export class WhatsAppController {
         fieldOrder: Object.keys(params)
       });
 
-      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, builtComponents);
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, builtComponents, fromCredentials);
+      appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
@@ -230,7 +237,7 @@ export class WhatsAppController {
     // POST /api/whatsapp/send-text
     static async sendText(req: Request, res: Response): Promise<void> {
     try {
-      const { to, text } = req.body;
+      const { to, text, fromNumberId } = req.body;
 
       const toStr = to != null ? String(to).trim() : '';
       if (!toStr) {
@@ -249,10 +256,66 @@ export class WhatsAppController {
         ErrorHandler.sendValidationError(res, 'Message "text" cannot be empty or whitespace only.');
         return;
       }
-      const result = await WhatsAppService.sendText(toStr, text);
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendText(toStr, text, fromCredentials);
+      appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendText', 500);
     }
   }
+
+  // From Numbers (fetched from Meta) 
+
+  // GET /api/whatsapp/from-numbers - List all "From" numbers from Meta (WABA phone_numbers). Uses .env WHATSAPP_BUSINESS_ACCOUNT_ID and token. 
+  static async listFromNumbers(_req: Request, res: Response): Promise<void> {
+    try {
+      const result = await WhatsAppService.getFromNumbersFromMeta();
+      if (!result.ok) {
+        res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
+        return;
+      }
+      ErrorHandler.sendSuccess(res, {
+        message: 'From numbers retrieved from Meta successfully',
+        count: result.data?.length ?? 0,
+        data: result.data ?? []
+      });
+    } catch (error) {
+      ErrorHandler.sendErrorResponse(res, error, 'Error in listFromNumbers', 500);
+    }
+  }
+
+  // POST /api/whatsapp/from-numbers - Add a From number in Meta
+  static async addFromNumberInMeta(req: Request, res: Response): Promise<void> {
+    try {
+      const { cc, phone_number, verified_name } = req.body;
+      if (cc == null || String(cc).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "cc" (country calling code, e.g. 91 for India) is required');
+        return;
+      }
+      if (phone_number == null || String(phone_number).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "phone_number" is required');
+        return;
+      }
+      const result = await WhatsAppService.addFromNumberInMeta(String(cc).trim(), String(phone_number).trim(), verified_name != null ? String(verified_name).trim() : undefined);
+      if (!result.ok) {
+        res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
+        return;
+      }
+      ErrorHandler.sendSuccess(res, {
+        message: 'From number added in Meta successfully. Use the returned "id" (phone_number_id) as fromNumberId when sending messages.',
+        data: result.data
+      }, 201);
+    } catch (error) {
+      ErrorHandler.sendErrorResponse(res, error, 'Error in addFromNumberInMeta', 500);
+    }
+  }
+}
+
+// Resolve fromNumberId (Meta phone_number_id string) to { phoneNumberId, accessToken } using env token. 
+function resolveFromNumber(fromNumberId: unknown): { phoneNumberId: string; accessToken: string } | undefined {
+  if (fromNumberId == null || fromNumberId === '') return undefined;
+  const id = String(fromNumberId).trim();
+  if (id.length === 0) return undefined;
+  return WhatsAppService.getCredentialsForPhoneNumberId(id) ?? undefined;
 }

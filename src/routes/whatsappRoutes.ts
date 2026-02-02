@@ -16,6 +16,10 @@ router.post('/send-text', WhatsAppController.sendText);
 router.post('/send-daily-kpi-snapshot', WhatsAppController.sendDailyKpiSnapshot);
 router.post('/send-dynamic', WhatsAppController.sendDynamic);
 
+// From Numbers: list from Meta (GET), add in Meta (POST). Use fromNumberId (Meta phone_number_id) in send-dynamic/send-template/send-text to send from that number.
+router.get('/from-numbers', WhatsAppController.listFromNumbers);
+router.post('/from-numbers', WhatsAppController.addFromNumberInMeta);
+
 // WhatsApp Template Management routes
 router.post('/templates/create', WhatsAppTemplateController.createTemplate);
 router.post('/templates/create-custom', WhatsAppTemplateController.createCustomTemplate);
