@@ -6,6 +6,7 @@ import { connectPrisma, disconnectPrisma } from './config/prisma.js';
 // Import models to ensure they're loaded (NotificationLog, NotificationSetting, Widget)
 import './models/index.js';
 import apiRoutes from './routes/api.js';
+import whatsappWebhookRoutes from './routes/whatsappWebhookRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -57,7 +58,8 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// Routes
+// Routes (webhook is public - no auth; Meta calls it for verification and events)
+app.use('/webhook', whatsappWebhookRoutes);
 app.use('/api', apiRoutes);
 
 // Health check (before 404)

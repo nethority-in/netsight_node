@@ -155,26 +155,30 @@ export class WhatsAppTemplateService {
         };
       }
 
-      // Prepare template payload for Meta API
+      // Prepare template payload for Meta API (supports positional and named parameter_format)
+      const templateAny = template as { parameter_format?: string; name: string; category: string; language: string; components: Array<{ type: string; text?: string; format?: string; example?: { header_text?: string[]; body_text?: string[][]; body_text_named_params?: Array<{ param_name: string; example: string }> }; buttons?: unknown[] }> };
       const templatePayload: any = {
-        name: template.name,
-        category: template.category,
-        language: template.language,
-        components: template.components.map(comp => {
+        name: templateAny.name,
+        category: templateAny.category,
+        language: templateAny.language,
+        components: templateAny.components.map(comp => {
           const component: any = { type: comp.type };
+          const compExample = comp.example as { header_text?: string[]; body_text?: string[][]; body_text_named_params?: Array<{ param_name: string; example: string }> } | undefined;
           
           if (comp.type === 'HEADER' && comp.format) {
             component.format = comp.format;
             if (comp.text) component.text = comp.text;
-            if (comp.example?.header_text) {
-              component.example = { header_text: comp.example.header_text };
+            if (compExample?.header_text) {
+              component.example = { header_text: compExample.header_text };
             }
           }
           
           if (comp.type === 'BODY') {
             if (comp.text) component.text = comp.text;
-            if (comp.example?.body_text) {
-              component.example = { body_text: comp.example.body_text };
+            if (compExample?.body_text_named_params) {
+              component.example = { body_text_named_params: compExample.body_text_named_params };
+            } else if (compExample?.body_text) {
+              component.example = { body_text: compExample.body_text };
             }
           }
           
@@ -183,7 +187,7 @@ export class WhatsAppTemplateService {
           }
           
           if (comp.type === 'BUTTONS' && comp.buttons) {
-            component.buttons = comp.buttons.map(btn => {
+            component.buttons = (comp.buttons as Array<{ type: string; text: string; url?: string; phone_number?: string }>).map(btn => {
               const button: any = {
                 type: btn.type,
                 text: btn.text
@@ -201,14 +205,17 @@ export class WhatsAppTemplateService {
           return component;
         })
       };
+      if (templateAny.parameter_format) {
+        templatePayload.parameter_format = templateAny.parameter_format;
+      }
 
       const graphVersion = process.env.META_GRAPH_VERSION || 'v21.0';
       const url = `https://graph.facebook.com/${graphVersion}/${businessAccountId}/message_templates`;
 
       console.log('📤 Creating WhatsApp template in Meta:', {
-        name: template.name,
-        category: template.category,
-        language: template.language
+        name: templateAny.name,
+        category: templateAny.category,
+        language: templateAny.language
       });
 
       const response = await axios.post(url, templatePayload, {

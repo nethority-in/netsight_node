@@ -183,13 +183,13 @@ export class WhatsAppService {
         return ErrorHandler.toServiceError(`WhatsApp access token not configured. ${envMessage}`, 500) as WhatsAppServiceResponse;
       }
 
-      // Prepare template object
+      // Prepare template object (parameters can be positional { type, text } or named { type, parameter_name, text })
       const template: {
         name: string;
         language: { code: string };
         components?: Array<{
           type: string;
-          parameters?: Array<{ type: string; text?: string; payload?: string }>;
+          parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
           sub_type?: string;
           index?: number;
         }>;

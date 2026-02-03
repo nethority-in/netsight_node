@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { WhatsAppTemplateService } from '../services/whatsappTemplateService.js';
 import { getWhatsAppTemplate, getAllWhatsAppTemplates, registerWhatsAppTemplate, WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
+import { appendMetaApiLog, appendCreateCustomTemplateLog} from '../utils/logApiResponse.js';
 
 export class WhatsAppTemplateController {
   // POST /api/whatsapp/templates/create - Create template in Meta Business Manager
@@ -21,8 +22,10 @@ export class WhatsAppTemplateController {
       }
 
       const result = await WhatsAppTemplateService.createTemplate(template);
+      appendCreateCustomTemplateLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      appendCreateCustomTemplateLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in createTemplate', 500);
     }
   }
@@ -33,6 +36,7 @@ export class WhatsAppTemplateController {
       const templateData = req.body as WhatsAppTemplateDefinition;
 
       if (!templateData.name || !templateData.category || !templateData.language || !templateData.components) {
+        appendCreateCustomTemplateLog(req.body, { error: 'Missing required fields: "name", "category", "language", and "components" are required' });
         ErrorHandler.sendValidationError(res, 'Missing required fields: "name", "category", "language", and "components" are required');
         return;
       }
@@ -43,12 +47,14 @@ export class WhatsAppTemplateController {
       const result = await WhatsAppTemplateService.createTemplate(templateData);
 
       if (result.ok) {
+        appendCreateCustomTemplateLog(req.body, result);
         ErrorHandler.sendSuccess(res, {
           message: `Template "${templateData.name}" saved in code and created in Meta successfully. Waiting for approval.`,
           data: { ...result.data, codeRegistered: true }
         });
       } else {
         const statusCode = result.error?.status || 500;
+        appendCreateCustomTemplateLog(req.body, { error: result.error });
         res.status(statusCode).json({
           ok: false,
           message: `Template "${templateData.name}" saved in code but failed to create in Meta.`,
@@ -57,6 +63,7 @@ export class WhatsAppTemplateController {
         });
       }
     } catch (error) {
+      appendCreateCustomTemplateLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in createCustomTemplate', 500);
     }
   }
@@ -126,8 +133,10 @@ export class WhatsAppTemplateController {
   static async getTemplatesFromMeta(_req: Request, res: Response): Promise<void> {
     try {
       const result = await WhatsAppTemplateService.getTemplatesFromMeta();
+      appendMetaApiLog(_req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      appendMetaApiLog(_req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in getTemplatesFromMeta', 500);
     }
   }

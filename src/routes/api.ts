@@ -4,7 +4,7 @@ import whatsappRoutes from './whatsappRoutes.js';
 import emailRoutes from './emailRoutes.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
-
+import { appendNotificationLog, appendNotificationSettingLog, appendWidgetLog } from '../utils/logApiResponse.js';
 const router: Router = express.Router();
 
 // Apply authentication middleware to ALL routes
@@ -34,7 +34,7 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
     const notificationLogs = await prisma.notificationLog.findMany({
       orderBy: { created_at: 'desc' }
     });
-
+    appendNotificationLog(_req.body, notificationLogs);
     ErrorHandler.sendSuccess(res, {
       message: 'Notification logs retrieved successfully',
       count: notificationLogs.length,
@@ -46,6 +46,7 @@ router.get('/notification-logs', async (_req: Request, res: Response): Promise<v
       ErrorHandler.sendUnavailable(res, 'Cannot connect to database. Please check your database credentials and ensure MySQL is running.');
       return;
     }
+    appendNotificationLog(_req.body, { error: error });
     ErrorHandler.sendErrorResponse(res, error, 'Failed to retrieve notification logs', 500);
   }
 });
@@ -62,7 +63,7 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
     const notificationSettings = await prisma.notificationSetting.findMany({
       orderBy: { created_at: 'desc' }
     });
-
+    appendNotificationSettingLog(_req.body, notificationSettings);
     ErrorHandler.sendSuccess(res, {
       message: 'Notification settings retrieved successfully',
       count: notificationSettings.length,
@@ -74,6 +75,7 @@ router.get('/notification-settings', async (_req: Request, res: Response): Promi
       ErrorHandler.sendUnavailable(res, 'Cannot connect to database. Please check your database credentials and ensure MySQL is running.');
       return;
     }
+    appendNotificationSettingLog(_req.body, { error: error });
     ErrorHandler.sendErrorResponse(res, error, 'Failed to retrieve notification settings', 500);
   }
 });
@@ -93,7 +95,7 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
         { created_at: 'desc' }
       ]
     });
-
+    appendWidgetLog(_req.body, widgets);
     ErrorHandler.sendSuccess(res, {
       message: 'Widgets retrieved successfully',
       count: widgets.length,
@@ -105,6 +107,7 @@ router.get('/widgets', async (_req: Request, res: Response): Promise<void> => {
       ErrorHandler.sendUnavailable(res, 'Cannot connect to database. Please check your database credentials and ensure MySQL is running.');
       return;
     }
+    appendWidgetLog(_req.body, { error: error });
     ErrorHandler.sendErrorResponse(res, error, 'Failed to retrieve widgets', 500);
   }
 });

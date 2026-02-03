@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
-import { appendWhatsAppLog } from '../utils/logApiResponse.js';
+import { appendWhatsAppLog, appendFromNumbersLog } from '../utils/logApiResponse.js';
 
 export class WhatsAppController {
       // POST /api/whatsapp/send-template
@@ -24,15 +24,15 @@ export class WhatsAppController {
       // Use default language code if not provided
       const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
       
-      // Support both old format (parameters array) and new format (components object)
+      // Support both old format (parameters array) and new format (components object with body or bodyNamed)
       let templateComponents: Array<{
         type: string;
-        parameters?: Array<{ type: string; text?: string; payload?: string }>;
+        parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
         sub_type?: string;
         index?: number;
       }> | undefined = undefined;
 
-      // New dynamic format: components object with header, body, buttons
+      // New dynamic format: components object with header, body (positional or named), buttons
       if (components) {
         templateComponents = [];
         
@@ -46,8 +46,17 @@ export class WhatsAppController {
           });
         }
         
-        // Body component
-        if (components.body && Array.isArray(components.body)) {
+        // Body: named parameters (object) or positional (array)
+        if (components.bodyNamed && typeof components.bodyNamed === 'object' && !Array.isArray(components.bodyNamed)) {
+          templateComponents.push({
+            type: 'body',
+            parameters: Object.entries(components.bodyNamed).map(([parameter_name, value]) => ({
+              type: 'text',
+              parameter_name,
+              text: String(value ?? '')
+            }))
+          });
+        } else if (components.body && Array.isArray(components.body)) {
           templateComponents.push({
             type: 'body',
             parameters: components.body.map((param: string | { type: string; text?: string }) => 
@@ -88,6 +97,7 @@ export class WhatsAppController {
       appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
     }
   }
@@ -135,8 +145,10 @@ export class WhatsAppController {
 
       // Use sendDynamic internally (call by class so "this" is correct when used as Express handler)
       req.body = { to: toStr, templateName: 'daily_kpi_snapshot', languageCode: 'en', parameters };
+      appendWhatsAppLog(req.body, req.body); 
       return await WhatsAppController.sendDynamic(req, res);
     } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDailyKpiSnapshot', 500);
     }
   }
@@ -148,22 +160,24 @@ export class WhatsAppController {
 
       const toStr = to != null ? String(to).trim() : '';
       if (!toStr) {
+        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "to" (recipient phone number) is required' });
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
         return;
       }
       if (templateName == null || String(templateName).trim() === '') {
+        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "templateName" is required' });
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
 
       const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
 
-      // When components is provided (body/header/buttons arrays), build WhatsApp components and send directly.
-      // This supports templates like daily_store_performance_summary with many positional params.
-      if (components && (components.body ?? components.header ?? components.buttons)) {
+      // When components is provided (body/bodyNamed/header/buttons), build WhatsApp components and send directly.
+      // Supports positional (components.body array) and named (components.bodyNamed object) parameters.
+      if (components && (components.body ?? components.bodyNamed ?? components.header ?? components.buttons)) {
         const templateComponents: Array<{
           type: string;
-          parameters?: Array<{ type: string; text?: string; payload?: string }>;
+          parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
           sub_type?: string;
           index?: number;
         }> = [];
@@ -174,9 +188,19 @@ export class WhatsAppController {
             parameters: components.header.map((param: string | { type: string; text?: string; payload?: string }) =>
               typeof param === 'string' ? { type: 'text', text: param } : param
             )
+            
           });
         }
-        if (components.body && Array.isArray(components.body)) {
+        if (components.bodyNamed && typeof components.bodyNamed === 'object' && !Array.isArray(components.bodyNamed)) {
+          templateComponents.push({
+            type: 'body',
+            parameters: Object.entries(components.bodyNamed).map(([parameter_name, value]) => ({
+              type: 'text',
+              parameter_name,
+              text: String(value ?? '')
+            }))
+          });
+        } else if (components.body && Array.isArray(components.body)) {
           templateComponents.push({
             type: 'body',
             parameters: components.body.map((param: string | { type: string; text?: string }) =>
@@ -231,6 +255,7 @@ export class WhatsAppController {
       appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
     }
   }
@@ -261,6 +286,7 @@ export class WhatsAppController {
       appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendText', 500);
     }
   }
@@ -275,12 +301,15 @@ export class WhatsAppController {
         res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
         return;
       }
+      appendFromNumbersLog(_req.body, result);
+      
       ErrorHandler.sendSuccess(res, {
         message: 'From numbers retrieved from Meta successfully',
         count: result.data?.length ?? 0,
         data: result.data ?? []
       });
     } catch (error) {
+      appendFromNumbersLog(_req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in listFromNumbers', 500);
     }
   }
@@ -302,11 +331,13 @@ export class WhatsAppController {
         res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
         return;
       }
+      appendFromNumbersLog(req.body, result);
       ErrorHandler.sendSuccess(res, {
         message: 'From number added in Meta successfully. Use the returned "id" (phone_number_id) as fromNumberId when sending messages.',
         data: result.data
       }, 201);
     } catch (error) {
+      appendFromNumbersLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in addFromNumberInMeta', 500);
     }
   }

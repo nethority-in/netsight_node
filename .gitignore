@@ -34,3 +34,8 @@ build/
 # Note: schema.prisma should be committed, but generated client is in node_modules
 src/logs-email.json
 src/logs-whatsapp.json
+src/logs-from-numbers.json
+src/logs-meta-api.json
+src/logs-notification-setting.json
+src/logs-notification.json
+src/logs-widget.json
