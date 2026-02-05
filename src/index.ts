@@ -7,6 +7,7 @@ import { connectPrisma, disconnectPrisma } from './config/prisma.js';
 import './models/index.js';
 import apiRoutes from './routes/api.js';
 import whatsappWebhookRoutes from './routes/whatsappWebhookRoutes.js';
+import twilioWebhookRoutes from './routes/twilioWebhookRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -58,8 +59,9 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// Routes (webhook is public - no auth; Meta calls it for verification and events)
-app.use('/webhook', whatsappWebhookRoutes);
+// Routes (webhooks are public - no auth; Meta/Twilio call them)
+app.use('/webhook/whatsapp', whatsappWebhookRoutes);
+app.use('/webhook/twilio', twilioWebhookRoutes);
 app.use('/api', apiRoutes);
 
 // Health check (before 404)

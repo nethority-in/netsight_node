@@ -1,582 +1,786 @@
-# API Endpoints Reference
+# WhatsApp API Endpoints Documentation
 
-## Base URLs
+## Base URL
+- **Local**: `http://localhost:3002/api/whatsapp`
+- **Production**: `https://bridge.netsights.ai/api/whatsapp`
 
-- **Local**: `http://localhost:3002`
-- **Server**: `http://bridge.netsights.ai` or `http://139.59.95.78:3002`
+---
 
-### Using cURL:
+## Twilio Webhook (Incoming WhatsApp Messages)
 
-```bash
-# Health check
-curl http://bridge.netsights.ai/health
+जेव्हा कोणी तुमच्या Twilio WhatsApp number वर message पाठवतो, तेव्हा Twilio हा URL call करतो. हा endpoint सेट करण्यासाठी Twilio Console मध्ये "When a message comes in" webhook URL द्या.
 
-# Notification logs
-curl http://bridge.netsights.ai/api/notification-logs
+**Webhook URL (सेट करायचे)**:
+- **Local**: `http://localhost:3002/webhook/twilio/whatsapp` (ngrok सारखा public URL वापरा)
+- **Production**: `https://bridge.netsights.ai/webhook/twilio/whatsapp`
 
-# Notification settings
-curl http://bridge.netsights.ai/api/notification-settings
+**Twilio Console मध्ये कसे सेट करावे**:
+1. [Twilio Console](https://console.twilio.com) → Messaging → Try it out → Send a WhatsApp message (किंवा WhatsApp Sender settings).
+2. तुमच्या WhatsApp-enabled number वर click करा → "Configure" / "Webhook".
+3. **"A MESSAGE COMES IN"** → Webhook URL: `https://bridge.netsights.ai/webhook/twilio/whatsapp`, HTTP: **POST**.
+4. Save.
 
-# Widgets
-curl http://bridge.netsights.ai/api/widgets
+**याचा उपयोग**:
+- Incoming messages log होतात (server console मध्ये).
+- तुम्ही या controller मध्ये logic जोडू शकता: auto-reply, CRM sync, bot, ticket creation इ.
 
-# Send WhatsApp text
-curl -X POST https://bridge.netsights.ai/api/whatsapp/send-text \
-  -H "Content-Type: application/json" \
-  -d '{"to": "918605749752", "text": "Test message"}'
+**Request (Twilio → तुमचा server)**:  
+Twilio POST करतो `application/x-www-form-urlencoded` with `MessageSid`, `From`, `To`, `Body`, `ProfileName`, `NumMedia` इ.
 
-# Send WhatsApp template
-curl -X POST https://bridge.netsights.ai/api/whatsapp/send-template \
-  -H "Content-Type: application/json" \
-  -d '{"to": "918605749752", "templateName": "hello_world", "languageCode": "en_US"}'
+**Response**: Server TwiML (XML) return करतो. सध्या empty `<Response></Response>` (कोणतीही auto-reply नाही).
 
-# Send WhatsApp template with parameters
-curl -X POST https://bridge.netsights.ai/api/whatsapp/send-template \
-  -H "Content-Type: application/json" \
-  -d '{"to": "918605749752", "templateName": "hello_world", "languageCode": "en_US", "parameters": ["param1", "param2"]}'
+---
 
-# Send Daily KPI Snapshot template
-curl -X POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "918605749752",
-    "storeName": "Netsight Store",
-    "date": "15 Jan 2026",
-    "businessOverview": "Revenue: ₹12.4Cr | Orders: 6,420 | AOV: ₹1,930 | CR: 2.9% | RPV: ₹56",
-    "marketingProfitability": "ROAS (1D): 1.8 | CAC: ₹640 | CM%: 34%",
-    "operationsCash": "Returns: 8% | RTO: 6% | SLA: 96% | Net Cash: ₹9.1Cr",
-    "keySignals": "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
-  }'
+## 1. Send Text Message
+
+Send a plain text WhatsApp message.
+
+**Endpoint**: `POST /send-text`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "text": "Hello! This is a test message from NetSight."
+}
 ```
 
-### Using Postman:
-
-1. **Base URL**: `https://bridge.netsights.ai`
-2. **Health Check**: `GET https://bridge.netsights.ai/health`
-3. **Notification Logs**: `GET https://bridge.netsights.ai/api/notification-logs`
-4. **Notification Settings**: `GET https://bridge.netsights.ai/api/notification-settings`
-5. **Widgets**: `GET https://bridge.netsights.ai/api/widgets`
-6. **WhatsApp Text**: `POST https://bridge.netsights.ai/api/whatsapp/send-text`
-7. **WhatsApp Template**: `POST https://bridge.netsights.ai/api/whatsapp/send-template`
-8. **WhatsApp Daily KPI Snapshot**: `POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot`
-9. **WhatsApp From Numbers**: List (GET) and Add in Meta (POST).
-
-### for local
-
-http://localhost:3002/api/whatsapp/send-daily-kpi-snapshot
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-text
+Content-Type: application/json
 
 {
-  "to": "918605749752",
-  "storeName": "Netsight Store",
-  "date": "15 Jan 2026",
+  "to": "+919876543210",
+  "text": "Hello! This is a test message from NetSight."
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "meta": {
+    "sid": "SM1234567890abcdef",
+    "status": "queued",
+    "to": "whatsapp:+919876543210",
+    "from": "whatsapp:+19785889593",
+    "body": "Hello! This is a test message from NetSight.",
+    "dateCreated": "2024-01-15T10:30:00.000Z"
+  }
+}
+```
+
+---
+
+## 2. Send Template Message
+
+Send a WhatsApp message using a pre-approved template.
+
+**Endpoint**: `POST /send-template`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "templateName": "netsightsdailyreports1",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "NetSight Store",
+    "15 Jan 2024",
+    "₹12.4Cr",
+    "6,420",
+    "₹1,930",
+    "+5%",
+    "+7%",
+    "1.8",
+    "₹640",
+    "+5%",
+    "-3%",
+    "34%",
+    "+2%",
+    "8%",
+    "-1%",
+    "6%",
+    "-2%",
+    "96%",
+    "+1%",
+    "ROAS",
+    "5%",
+    "AOV",
+    "7%",
+    "Orders",
+    "3%",
+    "Returns",
+    "2%"
+  ]
+}
+```
+
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-template
+Content-Type: application/json
+
+{
+  "to": "+919876543210",
+  "templateName": "netsightsdailyreports1",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "NetSight Store",
+    "15 Jan 2024",
+    "₹12.4Cr",
+    "6,420",
+    "₹1,930",
+    "+5%",
+    "+7%",
+    "1.8",
+    "₹640",
+    "+5%",
+    "-3%",
+    "34%",
+    "+2%",
+    "8%",
+    "-1%",
+    "6%",
+    "-2%",
+    "96%",
+    "+1%",
+    "ROAS",
+    "5%",
+    "AOV",
+    "7%",
+    "Orders",
+    "3%",
+    "Returns",
+    "2%"
+  ]
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "meta": {
+    "sid": "SM1234567890abcdef",
+    "status": "queued",
+    "to": "whatsapp:+919876543210",
+    "from": "whatsapp:+19785889593"
+  }
+}
+```
+
+---
+
+## 3. Send New Order Template
+
+**Endpoint**: `POST /send-template`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "templateName": "new_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "15 Jan 2024",
+    "John Doe",
+    "₹2,500",
+    "Credit Card",
+    "Mumbai",
+    "Mumbai",
+    "16 Jan 2024"
+  ]
+}
+```
+
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-template
+Content-Type: application/json
+
+{
+  "to": "+919876543210",
+  "templateName": "new_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "15 Jan 2024",
+    "John Doe",
+    "₹2,500",
+    "Credit Card",
+    "Mumbai",
+    "Mumbai",
+    "16 Jan 2024"
+  ]
+}
+```
+
+---
+
+## 4. Send Fulfilled Order Template
+
+**Endpoint**: `POST /send-template`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "templateName": "fulfilled_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "16 Jan 2024",
+    "3",
+    "5",
+    "BlueDart",
+    "Warehouse A",
+    "2:00 PM",
+    "Ready for Dispatch"
+  ]
+}
+```
+
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-template
+Content-Type: application/json
+
+{
+  "to": "+919876543210",
+  "templateName": "fulfilled_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "16 Jan 2024",
+    "3",
+    "5",
+    "BlueDart",
+    "Warehouse A",
+    "2:00 PM",
+    "Ready for Dispatch"
+  ]
+}
+```
+
+---
+
+## 5. Send Delivered Order Template
+
+**Endpoint**: `POST /send-template`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "templateName": "delivered_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "17 Jan 2024",
+    "John Doe",
+    "3",
+    "5",
+    "Credit Card",
+    "Mumbai",
+    "3:30 PM"
+  ]
+}
+```
+
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-template
+Content-Type: application/json
+
+{
+  "to": "+919876543210",
+  "templateName": "delivered_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "17 Jan 2024",
+    "John Doe",
+    "3",
+    "5",
+    "Credit Card",
+    "Mumbai",
+    "3:30 PM"
+  ]
+}
+```
+
+---
+
+## 6. Send Dynamic Template (Advanced)
+
+Send a template with dynamic components (header, body, buttons).
+
+**Endpoint**: `POST /send-dynamic`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "templateName": "netsightsdailyreports1",
+  "languageCode": "en",
+  "components": {
+    "body": [
+      "John Doe",
+      "NetSight Store",
+      "15 Jan 2024",
+      "₹12.4Cr",
+      "6,420",
+      "₹1,930"
+    ]
+  }
+}
+```
+
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/send-dynamic
+Content-Type: application/json
+
+{
+  "to": "+919876543210",
+  "templateName": "netsightsdailyreports1",
+  "languageCode": "en",
+  "components": {
+    "body": [
+      "John Doe",
+      "NetSight Store",
+      "15 Jan 2024",
+      "₹12.4Cr",
+      "6,420",
+      "₹1,930",
+      "+5%",
+      "+7%",
+      "1.8",
+      "₹640",
+      "+5%",
+      "-3%",
+      "34%",
+      "+2%",
+      "8%",
+      "-1%",
+      "6%",
+      "-2%",
+      "96%",
+      "+1%",
+      "ROAS",
+      "5%",
+      "AOV",
+      "7%",
+      "Orders",
+      "3%",
+      "Returns",
+      "2%"
+    ]
+  }
+}
+```
+
+---
+
+## 7. Send Daily KPI Snapshot
+
+Send a daily KPI snapshot report.
+
+**Endpoint**: `POST /send-daily-kpi-snapshot`
+
+**Request Body**:
+```json
+{
+  "to": "+919876543210",
+  "storeName": "NetSight Store",
+  "date": "15 Jan 2024",
   "businessOverview": "Revenue: ₹12.4Cr | Orders: 6,420 | AOV: ₹1,930 | CR: 2.9% | RPV: ₹56",
   "marketingProfitability": "ROAS (1D): 1.8 | CAC: ₹640 | CM%: 34%",
   "operationsCash": "Returns: 8% | RTO: 6% | SLA: 96% | Net Cash: ₹9.1Cr",
   "keySignals": "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
 }
+```
 
-POST http://localhost:3002/api/whatsapp/send-template
-
-{
-  "to": "918605749752",
-  "templateName": "daily_kpi_snapshot",
-  "languageCode": "en",
-  "parameters": [
-    "Netsight Store",
-    "15 Jan 2026",
-    "Revenue: ₹12.4Cr | Orders: 6,420 | AOV: ₹1,930 | CR: 2.9% | RPV: ₹56",
-    "ROAS (1D): 1.8 | CAC: ₹640 | CM%: 34%",
-    "Returns: 8% | RTO: 6% | SLA: 96% | Net Cash: ₹9.1Cr",
-    "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
-  ]
-}
-
-POST http://localhost:3002/api/whatsapp/from-numbers
-{
-  "cc": "91",
-  "phone_number": "8698673161",
-  "verified_name": "My Business Name"
-}
-
-# List all From numbers registered in Meta for your WABA.
-GET http://localhost:3002/api/whatsapp/from-numbers
-
-# Send message: use fromNumberId = Meta phone_number_id ("id" from GET /from-numbers), and "to" = recipient number.
-POST http://localhost:3002/api/whatsapp/send-dynamic
-{
-  "to": "918605749752",
-  "fromNumberId": "942341315626645",
-  "templateName": "daily_business_insights",
-  "languageCode": "en",
-  "components": { "body": ["Sarang", "ABC Store", "22 Jan 2024", "..."] }
-}
-
-# --- POST /api/whatsapp/templates/create-custom (Postman) ---
-# Option A: Positional parameters (parameter_format omitted or "positional", body_text)
-POST http://localhost:3002/api/whatsapp/templates/create-custom
-{
-  "name": "daily_store_performance_update_v3",
-  "category": "UTILITY",
-  "language": "en",
-  "description": "Daily operational and performance metrics update for store owners",
-  "components": [
-    {
-      "type": "BODY",
-      "text": "👋 Hello {{1}},\n\n📊 Here is your daily performance update for **{{2}}** dated **{{3}}**.\n\n💰 Sales Summary:\n• Total Revenue: {{4}}\n• Total Orders: {{5}}\n• Average Order Value: {{6}}\n• Revenue Change vs Previous Day: {{7}}\n• Orders Change vs Previous Day: {{8}}\n\n📈 Marketing Metrics:\n• ROAS (1 Day): {{9}}\n• Customer Acquisition Cost: {{10}}\n• ROAS Change: {{11}}\n• CAC Change: {{12}}\n• Contribution Margin: {{13}}\n• Contribution Margin Change: {{14}}\n\n🏭 Operations Overview:\n• Returns Count: {{15}}\n• Returns Change: {{16}}\n• RTO Percentage: {{17}}\n• RTO Change: {{18}}\n• SLA Adherence: {{19}}\n• SLA Change: {{20}}\n\n🔝 Key Improvements:\n• {{21}} increased by {{22}}\n• {{23}} increased by {{24}}\n\n⚠️ Areas to Monitor:\n• {{25}} decreased by {{26}}\n• {{27}} decreased by {{28}}\n\nℹ️ This update is shared for informational purposes.\n\nRegards,\n**Netsights.ai** 🚀",
-      "example": {
-        "body_text": [
-          ["Sarang", "ABC Store", "22 Jan 2024", "500000", "320", "1560", "+8%", "+5%", "3.2", "950", "+0.4", "-3%", "28%", "+2%", "12", "-1%", "6%", "-0.5%", "98%", "+1%", "Revenue", "+8%", "ROAS", "+0.4", "Customer Retention", "-5%", "RTO", "-1%"]
-        ]
-      }
-    }
-  ]
-}
-
-# Option B: Named parameters (parameter_format: "named", body_text_named_params)
-POST http://localhost:3002/api/whatsapp/templates/create-custom
-{
-  "name": "daily_store_performance_update_v3_named",
-  "category": "UTILITY",
-  "language": "en",
-  "description": "Daily performance update with named parameters",
-  "parameter_format": "named",
-  "components": [
-    {
-      "type": "BODY",
-      "text": "👋 Hello {{recipient_name}},\n\n📊 Here is your daily performance update for **{{store_name}}** dated **{{date}}**.\n\n💰 Sales Summary:\n• Total Revenue: {{total_revenue}}\n• Total Orders: {{total_orders}}\n• Average Order Value: {{avg_order_value}}\n• Revenue Change vs Previous Day: {{revenue_change}}\n• Orders Change vs Previous Day: {{orders_change}}\n\n📈 Marketing Metrics:\n• ROAS (1 Day): {{roas}}\n• Customer Acquisition Cost: {{cac}}\n• ROAS Change: {{roas_change}}\n• CAC Change: {{cac_change}}\n• Contribution Margin: {{contribution_margin}}\n• Contribution Margin Change: {{contribution_margin_change}}\n\n🏭 Operations Overview:\n• Returns Count: {{returns_count}}\n• Returns Change: {{returns_change}}\n• RTO Percentage: {{rto_percentage}}\n• RTO Change: {{rto_change}}\n• SLA Adherence: {{sla_adherence}}\n• SLA Change: {{sla_change}}\n\n🔝 Key Improvements:\n• {{improvement_metric_1}} increased by {{improvement_value_1}}\n• {{improvement_metric_2}} increased by {{improvement_value_2}}\n\n⚠️ Areas to Monitor:\n• {{monitor_metric_1}} decreased by {{monitor_value_1}}\n• {{monitor_metric_2}} decreased by {{monitor_value_2}}\n\nRegards,\n**Netsights.ai** 🚀",
-      "example": {
-        "body_text_named_params": [
-          { "param_name": "recipient_name", "example": "Sarang" },
-          { "param_name": "store_name", "example": "ABC Store" },
-          { "param_name": "date", "example": "22 Jan 2024" },
-          { "param_name": "total_revenue", "example": "500000" },
-          { "param_name": "total_orders", "example": "320" },
-          { "param_name": "avg_order_value", "example": "1560" },
-          { "param_name": "revenue_change", "example": "+8%" },
-          { "param_name": "orders_change", "example": "+5%" },
-          { "param_name": "roas", "example": "3.2" },
-          { "param_name": "cac", "example": "950" },
-          { "param_name": "roas_change", "example": "+0.4" },
-          { "param_name": "cac_change", "example": "-3%" },
-          { "param_name": "contribution_margin", "example": "28%" },
-          { "param_name": "contribution_margin_change", "example": "+2%" },
-          { "param_name": "returns_count", "example": "12" },
-          { "param_name": "returns_change", "example": "-1%" },
-          { "param_name": "rto_percentage", "example": "6%" },
-          { "param_name": "rto_change", "example": "-0.5%" },
-          { "param_name": "sla_adherence", "example": "98%" },
-          { "param_name": "sla_change", "example": "+1%" },
-          { "param_name": "improvement_metric_1", "example": "Revenue" },
-          { "param_name": "improvement_value_1", "example": "+8%" },
-          { "param_name": "improvement_metric_2", "example": "ROAS" },
-          { "param_name": "improvement_value_2", "example": "+0.4" },
-          { "param_name": "monitor_metric_1", "example": "Customer Retention" },
-          { "param_name": "monitor_value_1", "example": "-5%" },
-          { "param_name": "monitor_metric_2", "example": "RTO" },
-          { "param_name": "monitor_value_2", "example": "-1%" }
-        ]
-      }
-    }
-  ]
-}
-
-# --- POST /api/whatsapp/send-dynamic (Postman) ---
-# Option A: Positional parameters (components.body = array of values in order)
-POST http://localhost:3002/api/whatsapp/send-dynamic
-{
-  "to": "918605749752",
-  "templateName": "daily_store_performance_update_v3",
-  "languageCode": "en",
-  "components": {
-    "body": ["Sarang", "ABC Store", "22 Jan 2024", "500000", "320", "1560", "+8%", "+5%", "3.2", "950", "+0.4", "-3%", "28%", "+2%", "12", "-1%", "6%", "-0.5%", "98%", "+1%", "Revenue", "+8%", "ROAS", "+0.4", "Customer Retention", "-5%", "RTO", "-1%"]
-  }
-}
-
-# Option B: Named parameters (components.bodyNamed = object with param names as keys)
-POST http://localhost:3002/api/whatsapp/send-dynamic
-{
-  "to": "918605749752",
-  "templateName": "daily_store_performance_update_v3_named",
-  "languageCode": "en",
-  "components": {
-    "bodyNamed": {
-      "recipient_name": "Sarang",
-      "store_name": "ABC Store",
-      "date": "22 Jan 2024",
-      "total_revenue": "500000",
-      "total_orders": "320",
-      "avg_order_value": "1560",
-      "revenue_change": "+8%",
-      "orders_change": "+5%",
-      "roas": "3.2",
-      "cac": "950",
-      "roas_change": "+0.4",
-      "cac_change": "-3%",
-      "contribution_margin": "28%",
-      "contribution_margin_change": "+2%",
-      "returns_count": "12",
-      "returns_change": "-1%",
-      "rto_percentage": "6%",
-      "rto_change": "-0.5%",
-      "sla_adherence": "98%",
-      "sla_change": "+1%",
-      "improvement_metric_1": "Revenue",
-      "improvement_value_1": "+8%",
-      "improvement_metric_2": "ROAS",
-      "improvement_value_2": "+0.4",
-      "monitor_metric_1": "Customer Retention",
-      "monitor_value_1": "-5%",
-      "monitor_metric_2": "RTO",
-      "monitor_value_2": "-1%"
-    }
-  }
-}
-
-# local request
- http://localhost:3002/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
-
- https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
-
- http://localhost:3002/api/kpi/total-orders?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
-
- http://localhost:3002/api/kpi/net-sales?shop=celebrity-drapes.myshopify.com&date_from=2026-01-01&date_to=2026-01-15
-
- http://localhost:3002/api/kpi/gross-sales?shop=prativacollection.myshopify.com
-
-# server request
-
-# Total Sales
-https://bridge.netsights.ai/api/kpi/total-sales?shop=celebrity-drapes.myshopify.com
-
-# Total Orders
-https://bridge.netsights.ai/api/kpi/total-orders?shop=celebrity-drapes.myshopify.com
-
-# Net Sales
-https://bridge.netsights.ai/api/kpi/net-sales?shop=celebrity-drapes.myshopify.com
-
-# Gross Sales
-https://bridge.netsights.ai/api/kpi/gross-sales?shop=celebrity-drapes.myshopify.com
-
-
-# Mail
-POST http://localhost:3002/api/email/send-template
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "templateName": "simple_message",
-  "templateVariables": {
-    "subject": "Hello",
-    "message": "This is a test message"
-  }
-}
-# cc & bcc
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "templateName": "simple_message",
-  "templateVariables": {
-    "subject": "Test Email",
-    "message": "This is a test message"
-  },
-  "cc": ["cc1@example.com", "cc2@example.com"],
-  "bcc": ["bcc1@example.com", "bcc2@example.com"]
-}
-
-POST http://localhost:3002/api/email/send-daily-kpi-snapshot
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "storeName": "My Store",
-  "date": "2024-01-15",
-  "businessOverview": "Sales are up 20%",
-  "marketingProfitability": "ROI: 150%",
-  "operationsCash": "Cash flow positive",
-  "keySignals": "All systems operational"
-}
-daily-kpi-snapshot same as we writtern in send-template for cc&bcc
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "storeName": "My Store",
-  "date": "2024-01-15",
-  "businessOverview": "Sales are up 20%",
-  "marketingProfitability": "ROI: 150%",
-  "operationsCash": "Cash flow positive",
-  "keySignals": "All systems operational",
-  "cc": ["manager@example.com"],
-  "bcc": ["archive@example.com"]
-}
-
-# Send Daily Store Performance Summary via Email (same payload shape as WhatsApp)
-POST http://localhost:3002/api/email/send-dynamic
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "templateName": "daily_store_performance_summary",
-  "subject": "Optional custom subject (omit to use template default)",
-  "cc": ["manager@example.com"],
-  "bcc": ["archive@example.com"],
-  "components": {
-    "body": [
-      "Sarang",
-      "ABC Store",
-      "22 Jan 2024",
-      "₹5,00,000",
-      "320",
-      "₹1,560",
-      "+8%",
-      "+5%",
-      "2.4%",
-      "₹120",
-      "+0.2%",
-      "+6%",
-      "3.2",
-      "₹950",
-      "+0.4",
-      "-3%",
-      "28%",
-      "+2%",
-      "12",
-      "6%",
-      "-1%",
-      "-0.5%",
-      "98%",
-      "+1%",
-      "Revenue",
-      "+8%",
-      "ROAS",
-      "+0.4",
-      "CAC",
-      "-5%",
-      "RTO",
-      "-1%"
-    ]
-  }
-}
-Add "subject", "cc", "bcc" in this same JSON body when needed. "cc" and "bcc" are arrays of email strings.
-
-http://localhost:3002/api/email/send
-{
-  "to": "sarangchaudhari8699@gmail.com",
-  "subject": "Custom Email Subject",
-  "htmlContent": "<h1>Hello</h1><p>This is a custom HTML email.</p>",
-  "textContent": "Hello\nThis is a custom text email.",
-  "cc": ["cc1@example.com", "cc2@example.com"],
-  "bcc": ["bcc@example.com"]
-}
-
-#get template 
-http://localhost:3002/api/email/templates
-
-# register (only use for save template at code level)
-http://localhost:3002/api/whatsapp/templates/register
-
-  # sam code as given in custom template
-
-# create 
-http://localhost:3002/api/whatsapp/templates/create
+**Example (Postman)**:
 ```json
+POST http://localhost:3002/api/whatsapp/send-daily-kpi-snapshot
+Content-Type: application/json
+
 {
-  "templateName": "template_name"
+  "to": "+919876543210",
+  "storeName": "NetSight Store",
+  "date": "15 Jan 2024",
+  "businessOverview": "Revenue: ₹12.4Cr | Orders: 6,420 | AOV: ₹1,930 | CR: 2.9% | RPV: ₹56",
+  "marketingProfitability": "ROAS (1D): 1.8 | CAC: ₹640 | CM%: 34%",
+  "operationsCash": "Returns: 8% | RTO: 6% | SLA: 96% | Net Cash: ₹9.1Cr",
+  "keySignals": "ROAS ↑5% | AOV ↑7% | Orders ↓3%"
 }
 ```
 
-# custom template
-http://localhost:3002/api/whatsapp/templates/create-custom
+---
+
+## 8. Get All Templates from Twilio
+
+Get all WhatsApp Content Templates from your Twilio account.
+
+**Endpoint**: `GET /templates/meta`
+
+**Example (Postman)**:
+```
+GET http://localhost:3002/api/whatsapp/templates/twillio
+```
+
+**Response**:
+```json
 {
-  "name": "daily_info_update",
-  "category": "UTILITY",
-  "language": "en",
-  "description": "Daily informational update template for users",
-  "components": [
-    {
-      "type": "BODY",
-      "text": "Hello {{1}},\n\nThis is your daily update:\n{{2}}\n\nDate: {{3}}\nReference ID: {{4}}\nStatus: {{5}}\n\nThank you for your attention.",
-      "example": {
-        "body_text": [
-          [
-            "Rohit Sharma",
-            "Your account balance has been updated",
-            "2024-01-22",
-            "REF-4587",
-            "Completed"
-          ]
-        ]
-      }
-    }
-  ]
-}
-# send message 
-{
-  "to": "918698673161",
-  "templateName": "daily_info_update",
-  "languageCode": "en",
-  "components": {
-    "body": [
-      "Rohit Sharma",
-      "Your account balance has been updated",
-      "2024-01-22",
-      "REF-4587",
-      "Completed"
-    ]
-  }
-}
-OR
-{
-  "to": "918698673161",
-  "templateName": "daily_info_update",
-  "languageCode": "en",
-  "parameters": [
-    "Rohit Sharma",
-    "Your account balance has been updated",
-    "2024-01-22",
-    "REF-4587",
-    "Completed"
-  ]
-}
-
-# Check Template Status
-
-http://localhost:3002/api/whatsapp/templates/meta
-
-# Get All Templates from Code
-
-http://localhost:3002/api/whatsapp/templates
-
-# Get Specific Template Details
-
-http://localhost:3002/api/whatsapp/templates/templateName
-
-# Send Message Using Template
-
-http://localhost:3002/api/whatsapp/send-dynamic
-
-{
-  "to": "1234567890",
-  "templateName": "product_alert",
-  "languageCode": "en",
-  "parameters": {
-    "customerName": "John",
-    "productName": "iPhone 15",
-    "price": "$999",
-    "stock": "In Stock"
-  }
-}
-
-# Edit the template
-http://localhost:3002/api/whatsapp/templates/create-custom-edit
-
-{
-  "templateId": "2666208380425785",
-  "template": {
-    "name": "daily_info",
-    "category": "UTILITY",
-    "language": "en",
-    "description": "Updated daily informational update template",
-    "components": [
+  "ok": true,
+  "data": {
+    "templates": [
       {
-        "type": "BODY",
-        "text": "Hello {{1}},\n\nThis is your updated daily update:\n{{2}}\n\nDate: {{3}}\nReference ID: {{4}}\nStatus: {{5}}\n\nThank you!",
-        "example": {
-          "body_text": [
-            [
-              "ruturaj Sharma",
-              "Your balance has been updated",
-              "2024-01-26",
-              "REF-4587",
-              "pending"
-            ]
-          ]
-        }
+        "sid": "HX76ba66f51b489342b00955c8da29806b",
+        "friendlyName": "netsightsdailyreports1",
+        "language": "en",
+        "types": {
+          "twilio/text": {
+            "body": "Hello {{1}}, ..."
+          }
+        },
+        "dateCreated": "2024-01-15T10:00:00.000Z",
+        "dateUpdated": "2024-01-15T10:00:00.000Z"
       }
-    ]
+    ],
+    "count": 1
   }
 }
+```
 
-# delete template  just need to add templateId
-http://localhost:3002/api/whatsapp/templates/create-custom-delete
+---
+
+## 9. Create Template in Twilio
+
+Create a new WhatsApp Content Template in Twilio.
+
+**Endpoint**: `POST /templates/create-custom`
+
+**Request Body** (Direct Twilio Format):
+```json
 {
-  "templateId": "1374048857227941"
+  "friendlyName": "my_custom_template",
+  "body": "Hello {{1}}, Your order {{2}} has been confirmed!",
+  "language": "en"
 }
+```
 
-api/whatsapp/send-dynamic
-with emoji and professional output for whatsapp
+**Example (Postman)**:
+```json
+POST http://localhost:3002/api/whatsapp/templates/create-custom
+Content-Type: application/json
+
 {
-  "to": "918605749752",
-  "templateName": "daily_business_insights",
-  "languageCode": "en",
-  "components": {
-    "body": [
-      "Sarang",          
-      "ABC Store",       
-      "22 Jan 2024",     
-      "5,00,000",        
-      "320",             
-      "1,560",           
-      "+8%",             
-      "+5%",             
-      "3.2",             
-      "950",             
-      "+0.4",            
-      "-3%",             
-      "28%",             
-      "+2%",             
-      "12",              
-      "-1%",             
-      "6%",              
-      "-0.5%",           
-      "98%",             
-      "+1%",             
-      "Revenue",         
-      "+8%",             
-      "ROAS",            
-      "+0.4",            
-      "Customer Retention", 
-      "-5%",             
-      "RTO",             
-      "-1%"              
-    ]
+  "friendlyName": "my_custom_template",
+  "body": "Hello {{1}}, Your order {{2}} has been confirmed!",
+  "language": "en"
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": {
+    "sid": "HX1234567890abcdef",
+    "friendlyName": "my_custom_template",
+    "language": "en",
+    "types": {
+      "twilio/text": {
+        "body": "Hello {{1}}, Your order {{2}} has been confirmed!"
+      }
+    },
+    "dateCreated": "2024-01-15T10:30:00.000Z"
   }
 }
+```
+
+---
+
+## 10. Update Template in Twilio
+
+Update an existing WhatsApp Content Template.
+
+**Endpoint**: `PUT /templates/create-custom-edit`
+
+**Request Body**:
+```json
+{
+  "contentSid": "HX1234567890abcdef",
+  "friendlyName": "updated_template_name",
+  "body": "Hello {{1}}, Your updated order {{2}} has been confirmed!"
+}
+```
+
+**Example (Postman)**:
+```json
+PUT http://localhost:3002/api/whatsapp/templates/create-custom-edit
+Content-Type: application/json
 
 {
-  "name": "daily_store_performance_update_v4",
+  "contentSid": "HX1234567890abcdef",
+  "friendlyName": "updated_template_name",
+  "body": "Hello {{1}}, Your updated order {{2}} has been confirmed!"
+}
+```
+
+---
+
+## 11. Delete Template from Twilio
+
+Delete a WhatsApp Content Template.
+
+**Endpoint**: `DELETE /templates/create-custom-delete`
+
+**Request Body**:
+```json
+{
+  "contentSid": "HX1234567890abcdef"
+}
+```
+
+**Example (Postman)**:
+```json
+DELETE http://localhost:3002/api/whatsapp/templates/create-custom-delete
+Content-Type: application/json
+
+{
+  "contentSid": "HX1234567890abcdef"
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": {
+    "message": "Template HX1234567890abcdef deleted successfully"
+  }
+}
+```
+
+---
+
+## 12. Get All Templates (from Code)
+
+Get all templates registered in the codebase.
+
+**Endpoint**: `GET /templates`
+
+**Example (Postman)**:
+```
+GET http://localhost:3002/api/whatsapp/templates
+```
+
+---
+
+## 13. Get Specific Template (from Code)
+
+Get a specific template definition from the codebase.
+
+**Endpoint**: `GET /templates/:templateName`
+
+**Example (Postman)**:
+```
+GET http://localhost:3002/api/whatsapp/templates/netsightsdailyreports1
+```
+
+---
+
+## 14. Register Template (in Code)
+
+Register a new template in the codebase (does not create in Twilio).
+
+**Endpoint**: `POST /templates/register`
+
+**Request Body**:
+```json
+{
+  "name": "my_template",
   "category": "UTILITY",
   "language": "en",
-  "description": "Daily operational and performance metrics update for store owners",
   "components": [
     {
       "type": "BODY",
-      "text": "👋 Hello {{1}},\n\n📊 Here is your daily performance update for **{{2}}** dated **{{3}}**.\n\n💰 Sales Summary:\n• Total Revenue: {{4}}\n• Total Orders: {{5}}\n• Average Order Value: {{6}}\n• Revenue Change vs Previous Day: {{7}}\n• Orders Change vs Previous Day: {{8}}\n\n📈 Marketing Metrics:\n• ROAS (1 Day): {{9}}\n• Customer Acquisition Cost: {{10}}\n• ROAS Change: {{11}}\n• CAC Change: {{12}}\n• Contribution Margin: {{13}}\n• Contribution Margin Change: {{14}}\n\n🏭 Operations Overview:\n• Returns Count: {{15}}\n• Returns Change: {{16}}\n• RTO Percentage: {{17}}\n• RTO Change: {{18}}\n• SLA Adherence: {{19}}\n• SLA Change: {{20}}\n\n🔝 Key Improvements:\n• {{21}} increased by {{22}}\n• {{23}} increased by {{24}}\n\n⚠️ Areas to Monitor:\n• {{25}} decreased by {{26}}\n• {{27}} decreased by {{28}}\n\nℹ️ This update is shared for informational purposes.\n\nRegards,\n**Netsights.ai** 🚀",
-      "example": {
-        "body_text": [
-          [
-            "Sarang",
-            "ABC Store",
-            "22 Jan 2024",
-            "500000",
-            "320",
-            "1560",
-            "+8%",
-            "+5%",
-            "3.2",
-            "950",
-            "+0.4",
-            "-3%",
-            "28%",
-            "+2%",
-            "12",
-            "-1%",
-            "6%",
-            "-0.5%",
-            "98%",
-            "+1%",
-            "Revenue",
-            "+8%",
-            "ROAS",
-            "+0.4",
-            "Customer Retention",
-            "-5%",
-            "RTO",
-            "-1%"
-          ]
-        ]
-      }
+      "text": "Hello {{1}}, Your order {{2}} has been confirmed!"
     }
   ]
 }
+```
+
+---
+
+## 15. List From Numbers
+
+Get all WhatsApp-enabled phone numbers from Twilio.
+
+**Endpoint**: `GET /from-numbers`
+
+**Example (Postman)**:
+```
+GET http://localhost:3002/api/whatsapp/from-numbers
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "+19785889593",
+      "display_phone_number": "+19785889593",
+      "verified_name": "Default WhatsApp Number"
+    }
+  ]
+}
+```
+
+---
+
+## Template Parameter Mapping
+
+### netsightsdailyreports1 (28 parameters)
+1. Customer Name
+2. Store Name
+3. Report Date
+4. Total Revenue
+5. Total Orders
+6. Average Order Value
+7. Revenue Change vs Previous Day
+8. Orders Change vs Previous Day
+9. ROAS (1 Day)
+10. Customer Acquisition Cost
+11. ROAS Change
+12. CAC Change
+13. Contribution Margin
+14. Contribution Margin Change
+15. Returns Count
+16. Returns Change
+17. RTO Percentage
+18. RTO Change
+19. SLA Adherence
+20. SLA Change
+21. Key Improvement Metric 1
+22. Key Improvement Change 1
+23. Key Improvement Metric 2
+24. Key Improvement Change 2
+25. Monitor Metric 1
+26. Monitor Change 1
+27. Monitor Metric 2
+28. Monitor Change 2
+
+### new_order (10 parameters)
+1. Customer Name
+2. Order ID
+3. Store Name
+4. Order Date
+5. Customer Name (duplicate)
+6. Order Value
+7. Payment Method
+8. Delivery City
+9. Received City
+10. Expected Dispatch Date
+
+### fulfilled_order (10 parameters)
+1. Customer Name
+2. Order ID
+3. Store Name
+4. Fulfillment Date
+5. Items Packed
+6. Total Quantity
+7. Courier Partner
+8. Pickup Location
+9. Estimated Dispatch Time
+10. Current Status
+
+### delivered_order (10 parameters)
+1. Customer Name
+2. Order ID
+3. Store Name
+4. Delivery Date
+5. Customer Name (duplicate)
+6. Items Delivered
+7. Total Quantity
+8. Payment Method
+9. Delivery City
+10. Delivery Time
+
+---
+
+## Error Responses
+
+All endpoints return errors in the following format:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "message": "Error description",
+    "status": 400,
+    "code": 400
+  }
+}
+```
+
+**Common Error Codes**:
+- `400`: Bad Request (missing or invalid parameters)
+- `404`: Not Found (template not found)
+- `500`: Internal Server Error
+- `503`: Service Unavailable (network/timeout errors)
+
+---
+
+## WhatsApp delivery: Error 63049 (Meta did not deliver)
+
+If Twilio shows **status "Undelivered"** and **Warning 63049: "Meta chose not to deliver this WhatsApp marketing message"**:
+
+- **Cause**: WhatsApp (Meta) treats the template as **marketing** and is blocking delivery (per-user limits or policy).
+- **Fix (Twilio/Meta side)**:
+  1. In **Meta Business Manager** (or Twilio Content Template), ensure order templates (`new_order`, `fulfilled_order`, `delivered_order`) are submitted and approved as **UTILITY** (transactional), not **MARKETING**.
+  2. Template wording should be clearly transactional (e.g. "Your order has been fulfilled") rather than promotional.
+  3. For international numbers: avoid sending the same marketing template repeatedly; Meta may temporarily block delivery. Retry after some time.
+- **Reference**: [Twilio Error 63049](https://www.twilio.com/docs/api/errors/63049)
+
+---
+
+## Notes
+
+1. **Phone Number Format**: Always use E.164 format with country code (e.g., `+919876543210` for India, `+19785889593` for US).
+
+2. **Template Names**: Use the exact template names as defined in `twilioTemplateConfig.ts`:
+   - `netsightsdailyreports1` or `daily_kpi_snapshot`
+   - `new_order`
+   - `fulfilled_order`
+   - `delivered_order`
+
+3. **Template Parameters**: Parameters are positional and must match the template structure. Use `{{1}}`, `{{2}}`, etc. in templates.
+
+4. **Rate Limiting**: All send endpoints have rate limiting and duplicate message protection enabled.
+
+5. **Environment Variables**: Ensure these are set in your `.env` file:
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_WHATSAPP_FROM`

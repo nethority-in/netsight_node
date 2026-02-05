@@ -26,7 +26,7 @@ router.post('/templates/create-custom', WhatsAppTemplateController.createCustomT
 router.put('/templates/create-custom-edit', WhatsAppTemplateController.editTemplate);
 router.delete('/templates/create-custom-delete', WhatsAppTemplateController.deleteTemplate);
 router.get('/templates', WhatsAppTemplateController.getTemplates);
-router.get('/templates/meta', WhatsAppTemplateController.getTemplatesFromMeta);
+router.get('/templates/twillio', WhatsAppTemplateController.getTemplatesFromMeta);
 router.get('/templates/:templateName', WhatsAppTemplateController.getTemplate);
 router.post('/templates/register', WhatsAppTemplateController.registerTemplate);
 

@@ -1,0 +1,25 @@
+[
+  {
+    "timestamp": "5/2/2026, 18:14:40",
+    "request": {
+      "friendlyName": "my_custom_template",
+      "body": "Hello {{1}}, Your order {{2}} has been confirmed!",
+      "language": "en"
+    },
+    "response": {
+      "ok": true,
+      "data": {
+        "sid": "HX093c847a501102b558c68ffa460e43f1",
+        "friendlyName": "",
+        "language": "en",
+        "types": {
+          "twilio/text": {
+            "body": "Hello {{1}}, Your order {{2}} has been confirmed!"
+          }
+        },
+        "dateCreated": "2026-02-05T12:44:39.000Z",
+        "dateUpdated": "2026-02-05T12:44:39.000Z"
+      }
+    }
+  }
+]

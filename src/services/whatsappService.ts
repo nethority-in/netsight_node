@@ -1,47 +1,47 @@
-import axios, { AxiosError } from 'axios';
+import twilio from 'twilio';
 import dotenv from 'dotenv';
 import { parsePhoneNumberWithError, ParseError } from 'libphonenumber-js/max';
 import type { CountryCode } from 'libphonenumber-js';
 import { ErrorHandler } from '../utils/errorHandler.js';
-import { retryWithBackoff } from '../utils/retry.js';
+import { getTwilioTemplateId } from '../config/twilioTemplateConfig.js';
 
 dotenv.config();
 
 // Optional: default country when number is entered without country code (e.g. 9876543210 → India).
 const DEFAULT_PHONE_COUNTRY = (process.env.DEFAULT_PHONE_COUNTRY?.trim().toUpperCase() || 'IN') as CountryCode;
 
-// WhatsApp API Configuration
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-const GRAPH_VERSION = process.env.META_GRAPH_VERSION;
-const GRAPH_BASE_URL = `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
+// Twilio WhatsApp API Configuration
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || '+19785889593'; // Default Twilio WhatsApp number
 
-// Token Configuration
-// System_User_TOKEN: Production
-const SYSTEM_USER_TOKEN = process.env.SYSTEM_USER_TOKEN;
-const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-const NODE_ENV = process.env.NODE_ENV || 'development';
-const IS_PRODUCTION = NODE_ENV === 'production';
+// Initialize Twilio client
+let twilioClient: twilio.Twilio | null = null;
 
-// Meta Graph API Response Types
-export interface MetaGraphResponse {
-  messaging_product: string;
-  contacts: Array<{ input: string; wa_id: string }>;
-  messages: Array<{ id: string }>;
+function getTwilioClient(): twilio.Twilio {
+  if (!twilioClient) {
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
+      throw new Error('Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env');
+    }
+    twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  }
+  return twilioClient;
 }
 
-export interface MetaGraphError {
-  error: {
-    message: string;
-    type: string;
-    code: number;
-    error_subcode?: number;
-    fbtrace_id?: string;
-  };
+// Twilio API Response Types
+export interface TwilioMessageResponse {
+  sid: string;
+  status: string;
+  to: string;
+  from: string;
+  body?: string;
+  dateCreated?: Date;
+  dateUpdated?: Date;
 }
 
 export interface WhatsAppServiceResponse {
   ok: boolean;
-  meta?: MetaGraphResponse;
+  meta?: TwilioMessageResponse;
   error?: {
     message: string;
     status: number;
@@ -51,49 +51,20 @@ export interface WhatsAppServiceResponse {
 }
 
 export class WhatsAppService {
-  private static getAccessToken(): string | null {
-    if (IS_PRODUCTION) {
-      // Production: Prefer System User Token (long-lived, stable)
-      if (SYSTEM_USER_TOKEN) {
-        console.log('🔑 Using System_User_TOKEN for production');
-        return SYSTEM_USER_TOKEN;
-      }
-      // Fallback to regular access token if system user token not available
-      if (WHATSAPP_ACCESS_TOKEN) {
-        console.warn('⚠️  System_User_TOKEN not found. Using WHATSAPP_ACCESS_TOKEN as fallback (may expire in 24h)');
-        return WHATSAPP_ACCESS_TOKEN;
-      }
-    } else {
-      // Development/Testing: Prefer regular access token (for testing)
-      if (WHATSAPP_ACCESS_TOKEN) {
-        console.log('🔑 Using WHATSAPP_ACCESS_TOKEN for development/testing');
-        return WHATSAPP_ACCESS_TOKEN;
-      }
-      // Fallback to system user token if regular token not available
-      if (SYSTEM_USER_TOKEN) {
-        console.warn('⚠️  WHATSAPP_ACCESS_TOKEN not found. Using System_User_TOKEN as fallback');
-        return SYSTEM_USER_TOKEN;
-      }
+  private static validateTwilioConfig(): { valid: boolean; message?: string } {
+    if (!TWILIO_ACCOUNT_SID || TWILIO_ACCOUNT_SID === 'undefined') {
+      return { valid: false, message: 'TWILIO_ACCOUNT_SID is not set in .env. Required for Twilio WhatsApp API.' };
     }
-    
-    return null;
-  }
-
-  private static validateAccessToken(): string | null {
-    const token = this.getAccessToken();
-    
-    if (!token) {
-      const envMessage = IS_PRODUCTION 
-        ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
-        : 'Set WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in .env';
-      
-      console.error(`❌ WhatsApp access token not configured. ${envMessage}`);
+    if (!TWILIO_AUTH_TOKEN || TWILIO_AUTH_TOKEN === 'undefined') {
+      return { valid: false, message: 'TWILIO_AUTH_TOKEN is not set in .env. Required for Twilio WhatsApp API.' };
     }
-    
-    return token;
+    if (!TWILIO_WHATSAPP_FROM || TWILIO_WHATSAPP_FROM === 'undefined') {
+      return { valid: false, message: 'TWILIO_WHATSAPP_FROM is not set in .env. Required for Twilio WhatsApp API.' };
+    }
+    return { valid: true };
   }
   // Accepts E.164 (+44...), with country code (447700...), or national format with default country (e.g. 9876543210 + DEFAULT_PHONE_COUNTRY=IN).
-  // Returns E.164 without '+' for Meta API; rejects invalid or non-mobile/fixed-line-or-mobile numbers.
+  // Returns E.164 with '+' for Twilio API; rejects invalid or non-mobile/fixed-line-or-mobile numbers.
    
   static normalizePhoneForWhatsApp(phone: string): { ok: true; e164: string } | { ok: false; message: string } {
     const trimmed = phone.trim();
@@ -110,8 +81,8 @@ export class WhatsAppService {
       if (type && !allowedTypes.includes(type)) {
         return { ok: false, message: `This number type (${type}) is not supported for WhatsApp. Please use a mobile number.` };
       }
-      // Meta WhatsApp API expects E.164 without '+' (digits only)
-      const e164 = parsed.format('E.164').replace(/^\+/, '');
+      // Twilio WhatsApp API expects E.164 with '+' (e.g. +919876543210)
+      const e164 = parsed.format('E.164');
       return { ok: true, e164 };
     } catch (e) {
       if (e instanceof ParseError) {
@@ -129,25 +100,14 @@ export class WhatsAppService {
     }
   }
 
-     // Validates that WhatsApp API URL can be built (env vars set).
-    private static validateApiConfig(): { valid: boolean; message?: string } {
-      if (!PHONE_NUMBER_ID || PHONE_NUMBER_ID === 'undefined') {
-        return { valid: false, message: 'WHATSAPP_PHONE_NUMBER_ID is not set in .env. Required for WhatsApp API.' };
-      }
-      if (!GRAPH_VERSION || GRAPH_VERSION === 'undefined') {
-        return { valid: false, message: 'META_GRAPH_VERSION is not set in .env. Required for WhatsApp API.' };
-      }
-      return { valid: true };
-    }
-
-    // Send template message via WhatsApp Cloud API using Meta Graph API
+    // Send template message via Twilio WhatsApp API
   static async sendTemplate(
     to: string,
     templateName: string,
-    languageCode: string = 'en_US',
+    _languageCode: string = 'en_US',
     components?: Array<{
       type: string;
-      parameters?: Array<{ type: string; text?: string; payload?: string }>;
+      parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
       sub_type?: string;
       index?: number;
     }>,
@@ -164,85 +124,95 @@ export class WhatsAppService {
         return ErrorHandler.toServiceError('Template name is required and must be a non-empty string.', 400) as WhatsAppServiceResponse;
       }
 
-      const useFromNumber = fromCredentials?.phoneNumberId && fromCredentials?.accessToken;
-      let graphBaseUrl: string;
-      if (useFromNumber) {
-        graphBaseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${fromCredentials!.phoneNumberId}/messages`;
-      } else {
-        const apiConfig = this.validateApiConfig();
-        if (!apiConfig.valid) {
-          return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
-        }
-        graphBaseUrl = GRAPH_BASE_URL;
-      }
-      const accessToken = useFromNumber ? fromCredentials!.accessToken : this.validateAccessToken();
-      if (!accessToken) {
-        const envMessage = IS_PRODUCTION
-          ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
-          : 'Set WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in .env';
-        return ErrorHandler.toServiceError(`WhatsApp access token not configured. ${envMessage}`, 500) as WhatsAppServiceResponse;
+      // Validate Twilio configuration
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
       }
 
-      // Prepare template object (parameters can be positional { type, text } or named { type, parameter_name, text })
-      const template: {
-        name: string;
-        language: { code: string };
-        components?: Array<{
-          type: string;
-          parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
-          sub_type?: string;
-          index?: number;
-        }>;
-      } = {
-        name: templateName,
-        language: {
-          code: languageCode
-        }
-      };
+      // Get Twilio template ID from mapping
+      const twilioTemplateId = getTwilioTemplateId(templateName);
+      if (!twilioTemplateId) {
+        return ErrorHandler.toServiceError(`Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`, 400) as WhatsAppServiceResponse;
+      }
 
-      // Add components if provided (header, body, buttons)
+      // Determine from number (use fromCredentials if provided, otherwise use env)
+      const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
+
+      // Extract template parameters from components
+      // Twilio expects contentVariables as JSON string: { "1": "value1", "2": "value2" } (string values, NOT arrays)
+      const contentVariables: Record<string, string> = {};
+
+      function sanitizeContentVariable(value: string): string {
+        if (value == null || typeof value !== 'string') return ' ';
+        let s = value
+          .replace(/\r\n|\r|\n/g, ' ')
+          .replace(/\t/g, ' ')
+          .replace(/\s{5,}/g, '    '); // max 4 consecutive spaces
+        return s.trim() === '' ? ' ' : s;
+      }
+
       if (components && components.length > 0) {
-        template.components = components;
+        const bodyComponent = components.find(c => c.type === 'body');
+        if (bodyComponent && bodyComponent.parameters) {
+          bodyComponent.parameters.forEach((param, index) => {
+            if (param.type === 'text') {
+              const paramKey = String(index + 1);
+              contentVariables[paramKey] = sanitizeContentVariable(param.text ?? '');
+            }
+          });
+        }
+
+        const headerComponent = components.find(c => c.type === 'header');
+        if (headerComponent && headerComponent.parameters) {
+          const bodyParamCount = bodyComponent?.parameters?.length || 0;
+          headerComponent.parameters.forEach((param, index) => {
+            if (param.type === 'text') {
+              const paramKey = String(bodyParamCount + index + 1);
+              contentVariables[paramKey] = sanitizeContentVariable(param.text ?? '');
+            }
+          });
+        }
       }
 
-      // Prepare Meta Graph API payload
-      const payload = {
-        messaging_product: 'whatsapp',
-        to: cleanedPhone,
-        type: 'template',
-        template: template
+      // Build Twilio message payload
+      const messagePayload: any = {
+        from: `whatsapp:${fromNumber}`,
+        to: `whatsapp:${cleanedPhone}`,
+        contentSid: twilioTemplateId
       };
 
-      // Log request details for debugging (without exposing full token)
-      const tokenType = useFromNumber ? 'FromNumber (DB)' : (IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN');
-      console.log('📤 Sending WhatsApp template message:', {
+      if (Object.keys(contentVariables).length > 0) {
+        messagePayload.contentVariables = JSON.stringify(contentVariables);
+      }
+
+      console.log('📤 Sending WhatsApp template message via Twilio:', {
         to: cleanedPhone,
+        from: fromNumber,
         templateName,
-        languageCode,
-        componentsCount: components?.length || 0,
-        components: components?.map(c => ({ type: c.type, paramsCount: c.parameters?.length || 0 })),
-        url: graphBaseUrl,
-        tokenType,
-        tokenPrefix: accessToken.substring(0, 10) + '...'
+        twilioTemplateId,
+        hasParameters: Object.keys(contentVariables).length > 0
       });
 
-      // Send request to Meta Graph API
-      const response = await retryWithBackoff(
-        () =>
-          axios.post<MetaGraphResponse>(graphBaseUrl, payload, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            }
-          }),
-        { maxAttempts: 3, initialDelayMs: 1000, maxDelayMs: 10000 }
-      );
+      // Send via Twilio
+      const client = getTwilioClient();
+      const message = await client.messages.create(messagePayload);
 
-      console.log('✅ WhatsApp template message sent successfully:', response.data);
+      console.log('✅ WhatsApp template message sent successfully via Twilio:', {
+        sid: message.sid,
+        status: message.status
+      });
 
       return {
         ok: true,
-        meta: response.data
+        meta: {
+          sid: message.sid,
+          status: message.status,
+          to: message.to || cleanedPhone,
+          from: message.from || fromNumber,
+          dateCreated: message.dateCreated,
+          dateUpdated: message.dateUpdated
+        }
       };
     } catch (error) {
       return this.handleError(error);
@@ -250,7 +220,7 @@ export class WhatsAppService {
   }
 
 
-    // Send text message via WhatsApp Cloud API
+    // Send text message via Twilio WhatsApp API
   
   static async sendText(
     to: string,
@@ -276,118 +246,102 @@ export class WhatsAppService {
         return ErrorHandler.toServiceError(`Message text must not exceed ${WHATSAPP_TEXT_MAX_LENGTH} characters. Current length: ${trimmedText.length}.`, 400) as WhatsAppServiceResponse;
       }
 
-      const useFromNumber = fromCredentials?.phoneNumberId && fromCredentials?.accessToken;
-      let graphBaseUrl: string;
-      if (useFromNumber) {
-        graphBaseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${fromCredentials!.phoneNumberId}/messages`;
-      } else {
-        const apiConfig = this.validateApiConfig();
-        if (!apiConfig.valid) {
-          return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
-        }
-        graphBaseUrl = GRAPH_BASE_URL;
-      }
-      const accessToken = useFromNumber ? fromCredentials!.accessToken : this.validateAccessToken();
-      if (!accessToken) {
-        const envMessage = IS_PRODUCTION
-          ? 'Set System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in .env'
-          : 'Set WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in .env';
-        return ErrorHandler.toServiceError(`WhatsApp access token not configured. ${envMessage}`, 500) as WhatsAppServiceResponse;
+      // Validate Twilio configuration
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
       }
 
-      // Prepare Meta Graph API payload
-      const payload = {
-        messaging_product: 'whatsapp',
-        to: cleanedPhone,
-        type: 'text',
-        text: {
-          body: trimmedText
-        }
-      };
+      // Determine from number (use fromCredentials if provided, otherwise use env)
+      const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
-      // Log request details for debugging (without exposing full token)
-      const tokenType = useFromNumber ? 'FromNumber (DB)' : (IS_PRODUCTION && SYSTEM_USER_TOKEN ? 'System_User_TOKEN' : 'WHATSAPP_ACCESS_TOKEN');
-      console.log('📤 Sending WhatsApp text message:', {
+      console.log('📤 Sending WhatsApp text message via Twilio:', {
         to: cleanedPhone,
-        textLength: trimmedText.length,
-        url: graphBaseUrl,
-        tokenType,
-        tokenPrefix: accessToken.substring(0, 10) + '...'
+        from: fromNumber,
+        textLength: trimmedText.length
       });
 
-      // Send request to Meta Graph API with retry on transient failures
-      const response = await retryWithBackoff(
-        () =>
-          axios.post<MetaGraphResponse>(graphBaseUrl, payload, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            }
-          }),
-        { maxAttempts: 3, initialDelayMs: 1000, maxDelayMs: 10000 }
-      );
+      // Send via Twilio
+      const client = getTwilioClient();
+      const message = await client.messages.create({
+        from: `whatsapp:${fromNumber}`,
+        to: `whatsapp:${cleanedPhone}`,
+        body: trimmedText
+      });
 
-      console.log('✅ WhatsApp text message sent successfully:', response.data);
+      console.log('✅ WhatsApp text message sent successfully via Twilio:', {
+        sid: message.sid,
+        status: message.status
+      });
 
       return {
         ok: true,
-        meta: response.data
+        meta: {
+          sid: message.sid,
+          status: message.status,
+          to: message.to || cleanedPhone,
+          from: message.from || fromNumber,
+          body: message.body,
+          dateCreated: message.dateCreated,
+          dateUpdated: message.dateUpdated
+        }
       };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-    // Handle Meta Graph API errors
+    // Handle Twilio API errors
   
   private static handleError(error: unknown): WhatsAppServiceResponse {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<MetaGraphError>;
+    // Handle Twilio-specific errors
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      const twilioError = error as { code: number; message: string; status?: number; moreInfo?: string };
+      const status = twilioError.status || 500;
+      const errorCode = twilioError.code;
+
+      console.error('❌ Twilio WhatsApp API error:', {
+        code: errorCode,
+        message: twilioError.message,
+        moreInfo: twilioError.moreInfo
+      });
+
+      // Provide helpful messages for common Twilio errors
+      let errorMessage = twilioError.message || 'Unknown error from Twilio API';
       
-      if (axiosError.response) {
-        // Meta API returned an error response
-        const metaError = axiosError.response.data;
-        const status = axiosError.response.status;
-        const errorCode = metaError?.error?.code;
-
-        console.error('❌ WhatsApp API error:', metaError);
-
-        // Provide helpful messages for common errors
-        let errorMessage = metaError?.error?.message || 'Unknown error from Meta Graph API';
-        
-        if (errorCode === 131030) {
-          errorMessage = 'Recipient phone number not in allowed list. Please add the phone number to your Meta Business Manager recipient list. Go to: Meta Business Manager > WhatsApp > API Setup > Manage phone number list';
-        } else if (errorCode === 131026) {
-          errorMessage = 'Template name not found or not approved. Please use an approved template name from your Meta Business Manager.';
-        } else if (errorCode === 132000) {
-          errorMessage = 'Number of parameters does not match the expected number of params. Please check that you are providing the correct number of template parameters.';
-        } else if (errorCode === 190) {
-          const tokenMessage = IS_PRODUCTION 
-            ? 'Invalid or expired access token. Please update System_User_TOKEN (preferred) or WHATSAPP_ACCESS_TOKEN in your .env file.'
-            : 'Invalid or expired access token. Please update WHATSAPP_ACCESS_TOKEN (preferred) or System_User_TOKEN in your .env file.';
-          errorMessage = tokenMessage;
-        }
-
-        return ErrorHandler.toServiceError(errorMessage, status, errorCode || status, metaError?.error) as WhatsAppServiceResponse;
-      } else if (axiosError.request) {
-        // Request was made but no response received (timeout, network, etc.)
-        const code = (axiosError as NodeJS.ErrnoException).code;
-        let msg = 'No response from Meta Graph API. Check your internet connection.';
-        if (code === 'ECONNRESET') msg = 'Connection reset by Meta Graph API. Please retry.';
-        if (code === 'ETIMEDOUT') msg = 'Request to Meta Graph API timed out. Please retry.';
-        if (code === 'ENOTFOUND') msg = 'Could not resolve Meta Graph API host. Check DNS or network.';
-        console.error('❌ WhatsApp API request failed - no response:', axiosError.message);
-        return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
+      if (errorCode === 21211) {
+        errorMessage = 'Invalid "To" phone number. Please provide a valid WhatsApp-enabled phone number in E.164 format (e.g., +919876543210).';
+      } else if (errorCode === 21212) {
+        errorMessage = 'Invalid "From" phone number. Please check TWILIO_WHATSAPP_FROM in your .env file.';
+      } else if (errorCode === 21608) {
+        errorMessage = 'The "From" number is not a valid WhatsApp-enabled number. Please verify your Twilio WhatsApp number.';
+      } else if (errorCode === 21614) {
+        errorMessage = 'WhatsApp template not found or not approved. Please check the template ID in twilioTemplateConfig.ts.';
+      } else if (errorCode === 20003) {
+        errorMessage = 'Twilio authentication failed. Please check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in your .env file.';
+      } else if (errorCode === 20429) {
+        errorMessage = 'Too many requests. Please retry after a few seconds.';
+      } else if (errorCode === 63049) {
+        errorMessage = 'Meta (WhatsApp) chose not to deliver this message: template may be classified as MARKETING. Use UTILITY category for order/transactional templates in Meta/Twilio, or recipient may be temporarily limited for marketing messages. See Twilio Console message log for details.';
+      } else if (errorCode === 63033) {
+        errorMessage = 'Recipient has opted out of receiving messages from your business.';
       }
+
+      return ErrorHandler.toServiceError(errorMessage, status, errorCode, twilioError) as WhatsAppServiceResponse;
     }
 
-    if (error instanceof Error && (error as NodeJS.ErrnoException).code) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code === 'ECONNRESET' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
-        const msg = code === 'ECONNRESET' ? 'Connection reset. Please retry.'
-          : code === 'ETIMEDOUT' ? 'Request timed out. Please retry.'
-          : 'Could not resolve host. Check network.';
-        return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
+    // Handle network/connection errors
+    if (error instanceof Error) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code) {
+        const code = nodeError.code;
+        if (code === 'ECONNRESET' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
+          const msg = code === 'ECONNRESET' ? 'Connection reset. Please retry.'
+            : code === 'ETIMEDOUT' ? 'Request timed out. Please retry.'
+            : 'Could not resolve host. Check network.';
+          console.error('❌ Network error:', msg);
+          return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
+        }
       }
     }
 
@@ -396,86 +350,71 @@ export class WhatsAppService {
     return ErrorHandler.toServiceError(errorMessage, 500) as WhatsAppServiceResponse;
   }
 
-  /** Get From numbers from Meta (WABA phone_numbers). Uses WHATSAPP_BUSINESS_ACCOUNT_ID and env token. */
+  /** Get From numbers from Twilio (WhatsApp-enabled phone numbers). */
   static async getFromNumbersFromMeta(): Promise<{ ok: boolean; data?: Array<{ id: string; display_phone_number?: string; verified_name?: string }>; error?: { message: string; status: number; code: number } }> {
     try {
-      const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
-      if (!businessAccountId || businessAccountId === 'undefined') {
-        return { ok: false, error: { message: 'WHATSAPP_BUSINESS_ACCOUNT_ID is not set in .env', status: 500, code: 500 } };
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return { ok: false, error: { message: apiConfig.message!, status: 500, code: 500 } };
       }
-      const accessToken = this.validateAccessToken();
-      if (!accessToken) {
-        return { ok: false, error: { message: 'WhatsApp access token not configured in .env', status: 500, code: 500 } };
+
+      const client = getTwilioClient();
+      // Fetch incoming phone numbers from Twilio
+      const incomingNumbers = await client.incomingPhoneNumbers.list();
+      
+      // Filter for WhatsApp-enabled numbers and format response
+      // Note: Twilio capabilities may vary, so we'll include all numbers and let user configure WhatsApp in Twilio Console
+      const whatsappNumbers = incomingNumbers
+        .map(num => ({
+          id: num.phoneNumber || '',
+          display_phone_number: num.phoneNumber || '',
+          verified_name: num.friendlyName || undefined
+        }));
+
+      // Also include the configured WhatsApp number if it's not in the list
+      if (TWILIO_WHATSAPP_FROM && !whatsappNumbers.find(n => n.id === TWILIO_WHATSAPP_FROM)) {
+        whatsappNumbers.unshift({
+          id: TWILIO_WHATSAPP_FROM,
+          display_phone_number: TWILIO_WHATSAPP_FROM,
+          verified_name: 'Default WhatsApp Number'
+        });
       }
-      const graphVersion = process.env.META_GRAPH_VERSION || 'v22.0';
-      const url = `https://graph.facebook.com/${graphVersion}/${businessAccountId}/phone_numbers`;
-      const response = await axios.get<{ data?: Array<{ id: string; display_phone_number?: string; verified_name?: string }> }>(url, {
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
-      });
-      const list = response.data?.data ?? [];
-      return { ok: true, data: list };
+
+      return { ok: true, data: whatsappNumbers };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data?.error) {
-        const metaError = error.response.data.error;
-        return {
-          ok: false,
-          error: {
-            message: metaError.message || 'Failed to fetch phone numbers from Meta',
-            status: error.response.status || 500,
-            code: metaError.code || error.response.status || 500
-          }
-        };
-      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       return { ok: false, error: { message, status: 500, code: 500 } };
     }
   }
 
-  /** Return credentials to send from a given Meta phone_number_id using env token. Use in send-dynamic/send-template/send-text as fromNumberId. */
+  /** Return credentials to send from a given phone number. For Twilio, this just returns the phone number. */
   static getCredentialsForPhoneNumberId(phoneNumberId: string): { phoneNumberId: string; accessToken: string } | null {
+    // For Twilio, we don't need separate credentials per number
+    // Just return the phone number as phoneNumberId
     if (!phoneNumberId || String(phoneNumberId).trim() === '') return null;
-    const accessToken = this.getAccessToken();
-    if (!accessToken) return null;
-    return { phoneNumberId: String(phoneNumberId).trim(), accessToken };
+    return { phoneNumberId: String(phoneNumberId).trim(), accessToken: 'twilio' };
   }
 
-  /** Add a From number in Meta (register phone number to WABA). Uses WHATSAPP_BUSINESS_ACCOUNT_ID and env token. */
+  /** Add a From number in Twilio. Note: Phone numbers must be purchased/configured in Twilio Console. */
   static async addFromNumberInMeta(cc: string, phone_number: string, verified_name?: string): Promise<{ ok: boolean; data?: { id: string }; error?: { message: string; status: number; code: number; details?: unknown } }> {
     try {
-      const businessAccountId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
-      if (!businessAccountId || businessAccountId === 'undefined') {
-        return { ok: false, error: { message: 'WHATSAPP_BUSINESS_ACCOUNT_ID is not set in .env', status: 500, code: 500 } };
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return { ok: false, error: { message: apiConfig.message!, status: 500, code: 500 } };
       }
-      const accessToken = this.validateAccessToken();
-      if (!accessToken) {
-        return { ok: false, error: { message: 'WhatsApp access token not configured in .env', status: 500, code: 500 } };
-      }
-      const graphVersion = process.env.META_GRAPH_VERSION || 'v22.0';
-      const url = `https://graph.facebook.com/${graphVersion}/${businessAccountId}/phone_numbers`;
-      const body: Record<string, string> = { cc: String(cc).trim(), phone_number: String(phone_number).trim() };
-      if (verified_name != null && String(verified_name).trim() !== '') {
-        body.verified_name = String(verified_name).trim();
-      }
-      const response = await axios.post<{ id: string }>(url, body, {
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
-      });
-      const id = response.data?.id;
-      return id ? { ok: true, data: { id } } : { ok: false, error: { message: 'Meta did not return phone number id', status: 500, code: 500 } };
+
+      // Note: Twilio phone numbers must be purchased through Twilio Console or API
+      // This method is kept for compatibility but phone numbers should be configured in Twilio Console
+      return {
+        ok: false,
+        error: {
+          message: 'Phone numbers must be purchased and configured through Twilio Console. Use Twilio Console to add WhatsApp-enabled phone numbers.',
+          status: 400,
+          code: 400,
+          details: { phone_number, cc, verified_name }
+        }
+      };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data?.error) {
-        const metaError = error.response.data.error as { message?: string; code?: number; error_user_msg?: string; error_user_title?: string; [k: string]: unknown };
-        const userMsg = metaError.error_user_msg || metaError.error_user_title || metaError.message;
-        const message = userMsg || 'Failed to add phone number in Meta';
-        return {
-          ok: false,
-          error: {
-            message,
-            status: error.response.status || 500,
-            code: metaError.code || error.response.status || 500,
-            details: metaError
-          }
-        };
-      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       return { ok: false, error: { message, status: 500, code: 500 } };
     }
