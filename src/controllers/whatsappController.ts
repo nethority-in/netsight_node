@@ -4,8 +4,8 @@ import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendWhatsAppLog, appendFromNumbersLog } from '../utils/logApiResponse.js';
 
 export class WhatsAppController {
-      // POST /api/whatsapp/send-template
-  static async sendTemplate(req: Request, res: Response): Promise<void> {
+      // POST /api/whatsapp/send-message
+  static async sendTemplate(req: Request, res: Response): Promise<void> { 
     try {
       const { to, templateName, languageCode, components, fromNumberId } = req.body;
       if (to == null || to === '') {
@@ -101,58 +101,6 @@ export class WhatsAppController {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
     }
   }
-  // Send daily KPI snapshot template - Now flexible with optional parameters (uses sendDynamic internally)
-  static async sendDailyKpiSnapshot(req: Request, res: Response): Promise<void> {
-    try {
-      const {   
-        to, 
-        storeName, 
-        date, 
-        businessOverview, 
-        marketingProfitability, 
-        operationsCash, 
-        keySignals,
-        revenue,
-        expenses,
-        profit,
-        newCustomers,
-        returns,
-        loyaltyPoints
-      } = req.body;
-
-      const toStr = to != null ? String(to).trim() : '';
-      if (!toStr || !storeName || !date) {
-        ErrorHandler.sendValidationError(res, 'Missing required fields: "to", "storeName", and "date" are required. "to" cannot be empty.');
-        return;
-      }
-
-      // Build parameters object with only provided fields
-      const parameters: Record<string, any> = {
-        storeName,
-        date
-      };
-
-      if (businessOverview) parameters.businessOverview = businessOverview;
-      if (marketingProfitability) parameters.marketingProfitability = marketingProfitability;
-      if (operationsCash) parameters.operationsCash = operationsCash;
-      if (keySignals) parameters.keySignals = keySignals;
-      if (revenue) parameters.revenue = revenue;
-      if (expenses) parameters.expenses = expenses;
-      if (profit) parameters.profit = profit;
-      if (newCustomers) parameters.newCustomers = newCustomers;
-      if (returns) parameters.returns = returns;
-      if (loyaltyPoints) parameters.loyaltyPoints = loyaltyPoints;
-
-      // Use sendDynamic internally (call by class so "this" is correct when used as Express handler)
-      req.body = { to: toStr, templateName: 'daily_kpi_snapshot', languageCode: 'en', parameters };
-      appendWhatsAppLog(req.body, req.body); 
-      return await WhatsAppController.sendDynamic(req, res);
-    } catch (error) {
-      appendWhatsAppLog(req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDailyKpiSnapshot', 500);
-    }
-  }
-
   // POST /api/whatsapp/send-dynamic - Flexible template with dynamic parameters
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
@@ -257,37 +205,6 @@ export class WhatsAppController {
     } catch (error) {
       appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
-    }
-  }
-    // POST /api/whatsapp/send-text
-    static async sendText(req: Request, res: Response): Promise<void> {
-    try {
-      const { to, text, fromNumberId } = req.body;
-
-      const toStr = to != null ? String(to).trim() : '';
-      if (!toStr) {
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
-        return;
-      }
-      if (text == null) {
-        ErrorHandler.sendValidationError(res, 'Missing required field: "text" (message body) is required');
-        return;
-      }
-      if (typeof text !== 'string') {
-        ErrorHandler.sendValidationError(res, 'Field "text" must be a string.');
-        return;
-      }
-      if (text.trim().length === 0) {
-        ErrorHandler.sendValidationError(res, 'Message "text" cannot be empty or whitespace only.');
-        return;
-      }
-      const fromCredentials = resolveFromNumber(fromNumberId);
-      const result = await WhatsAppService.sendText(toStr, text, fromCredentials);
-      appendWhatsAppLog(req.body, result);
-      ErrorHandler.sendServiceResult(res, result);
-    } catch (error) {
-      appendWhatsAppLog(req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in sendText', 500);
     }
   }
 

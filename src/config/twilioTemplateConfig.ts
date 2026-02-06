@@ -14,9 +14,9 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'daily_kpi_snapshot': 'HX76ba66f51b489342b00955c8da29806b', // Alias for backward compatibility
   
   // Order templates
-  'delivered_order': 'HX9ed6b259230cd86ec5e3a94cbb5c87c8',
-  'customer_fulfilled_order': 'HX4d49a6f7c5e40d41b4a6944443a8ae45',
-  'customer_new_order': 'HXdc9acb41c43e90c061fc7ef2d5823f36',
+  'delivered': 'HX14df1fb125270b547f85a598947f0f25',
+  'fulfilled': 'HX13ca3ad806735481e0b6deae183ff4da',
+  'new_order': 'HX6eec80a39c157cbce668ae712dcc3276',
   
   // Additional mappings can be added here
 };

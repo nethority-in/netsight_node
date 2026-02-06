@@ -1,8 +1,29 @@
 import { Request, Response } from 'express';
-import { TwilioTemplateService } from '../services/twilioTemplateService.js';
+import { TwilioTemplateService, CreateTemplateParams } from '../services/twilioTemplateService.js';
 import { getWhatsAppTemplate, getAllWhatsAppTemplates, registerWhatsAppTemplate, WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendMetaApiLog, appendCreateCustomTemplateLog} from '../utils/logApiResponse.js';
+
+/** Extract {{1}}, {{2}}, ... from body and return sample data object. Uses provided samples or defaults like "Sample 1", "Sample 2". */
+function getBodyVariableSamples(body: string, providedSamples?: Record<string, string>): Record<string, string> {
+  const matches = body.match(/\{\{(\d+)\}\}/g);
+  if (!matches || matches.length === 0) return providedSamples || {};
+  const indices = [...new Set(matches.map(m => m.replace(/\{\{|\}\}/g, '')))].map(Number).sort((a, b) => a - b);
+  const variables: Record<string, string> = {};
+  indices.forEach((num, i) => {
+    const key = String(num);
+    variables[key] = (providedSamples && providedSamples[key]) ?? `Sample ${i + 1}`;
+  });
+  return variables;
+}
+
+/** Normalize WhatsApp category to Utility or MARKETING. */
+function normalizeCategory(category?: string): string {
+  if (!category || typeof category !== 'string') return 'Utility';
+  const c = category.trim();
+  if (/^marketing$/i.test(c)) return 'MARKETING';
+  return 'Utility';
+}
 
 export class WhatsAppTemplateController {
   // POST /api/whatsapp/templates/create - Create template in Twilio
@@ -45,20 +66,27 @@ export class WhatsAppTemplateController {
   static async createCustomTemplate(req: Request, res: Response): Promise<void> {
     try {
       // Support both old format (WhatsAppTemplateDefinition) and new format (direct Twilio format)
-      if (req.body.friendlyName || req.body.body) {
+      if (req.body.friendlyName !== undefined || req.body.body) {
         // Direct Twilio format
-        const { friendlyName, body, language, category } = req.body;
+        const { friendlyName, body, language, category, variables: bodyVariables } = req.body;
 
-        if (!friendlyName || !body) {
-          ErrorHandler.sendValidationError(res, 'Missing required fields: "friendlyName" and "body" are required');
+        if (!body || typeof body !== 'string' || !body.trim()) {
+          ErrorHandler.sendValidationError(res, 'Missing required field: "body" is required');
+          return;
+        }
+        const trimmedName = typeof friendlyName === 'string' ? friendlyName.trim() : '';
+        if (!trimmedName) {
+          ErrorHandler.sendValidationError(res, 'Missing or empty "friendlyName" is required (template name for Twilio dashboard)');
           return;
         }
 
+        const variables = getBodyVariableSamples(body.trim(), bodyVariables);
         const result = await TwilioTemplateService.createTemplate({
-          friendlyName,
-          body,
+          friendlyName: trimmedName,
+          body: body.trim(),
           language: language || 'en',
-          category
+          category: normalizeCategory(category),
+          variables: Object.keys(variables).length > 0 ? variables : undefined
         });
 
         appendCreateCustomTemplateLog(req.body, result);
@@ -79,12 +107,14 @@ export class WhatsAppTemplateController {
         // Convert to Twilio format
         const bodyComponent = templateData.components.find(c => c.type === 'BODY');
         const bodyText = bodyComponent?.text || '';
+        const variables = getBodyVariableSamples(bodyText);
 
-        const twilioTemplate = {
-          friendlyName: templateData.name,
+        const twilioTemplate: CreateTemplateParams = {
+          friendlyName: (templateData.name || '').trim() || `template_${Date.now()}`,
           language: templateData.language || 'en',
           body: bodyText,
-          category: templateData.category
+          category: normalizeCategory(templateData.category),
+          variables: Object.keys(variables).length > 0 ? variables : undefined
         };
 
         const result = await TwilioTemplateService.createTemplate(twilioTemplate);

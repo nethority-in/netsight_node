@@ -21,5 +21,64 @@
         "dateUpdated": "2026-02-05T12:44:39.000Z"
       }
     }
+  },
+  {
+    "timestamp": "6/2/2026, 10:35:18",
+    "request": {
+      "friendlyName": "my_order_template",
+      "body": "Hello {{1}}, Your order {{2}} has been confirmed!",
+      "language": "en",
+      "category": "Utility",
+      "variables": {
+        "1": "John",
+        "2": "ORD-12345"
+      }
+    },
+    "response": {
+      "ok": true,
+      "data": {
+        "sid": "HXe3c0536d4304bbea7a7fde8b76273b97",
+        "friendlyName": "my_order_template",
+        "language": "en",
+        "types": {
+          "twilio/text": {
+            "body": "Hello {{1}}, Your order {{2}} has been confirmed!"
+          }
+        },
+        "dateCreated": "2026-02-06T05:05:18.000Z",
+        "dateUpdated": "2026-02-06T05:05:18.000Z"
+      }
+    }
+  },
+  {
+    "timestamp": "6/2/2026, 10:45:11",
+    "request": {
+      "friendlyName": "my_order_template",
+      "body": "Hello {{1}}, Your order {{2}} has been confirmed!",
+      "language": "en",
+      "category": "Utility",
+      "variables": {
+        "1": "John",
+        "2": "ORD-12345"
+      }
+    },
+    "response": {
+      "ok": true,
+      "data": {
+        "sid": "HX0dbdd8f184d5dcda1e39dd431957a1a9",
+        "friendlyName": "my_order_template",
+        "language": "en",
+        "category": "UTILITY",
+        "approvalStatus": "received",
+        "approvalSubmitted": true,
+        "types": {
+          "twilio/text": {
+            "body": "Hello {{1}}, Your order {{2}} has been confirmed!"
+          }
+        },
+        "dateCreated": "2026-02-06T05:15:10.000Z",
+        "dateUpdated": "2026-02-06T05:15:10.000Z"
+      }
+    }
   }
 ]

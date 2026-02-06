@@ -32,6 +32,20 @@ export interface TwilioTemplateServiceResponse {
   };
 }
 
+export interface CreateTemplateParams {
+  friendlyName: string;
+  language: string;
+  body: string;
+  category?: string;
+  variables?: Record<string, string>;
+}
+
+/** WhatsApp expects UTILITY or MARKETING (uppercase). */
+function normalizeCategoryForTwilio(category?: string): string {
+  if (!category || typeof category !== 'string') return 'UTILITY';
+  return /^marketing$/i.test(category.trim()) ? 'MARKETING' : 'UTILITY';
+}
+
 export class TwilioTemplateService {
   private static validateConfig(): { valid: boolean; message?: string } {
     if (!TWILIO_ACCOUNT_SID || TWILIO_ACCOUNT_SID === 'undefined') {
@@ -45,13 +59,9 @@ export class TwilioTemplateService {
 
   
     //Create a WhatsApp Content Template in Twilio
+  // Twilio Content API expects snake_case (friendly_name) and variables for WhatsApp approval (sample data for {{1}}, {{2}}, etc.)
 
-  static async createTemplate(template: {
-    friendlyName: string;
-    language: string;
-    body: string;
-    category?: string;
-  }): Promise<TwilioTemplateServiceResponse> {
+  static async createTemplate(template: CreateTemplateParams): Promise<TwilioTemplateServiceResponse> {
     try {
       const config = this.validateConfig();
       if (!config.valid) {
@@ -60,9 +70,12 @@ export class TwilioTemplateService {
 
       const client = getTwilioClient();
 
-      // Create Content Template
-      const contentTemplate = {
-        friendlyName: template.friendlyName,
+      const friendlyName = (template.friendlyName || '').trim() || `template_${Date.now()}`;
+      const category = normalizeCategoryForTwilio(template.category);
+
+      // Build payload with snake_case so Twilio Content API receives friendly_name (fixes "friendly_name not provided" in dashboard)
+      const contentTemplate: Record<string, unknown> = {
+        friendly_name: friendlyName,
         language: template.language || 'en',
         types: {
           'twilio/text': {
@@ -71,9 +84,15 @@ export class TwilioTemplateService {
         }
       };
 
+      if (template.variables && Object.keys(template.variables).length > 0) {
+        contentTemplate.variables = template.variables;
+      }
+
       console.log('📤 Creating Twilio WhatsApp Content Template:', {
-        friendlyName: template.friendlyName,
-        language: template.language
+        friendlyName,
+        language: contentTemplate.language,
+        category,
+        hasVariables: !!contentTemplate.variables
       });
 
       const content = await client.content.v1.contents.create(contentTemplate as any);
@@ -83,12 +102,29 @@ export class TwilioTemplateService {
         friendlyName: content.friendlyName
       });
 
+      // Submit for WhatsApp approval with category so it shows in Twilio Content Template Builder (category is set at approval, not at create)
+      let approvalResult: { category: string; status?: string; submitted?: boolean } = { category };
+      try {
+        const approval = await client.content.v1.contents(content.sid).approvalCreate.create({
+          name: friendlyName,
+          category
+        } as any);
+        approvalResult = { category: approval.category, status: approval.status, submitted: true };
+        console.log('✅ WhatsApp approval submitted with category:', approval.category, 'status:', approval.status);
+      } catch (approvalErr) {
+        console.warn('⚠️ Template created but WhatsApp approval submit failed (category may not show until submitted manually):', approvalErr instanceof Error ? approvalErr.message : approvalErr);
+        approvalResult.submitted = false;
+      }
+
       return {
         ok: true,
         data: {
           sid: content.sid,
           friendlyName: content.friendlyName,
           language: content.language,
+          category: approvalResult.category,
+          approvalStatus: approvalResult.status,
+          approvalSubmitted: approvalResult.submitted,
           types: content.types,
           dateCreated: content.dateCreated,
           dateUpdated: content.dateUpdated
