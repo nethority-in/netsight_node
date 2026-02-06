@@ -59,7 +59,7 @@ curl -X POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot \
 6. **WhatsApp Text**: `POST https://bridge.netsights.ai/api/whatsapp/send-text`
 7. **WhatsApp Template**: `POST https://bridge.netsights.ai/api/whatsapp/send-template`
 8. **WhatsApp Daily KPI Snapshot**: `POST https://bridge.netsights.ai/api/whatsapp/send-daily-kpi-snapshot`
-9. **WhatsApp From Numbers**: List (GET) and Add in Meta (POST).
+9. **WhatsApp From Numbers**: List (GET) and Add in Meta (POST). 
 
 ### for local
 
@@ -111,25 +111,11 @@ POST http://localhost:3002/api/whatsapp/send-dynamic
   "components": { "body": ["Sarang", "ABC Store", "22 Jan 2024", "..."] }
 }
 
-# --- POST /api/whatsapp/templates/create-custom (Postman) ---
+# --- POST /api/whatsapp/templates/create-custom
 # Option A: Positional parameters (parameter_format omitted or "positional", body_text)
 POST http://localhost:3002/api/whatsapp/templates/create-custom
 {
-  "name": "daily_store_performance_update_v3",
-  "category": "UTILITY",
-  "language": "en",
-  "description": "Daily operational and performance metrics update for store owners",
-  "components": [
-    {
-      "type": "BODY",
-      "text": "👋 Hello {{1}},\n\n📊 Here is your daily performance update for **{{2}}** dated **{{3}}**.\n\n💰 Sales Summary:\n• Total Revenue: {{4}}\n• Total Orders: {{5}}\n• Average Order Value: {{6}}\n• Revenue Change vs Previous Day: {{7}}\n• Orders Change vs Previous Day: {{8}}\n\n📈 Marketing Metrics:\n• ROAS (1 Day): {{9}}\n• Customer Acquisition Cost: {{10}}\n• ROAS Change: {{11}}\n• CAC Change: {{12}}\n• Contribution Margin: {{13}}\n• Contribution Margin Change: {{14}}\n\n🏭 Operations Overview:\n• Returns Count: {{15}}\n• Returns Change: {{16}}\n• RTO Percentage: {{17}}\n• RTO Change: {{18}}\n• SLA Adherence: {{19}}\n• SLA Change: {{20}}\n\n🔝 Key Improvements:\n• {{21}} increased by {{22}}\n• {{23}} increased by {{24}}\n\n⚠️ Areas to Monitor:\n• {{25}} decreased by {{26}}\n• {{27}} decreased by {{28}}\n\nℹ️ This update is shared for informational purposes.\n\nRegards,\n**Netsights.ai** 🚀",
-      "example": {
-        "body_text": [
-          ["Sarang", "ABC Store", "22 Jan 2024", "500000", "320", "1560", "+8%", "+5%", "3.2", "950", "+0.4", "-3%", "28%", "+2%", "12", "-1%", "6%", "-0.5%", "98%", "+1%", "Revenue", "+8%", "ROAS", "+0.4", "Customer Retention", "-5%", "RTO", "-1%"]
-        ]
-      }
-    }
-  ]
+ same number body 
 }
 
 # Option B: Named parameters (parameter_format: "named", body_text_named_params)
@@ -258,6 +244,12 @@ https://bridge.netsights.ai/api/kpi/net-sales?shop=celebrity-drapes.myshopify.co
 https://bridge.netsights.ai/api/kpi/gross-sales?shop=celebrity-drapes.myshopify.com
 
 
+# Facebook OAuth
+- **Connect (start OAuth):** `GET /api/facebook/connect` — requires `Authorization: Bearer <CUSTOM_TOKEN>`. Returns `{ "oauth_url": "https://www.facebook.com/.../dialog/oauth?..." }`. Open `oauth_url` in browser (or popup); user logs in and is redirected to callback.
+- **Callback (public):** `GET /api/facebook/callback?code=...&state=...` — used by Facebook redirect. Validates `state`, exchanges `code` for access token, exchanges for long-lived token, returns HTML that posts result to opener and closes (popup flow). No auth required.
+- **.env:** Set `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `FACEBOOK_REDIRECT_URI` (e.g. `http://localhost:3002/api/facebook/callback`). Optional: `FACEBOOK_API_VERSION` or use `META_GRAPH_VERSION`.
+
+
 # Mail
 POST http://localhost:3002/api/email/send-template
 {
@@ -311,6 +303,9 @@ POST http://localhost:3002/api/email/send-dynamic
   "subject": "Optional custom subject (omit to use template default)",
   "cc": ["manager@example.com"],
   "bcc": ["archive@example.com"],
+  "attachments": [
+    { "filename": "report.pdf", "content": "<base64-string-of-file>" }
+  ],
   "components": {
     "body": [
       "Sarang",
@@ -349,6 +344,7 @@ POST http://localhost:3002/api/email/send-dynamic
   }
 }
 Add "subject", "cc", "bcc" in this same JSON body when needed. "cc" and "bcc" are arrays of email strings.
+Optional "attachments": array of { "filename": string, "content": base64 string }; any file type; max 5MB per attachment. Omit if no attachments.
 
 http://localhost:3002/api/email/send
 {
@@ -580,3 +576,32 @@ with emoji and professional output for whatsapp
     }
   ]
 }
+
+
+Web Hooks
+GET https://bridge.netsights.ai/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=C5b0AIzBrgaS2IQXTWckxF0xLzTtUhK1JQTZAjusFFGvZCkra6afsWDafsWDsMrLwKZAEMGSVv&hub.challenge={dynamic}
+
+POST https://bridge.netsights.ai/webhook/whatsapp
+{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "1918759748728362",
+    "changes": [{
+      "value": {
+        "messaging_product": "whatsapp",
+        "metadata": { "phone_number_id": "942341315626645" },
+        "messages": [{
+          "from": "919876543210",
+          "id": "wamid.xxx",
+          "timestamp": "1234567890",
+          "type": "text",
+          "text": { "body": "Test message" }
+        }]
+      },
+      "field": "messages"
+    }]
+  }]
+}
+Meta Developer → तुमचा App → WhatsApp → Configuration.
+
+

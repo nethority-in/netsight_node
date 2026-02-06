@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from 'express';
 import { prisma, isDatabaseConnected } from '../config/prisma.js';
 import whatsappRoutes from './whatsappRoutes.js';
 import emailRoutes from './emailRoutes.js';
+import facebookRoutes from './facebookRoutes.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendNotificationLog, appendNotificationSettingLog, appendWidgetLog } from '../utils/logApiResponse.js';
@@ -117,5 +118,8 @@ router.use('/whatsapp', whatsappRoutes);
 
 // Email routes
 router.use('/email', emailRoutes);
+
+// Facebook OAuth (connect requires auth; callback is mounted in index.ts without auth)
+router.use('/facebook', facebookRoutes);
 
 export default router;

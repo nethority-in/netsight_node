@@ -11,6 +11,59 @@ const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY;
 const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'netsightai@gmail.com';
 const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Netsight';
 
+const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024; // 5MB per attachment
+
+const MIME_TYPES: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  txt: 'text/plain',
+  csv: 'text/csv',
+  zip: 'application/zip'
+};
+
+function getContentType(filename: string): string {
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  return MIME_TYPES[ext] || 'application/octet-stream';
+}
+
+function validateAttachments(attachments: Array<{ filename: string; content: string }>): { valid: true; mailjet: Array<{ Filename: string; ContentType: string; Base64Content: string }> } | { valid: false; message: string } {
+  const mailjet: Array<{ Filename: string; ContentType: string; Base64Content: string }> = [];
+  for (let i = 0; i < attachments.length; i++) {
+    const a = attachments[i];
+    const name = a?.filename ?? (a as any)?.name ?? '';
+    const content = a?.content ?? (a as any)?.base64 ?? '';
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return { valid: false, message: `Attachment at index ${i}: "filename" is required.` };
+    }
+    if (!content || typeof content !== 'string') {
+      return { valid: false, message: `Attachment at index ${i}: "content" (base64) is required.` };
+    }
+    let decodedLength: number;
+    try {
+      decodedLength = Buffer.byteLength(Buffer.from(content, 'base64'));
+    } catch {
+      return { valid: false, message: `Attachment at index ${i}: "content" must be valid base64.` };
+    }
+    if (decodedLength > ATTACHMENT_MAX_BYTES) {
+      return { valid: false, message: `Attachment "${name.trim()}" exceeds 5MB limit (${(decodedLength / 1024 / 1024).toFixed(2)}MB).` };
+    }
+    mailjet.push({
+      Filename: name.trim(),
+      ContentType: getContentType(name),
+      Base64Content: content
+    });
+  }
+  return { valid: true, mailjet };
+}
+
 // Initialize Mailjet client
 let mailjetClient: any = null;
 
@@ -64,7 +117,8 @@ export class EmailService {
     htmlContent: string,
     textContent?: string,
     cc?: string[],
-    bcc?: string[]
+    bcc?: string[],
+    attachments?: Array<{ filename: string; content: string }>
   ): Promise<EmailServiceResponse> {
     try {
       if (!this.validateCredentials()) {
@@ -111,28 +165,38 @@ export class EmailService {
         return ErrorHandler.toServiceError(`Invalid email address(es): ${invalidEmails.join(', ')}`, 400) as EmailServiceResponse;
       }
 
+      let mailjetAttachments: Array<{ Filename: string; ContentType: string; Base64Content: string }> | undefined;
+      if (attachments != null && Array.isArray(attachments) && attachments.length > 0) {
+        const validated = validateAttachments(attachments);
+        if (!validated.valid) {
+          return ErrorHandler.toServiceError(validated.message, 400) as EmailServiceResponse;
+        }
+        mailjetAttachments = validated.mailjet;
+      }
+
       // Prepare recipients
       const recipients = toArray.map((email: string) => ({ Email: email.trim() }));
       const ccRecipients = ccList.length > 0 ? ccList.map((email: unknown) => ({ Email: String(email).trim() })) : undefined;
       const bccRecipients = bccList.length > 0 ? bccList.map((email: unknown) => ({ Email: String(email).trim() })) : undefined;
 
-      // Prepare email data
-      const emailData = {
-        Messages: [
-          {
-            From: {
-              Email: MAIL_FROM_ADDRESS,
-              Name: MAIL_FROM_NAME
-            },
-            To: recipients,
-            ...(ccRecipients && ccRecipients.length > 0 && { Cc: ccRecipients }),
-            ...(bccRecipients && bccRecipients.length > 0 && { Bcc: bccRecipients }),
-            Subject: subject,
-            HTMLPart: htmlContent,
-            ...(textContent && { TextPart: textContent })
-          }
-        ]
+      const messagePayload: Record<string, unknown> = {
+        From: {
+          Email: MAIL_FROM_ADDRESS,
+          Name: MAIL_FROM_NAME
+        },
+        To: recipients,
+        ...(ccRecipients && ccRecipients.length > 0 && { Cc: ccRecipients }),
+        ...(bccRecipients && bccRecipients.length > 0 && { Bcc: bccRecipients }),
+        Subject: subject,
+        HTMLPart: htmlContent,
+        ...(textContent && { TextPart: textContent })
       };
+
+      if (mailjetAttachments && mailjetAttachments.length > 0) {
+        messagePayload.Attachments = mailjetAttachments;
+      }
+
+      const emailData = { Messages: [messagePayload] };
 
       console.log('📧 Sending email:', {
         to: toArray,
@@ -164,7 +228,8 @@ export class EmailService {
     templateVariables: Record<string, any> = {},
     subject?: string,
     cc?: string[],
-    bcc?: string[]
+    bcc?: string[],
+    attachments?: Array<{ filename: string; content: string }>
   ): Promise<EmailServiceResponse> {
     try {
       if (!this.validateCredentials()) {
@@ -198,7 +263,7 @@ export class EmailService {
       }
 
       // Send email with processed template
-      return await this.sendEmail(to, emailSubject, htmlContent, template.text, cc, bcc);
+      return await this.sendEmail(to, emailSubject, htmlContent, template.text, cc, bcc, attachments);
     } catch (error) {
       return this.handleError(error);
     }

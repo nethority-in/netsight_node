@@ -7,7 +7,7 @@ export class EmailController {
   // POST /api/email/send-template
   static async sendTemplate(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, templateVariables, subject, cc, bcc } = req.body;
+      const { to, templateName, templateVariables, subject, cc, bcc, attachments } = req.body;
 
       const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
       if (toVal.length === 0) {
@@ -25,7 +25,8 @@ export class EmailController {
         templateVariables || {},
         subject,
         cc,
-        bcc
+        bcc,
+        attachments
       );
 
       appendEmailLog(req.body, result);
@@ -53,7 +54,8 @@ export class EmailController {
         returns,
         loyaltyPoints,
         cc,
-        bcc
+        bcc,
+        attachments
       } = req.body;
 
       const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
@@ -80,7 +82,7 @@ export class EmailController {
       if (loyaltyPoints) parameters.loyaltyPoints = loyaltyPoints;
 
       // Use sendDynamic internally
-      req.body = { to: toVal.length === 1 ? toVal[0] : toVal, templateName: 'daily_kpi_snapshot', parameters, cc, bcc };
+      req.body = { to: toVal.length === 1 ? toVal[0] : toVal, templateName: 'daily_kpi_snapshot', parameters, cc, bcc, attachments };
       return await this.sendDynamic(req, res);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDailyKpiSnapshot', 500);
@@ -90,7 +92,7 @@ export class EmailController {
   // POST /api/email/send
   static async sendEmail(req: Request, res: Response): Promise<void> {
     try {
-      const { to, subject, htmlContent, textContent, cc, bcc } = req.body;
+      const { to, subject, htmlContent, textContent, cc, bcc, attachments } = req.body;
 
       const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
       if (toVal.length === 0) {
@@ -112,7 +114,8 @@ export class EmailController {
         htmlContent,
         textContent,
         cc,
-        bcc
+        bcc,
+        attachments
       );
 
       appendEmailLog(req.body, result);
@@ -139,7 +142,7 @@ export class EmailController {
   // For daily_store_performance_summary, accepts same format as WhatsApp: components: { body: string[] } (32 values in order)
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, parameters, components, subject, cc, bcc } = req.body;
+      const { to, templateName, parameters, components, subject, cc, bcc, attachments } = req.body;
 
       const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
       if (toVal.length === 0) {
@@ -192,7 +195,7 @@ export class EmailController {
       let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
 
-      const result = await EmailService.sendEmail(toVal.length === 1 ? toVal[0] : toVal, emailSubject, htmlContent, textContent, cc, bcc);
+      const result = await EmailService.sendEmail(toVal.length === 1 ? toVal[0] : toVal, emailSubject, htmlContent, textContent, cc, bcc, attachments);
       appendEmailLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
