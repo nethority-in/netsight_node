@@ -11,13 +11,14 @@ export interface TwilioTemplateMapping {
 export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   // Daily reports template
   'netsightsdailyreports1': 'HX76ba66f51b489342b00955c8da29806b',
-  'daily_kpi_snapshot': 'HX76ba66f51b489342b00955c8da29806b', // Alias for backward compatibility
+  'daily_kpi_snapshot'    : 'HX76ba66f51b489342b00955c8da29806b', // Alias for backward compatibility
   
   // Order templates
-  'delivered': 'HX14df1fb125270b547f85a598947f0f25',
-  'fulfilled': 'HX13ca3ad806735481e0b6deae183ff4da',
-  'new_order': 'HX6eec80a39c157cbce668ae712dcc3276',
-  
+  'delivered'             : 'HX14df1fb125270b547f85a598947f0f25',
+  'fulfilled'             : 'HX13ca3ad806735481e0b6deae183ff4da',
+  'new_order'             : 'HX6eec80a39c157cbce668ae712dcc3276',
+  'daily_insight'         : 'HX1cf620cd76f2dedf2230f65c53fe598f',
+  'copy_daily_insight'    : 'HX213daeb3b3f8077eef0bf275842aeeaa'
   // Additional mappings can be added here
 };
 
