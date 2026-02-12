@@ -11,6 +11,7 @@ const NOTIFICATION_SETTING_LOG_PATH = process.env.NODE_ENV === 'production' ? pa
 const WIDGET_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, 'logs', 'logs-widget.json') : path.join(projectRoot, 'src', 'logs-widget.json');
 const FROM_NUMBERS_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, "logs", "logs-from-numbers.json") : path.join(projectRoot, "src", "logs-from-numbers.json");
 const CREATE_CUSTOM_TEMPLATE_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, "logs", "logs-create-custom-template.json") : path.join(projectRoot, "src", "logs-create-custom-template.json");
+const AUTH_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, 'logs', 'logs-auth.json') : path.join(projectRoot, 'src', 'logs-auth.json');
 
 let whatsappLogPromise: Promise<void> = Promise.resolve();
 let emailLogPromise: Promise<void> = Promise.resolve();
@@ -20,6 +21,7 @@ let notificationSettingLogPromise: Promise<void> = Promise.resolve();
 let widgetLogPromise: Promise<void> = Promise.resolve();
 let fromNumbersLogsPromise: Promise<void> = Promise.resolve();
 let createCustomTemplateLogsPromise: Promise<void> = Promise.resolve();
+let authLogPromise: Promise<void> = Promise.resolve();
 
  //Get current timestamp in Indian Standard Time (IST) 
 function getISTTimestamp(): string {
@@ -169,4 +171,9 @@ export function appendCreateCustomTemplateLog(request: object, response: object)
     entry,
     createCustomTemplateLogsPromise
   )
+}
+
+export function appendAuthLog(entry: { event: string; username?: string; success?: boolean; message?: string; [key: string]: unknown }): void {
+  const fullEntry = { timestamp: getISTTimestamp(), ...entry };
+  authLogPromise = appendToJsonFile(AUTH_LOG_PATH, fullEntry, authLogPromise);
 }

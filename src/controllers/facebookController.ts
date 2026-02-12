@@ -13,10 +13,10 @@ function pruneExpiredStates(): void {
   }
 }
 
-/**
- * Initiate Facebook OAuth flow. Returns URL to redirect user to.
- * Requires Authorization: Bearer <CUSTOM_TOKEN>.
- */
+
+  // Initiate Facebook OAuth flow. Returns URL to redirect user to.
+  // Requires Authorization: Bearer <CUSTOM_TOKEN>.
+
 export async function connect(_req: Request, res: Response): Promise<void> {
   try {
     const state = crypto.randomBytes(16).toString('hex');
@@ -31,10 +31,9 @@ export async function connect(_req: Request, res: Response): Promise<void> {
   }
 }
 
-/**
- * Handle Facebook OAuth callback (GET with ?code=...&state=...).
- * Public route; validates state then exchanges code for token and returns success/error HTML for popup flow.
- */
+  // Handle Facebook OAuth callback (GET with ?code=...&state=...).
+  // Public route; validates state then exchanges code for token and returns success/error HTML for popup flow.
+
 export async function callback(req: Request, res: Response): Promise<void> {
   try {
     const code = req.query.code as string | undefined;

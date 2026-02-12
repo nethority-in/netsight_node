@@ -6,6 +6,7 @@ import { connectPrisma, disconnectPrisma } from './config/prisma.js';
 // Import models to ensure they're loaded (NotificationLog, NotificationSetting, Widget)
 import './models/index.js';
 import apiRoutes from './routes/api.js';
+import authRoutes from './routes/authRoutes.js';
 import whatsappWebhookRoutes from './routes/whatsappWebhookRoutes.js';
 import { callback as facebookCallback } from './controllers/facebookController.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -62,6 +63,7 @@ process.on('SIGTERM', async () => {
 // Routes (webhook is public - no auth; Meta calls it for verification and events)
 app.use('/webhook/whatsapp', whatsappWebhookRoutes);
 // Facebook OAuth callback is public (browser redirect from Facebook)
+app.use('/auth', authRoutes);
 app.get('/api/facebook/callback', facebookCallback);
 app.use('/api', apiRoutes);
 

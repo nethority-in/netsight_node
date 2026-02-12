@@ -39,7 +39,10 @@ src/logs-meta-api.json
 src/logs-notification-setting.json
 src/logs-notification.json
 src/logs-widget.json
+src/logs-auth.json
 
 # Ignore all files in the src/logs directory
 
-API_ENDPOINTS.md
+src/data/
+
+DB.md

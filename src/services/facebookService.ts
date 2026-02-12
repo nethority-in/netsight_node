@@ -17,7 +17,7 @@ export function getOAuthUrl(state: string | null): string {
   ensureConfig();
   const params = new URLSearchParams({
     client_id: process.env.FACEBOOK_APP_ID!,
-    redirect_uri: process.env.FACEBOOK_REDIRECT_URI! || "http://localhost:3002/api/facebook/callback",
+    redirect_uri: process.env.FACEBOOK_REDIRECT_URI!,
     scope: 'ads_read,business_management,pages_show_list,pages_read_engagement,public_profile,ads_management',
     response_type: 'code',
   });
@@ -47,7 +47,6 @@ export async function exchangeCodeForToken(code: string): Promise<{ access_token
     expires_in: data.expires_in,
   };
 }
-
 
   // Exchange short-lived token for long-lived token.
 
