@@ -603,5 +603,3 @@ POST https://bridge.netsights.ai/webhook/whatsapp
   }]
 }
 Meta Developer → App → WhatsApp → Configuration.
-
-

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiVersion = process.env.FACEBOOK_API_VERSION || process.env.META_GRAPH_VERSION || 'v22.0';
+const apiVersion = process.env.META_GRAPH_VERSION || 'v22.0';
 
 function ensureConfig(): void {
   if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET || !process.env.FACEBOOK_REDIRECT_URI) {
@@ -18,7 +18,7 @@ export function getOAuthUrl(state: string | null): string {
   const params = new URLSearchParams({
     client_id: process.env.FACEBOOK_APP_ID!,
     redirect_uri: process.env.FACEBOOK_REDIRECT_URI!,
-    scope: 'ads_read,business_management,pages_show_list,pages_read_engagement,public_profile,ads_management',
+    scope: 'business_management',
     response_type: 'code',
   });
   if (state) params.set('state', state);
