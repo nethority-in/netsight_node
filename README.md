@@ -1,44 +1,353 @@
+# NetSight Node Server
 
- **Generate Prisma Client**
-   ```bash
-   npx prisma generate
-   ```
-   This generates the Prisma Client based on your schema.
+Express.js server with Prisma, WhatsApp/Twilio integration, and JWT-based auth. Users are stored in a JSON file; protected APIs require a JWT (from login/register) or an API secret.
 
- **Run Database Migrations (Optional)**
-   ```bash
-   # Push schema to database (for development)
-   npm run prisma:push
-   
-   # Or create a migration (recommended for production)
-   npm run prisma:migrate
-   ```
+---
 
-5. **Start the Server**
-  
-   # npm run dev
-   # npm start
- 
+## Environment (.env)
 
-## Project Structure
+### Required for auth and protected APIs
 
-## Features
+```env
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRES_IN=24h
+```
 
-- Express.js server
-- Prisma ORM with MySQL database connection
-- CORS enabled
-- Environment variable configuration
-- Modular structure for easy expansion
+- **JWT_SECRET** – Used to sign and verify JWTs. Use a long, random string in production (e.g. 32+ characters).
+- **JWT_EXPIRES_IN** – Token lifetime (e.g. `24h`, `7d`, `30m`).
 
-## Prisma Commands
+### Optional
 
-- `npm run prisma:generate` - Generate Prisma Client
-- `npm run prisma:migrate` - Create and apply database migrations
-- `npm run prisma:push` - Push schema changes to database (development)
-- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+```env
+API_SECRET=your-api-secret-for-server-to-server
+```
 
-## Integration
+- **API_SECRET** – If set, you can call protected APIs with header `x-api-key: <API_SECRET>` instead of a JWT (useful for server-to-server or Postman).
 
-This Node.js server can work alongside:
-- **React Frontend** (in the root directory)
-- **Node Backend** (separate node project)
+### Other .env variables (as needed)
+
+- **PORT** – Server port (default `3002`).
+- **Twilio:** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_SANDBOX_WHATSAPP_FROM` (for sandbox WhatsApp).
+- **Database:** `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, etc. (for Prisma).
+
+---
+
+## WhatsApp message send करण्यासाठी बनवलेले APIs (फक्त हे 3)
+
+या folder मध्ये WhatsApp message पाठवण्यासाठी **फक्त हे 3 API** बनवले आहेत. सर्वांना **JWT** (Bearer) किंवा **x-api-key** लागतो.
+
+| Environment | Base URL |
+|-------------|----------|
+| **Local**   | `http://localhost:3002` |
+| **Server**  | `https://bridge.netsights.ai` |
+
+| # | API | Local URL | Server URL |
+|---|-----|-----------|------------|
+| 1 | **Template message** (Meta/Twilio template) | `POST http://localhost:3002/api/whatsapp/send-message` | `POST https://bridge.netsights.ai/api/whatsapp/send-message` |
+| 2 | **Dynamic message** (dynamic template + variables) | `POST http://localhost:3002/api/whatsapp/send-dynamic` | `POST https://bridge.netsights.ai/api/whatsapp/send-dynamic` |
+| 3 | **Twilio Sandbox message** | `POST http://localhost:3002/sandbox/twilio/send-sandbox-message` | `POST https://bridge.netsights.ai/sandbox/twilio/send-sandbox-message` |
+
+**Headers (सर्व 3 साठी):** `Content-Type: application/json`, `Authorization: Bearer <token>` किंवा `x-api-key: <apiKey>`
+
+---
+
+## How to use the APIs
+
+### 1. Register a user (get JWT)
+
+- **URL:** `POST http://localhost:3002/auth/register`
+- **Headers:** `Content-Type: application/json`
+- **Body (raw JSON):**
+
+```json
+{
+  "username": "myuser",
+  "password": "mypassword123"
+}
+```
+
+- **Success (201):** Returns `token`, `apiKey`, `user` (id, username), and `storageHint`. Use `token` (Bearer) or `apiKey` (x-api-key) for protected APIs.
+- **User exists (409):** Use login instead.
+
+### 2. Login (get JWT)
+
+- **URL:** `POST http://localhost:3002/auth/login`
+- **Headers:** `Content-Type: application/json`
+- **Body (raw JSON):**
+
+```json
+{
+  "username": "myuser",
+  "password": "mypassword123"
+}
+```
+
+- **Success (200):** Returns `token`, `apiKey`, and `user`. Use `token` (Bearer) or `apiKey` (x-api-key) for protected APIs.
+
+### 3. Call protected APIs (e.g. send WhatsApp)
+
+Use **one** of these:
+
+- **Option A – JWT (recommended for users):**  
+  Header: `Authorization: Bearer <token>`  
+  (Use the `token` from register or login.)
+
+- **Option B – Per-user API key:**  
+  Header: `x-api-key: <apiKey>`  
+  (Use the `apiKey` returned from register or login. Identifies that user.)
+
+- **Option C – Global API secret (if API_SECRET is set in .env):**  
+  Header: `x-api-key: <API_SECRET>`
+
+**Examples of protected endpoints:**
+
+- All under `/api/*` (e.g. `/api/test`, `/api/whatsapp/send-message`, etc.)
+- `POST /sandbox/twilio/send-sandbox-message`
+
+**Example – Sandbox send message:**
+
+- **URL:** `POST http://localhost:3002/sandbox/twilio/send-sandbox-message`
+- **Headers:**  
+  `Content-Type: application/json`  
+  `Authorization: Bearer <your-jwt-token>`
+- **Body (raw JSON):**
+
+```json
+{
+  "to": "whatsapp:+919876543210",
+  "contentSid": "HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "contentVariables": {}
+}
+```
+
+---
+
+## Testing in Postman
+
+### Step 1: Register
+
+1. New request → **POST** → `http://localhost:3002/auth/register`
+2. **Body** → raw → JSON:
+
+```json
+{
+  "username": "testuser",
+  "password": "testpass123"
+}
+```
+
+3. Send. Copy the **token** from the response (e.g. `eyJhbGc...`).
+
+### Step 2: Use the token on protected APIs
+
+1. New request → **GET** → `http://localhost:3002/api/test`
+2. **Authorization** tab → Type: **Bearer Token** → Token: paste the token you copied.
+3. Send. You should get a successful response.
+
+### Step 3: Login (if user already exists)
+
+1. **POST** → `http://localhost:3002/auth/login`
+2. Body → raw → JSON:
+
+```json
+{
+  "username": "testuser",
+  "password": "testpass123"
+}
+```
+
+3. Send. Copy the new **token** and use it as Bearer as in Step 2.
+
+### Step 4: Send sandbox WhatsApp (if Twilio is configured)
+
+1. **POST** → `http://localhost:3002/sandbox/twilio/send-sandbox-message`
+2. **Authorization** → Bearer Token → paste your JWT.
+3. **Body** → raw → JSON:
+
+```json
+{
+  "to": "whatsapp:+91xxxxxxxxxx",
+  "contentSid": "HX...",
+  "contentVariables": {}
+}
+```
+
+### Step 5: WhatsApp template – numbered variables {{1}}, {{2}} (send-message)
+
+**URL:** `POST http://localhost:3002/api/whatsapp/send-message`  
+**Headers:** `Content-Type: application/json`, `Authorization: Bearer <token>` (or `x-api-key: <apiKey>`)
+
+**Body (positional parameters):**
+
+```json
+{
+  "to": "+919876543210",
+  "templateName": "new_order",
+  "languageCode": "en",
+  "parameters": [
+    "John Doe",
+    "ORD-12345",
+    "NetSight Store",
+    "15 Jan 2024",
+    "John Doe",
+    "₹2,500",
+    "Credit Card",
+    "Mumbai",
+    "Mumbai",
+    "16 Jan 2024"
+  ]
+}
+```
+
+### Step 6: WhatsApp template – named variables {{Store Name}}, {{Previous Date}} (send-message)
+
+Templates with **named placeholders** (e.g. business performance report) use `components.bodyNamed`: keys must match the variable names in your Twilio template. **Twilio does not allow spaces in variable names** – use underscores in the template (e.g. `{{Store_Name}}`, `{{Previous_Date}}`) and same keys in the body.
+
+**URL:** `POST http://localhost:3002/api/whatsapp/send-message`  
+**Headers:** `Content-Type: application/json`, `Authorization: Bearer <token>` (or `x-api-key: <apiKey>`)
+
+**Body (named parameters – business_performance_report):**
+
+1. In `src/config/twilioTemplateConfig.ts`, set `business_performance_report` to your approved Twilio Content SID (e.g. `HX...`).
+2. In Postman:
+
+```json
+{
+  "to": "+919876543210",
+  "templateName": "business_performance_report",
+  "languageCode": "en",
+  "components": {
+    "bodyNamed": {
+      "Store_Name": "NetSight Store",
+      "Previous_Date": "12 Feb 2025",
+      "Revenue": "₹45,000",
+      "Orders": "120",
+      "AOV": "₹375",
+      "Revenue_%_Change": "+12%",
+      "Orders_%_Change": "+8%",
+      "Fb_ROAS": "FB ROAS: 2.4x",
+      "GoogleAds_ROAS": "Google ROAS: 1.9x",
+      "CAC": "CAC: ₹180",
+      "CM": "CM: 22%",
+      "Metric": "Conversion rate",
+      "%_Change": "5%"
+    }
+  }
+}
+```
+
+Note: Your approved template has repeated placeholders (e.g. **Metric** and **% Change** multiple times). Twilio substitutes the same value for every occurrence of that variable name. If your template uses different names for each bullet (e.g. `Metric_1`, `Metric_2`), add those keys in `bodyNamed`. Adjust keys to match **exactly** the variable names in your Twilio template (no spaces; use underscores).
+
+### Optional: Use API secret instead of JWT
+
+1. Add **API_SECRET** to your `.env` (e.g. `API_SECRET=my-secret-key`).
+2. In Postman, for any protected request, either:
+   - **Headers** → Add: `x-api-key` = `my-secret-key`,  
+   or
+   - Keep using **Authorization: Bearer** with the JWT.
+
+---
+
+## Project structure
+
+- **Auth:** Users stored in `src/data/users.json` (dev) or `data/users.json` (prod). Auth events logged to `logs-auth.json`.
+- **Auth routes:** `/auth/register`, `/auth/login` (no auth required).
+- **Protected routes:** All `/api/*` and `POST /sandbox/twilio/send-sandbox-message` require **JWT** (Bearer) or **x-api-key** (per-user `apiKey` from register/login, or global `API_SECRET`).
+
+---
+
+## Prisma commands
+
+- `npm run prisma:generate` – Generate Prisma Client
+- `npm run prisma:migrate` – Create and apply database migrations
+- `npm run prisma:push` – Push schema to database (development)
+- `npm run prisma:studio` – Open Prisma Studio
+
+## Run the server
+
+```bash
+npm run dev
+# or
+npm start
+```
+
+"bodyNamed": {
+  "Store_Name": "My Store",
+  "Previous_Date": "12 Feb 2025",
+  "Revenue": "₹45,000",
+  "Orders": "120",
+  "AOV": "₹375",
+  "Revenue_%_Change": "+12%",
+  "Orders_%_Change": "+8%",
+  "Fb_ROAS": "FB ROAS: 2.4",
+  "GoogleAds_ROAS": "Google ROAS: 1.8",
+  "CAC": "CAC: ₹150",
+  "CM": "CM: 35%",
+  "Metric1": "Conversion Rate",
+  "%_Change1": "5%",
+  "Metric2": "Avg. Order Value",
+  "%_Change2": "3%",
+  "Metric3": "Bounce Rate",
+  "%_Change3": "2%",
+  "Metric4": "Cart Abandonment",
+  "%_Change4": "1.5%"
+}
+
+{
+  "to": "+919876543210",
+  "templateName": "copy_netsightsdailyreports_13feb",
+  "languageCode": "en",
+  "components": {
+    "bodyNamed": {
+      "1": "My Store",
+      "2": "12 Feb 2025",
+      "3": "₹45,000",
+      "4": "120",
+      "5": "₹375",
+      "6": "+12%",
+      "7": "+8%",
+      "8": "FB ROAS: 2.4",
+      "9": "Google ROAS: 1.8",
+      "10": "CAC: ₹150",
+      "11": "CM: 35%",
+      "12": "Conversion Rate",
+      "13": "5%",
+      "14": "Avg. Order Value",
+      "15": "3%",
+      "16": "Bounce Rate",
+      "17": "2%",
+      "18": "Cart Abandonment",
+      "19": "1.5%"
+    }
+  }
+}
+
+
+{
+  "to": "+919876543210",
+  "templateName": "copy_netsightsdailyreports_13feb",
+  "languageCode": "en",
+  "components": {
+    "body": [
+      "My Store",
+      "12 Feb 2025",
+      "₹45,000",
+      "120",
+      "₹375",
+      "+12%",
+      "+8%",
+      "FB ROAS: 2.4",
+      "Google ROAS: 1.8",
+      "CAC: ₹150",
+      "CM: 35%",
+      "Conversion Rate",
+      "5%",
+      "Avg. Order Value",
+      "3%",
+      "Bounce Rate",
+      "2%",
+      "Cart Abandonment",
+      "1.5%"
+    ]
+  }
+}

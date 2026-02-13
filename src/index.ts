@@ -8,6 +8,8 @@ import './models/index.js';
 import apiRoutes from './routes/api.js';
 import whatsappWebhookRoutes from './routes/whatsappWebhookRoutes.js';
 import twilioWebhookRoutes from './routes/twilioWebhookRoutes.js';
+import twilioSandboxRoutes from './routes/twilioSandboxRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -62,6 +64,8 @@ process.on('SIGTERM', async () => {
 // Routes (webhooks are public - no auth; Meta/Twilio call them)
 app.use('/webhook/whatsapp', whatsappWebhookRoutes);
 app.use('/webhook/twilio', twilioWebhookRoutes);
+app.use('/auth', authRoutes);
+app.use('/sandbox/twilio', twilioSandboxRoutes);
 app.use('/api', apiRoutes);
 
 // Health check (before 404)

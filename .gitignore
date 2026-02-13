@@ -39,3 +39,6 @@ src/logs-meta-api.json
 src/logs-notification-setting.json
 src/logs-notification.json
 src/logs-widget.json
+src/logs-auth.json
+src/data/users.json
+data/

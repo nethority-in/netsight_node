@@ -17,7 +17,9 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'delivered': 'HX14df1fb125270b547f85a598947f0f25',
   'fulfilled': 'HX13ca3ad806735481e0b6deae183ff4da',
   'new_order': 'HX6eec80a39c157cbce668ae712dcc3276',
-  
+  // Daily report (Store Name, Previous Date, Revenue, Orders, AOV, % changes, ROAS, CAC, CM, Metrics)
+  'copy_netsightsdailyreports_13feb': 'HXd3e6b94d9b76a3ec28be26827b64319f',
+
   // Additional mappings can be added here
 };
 

@@ -139,8 +139,9 @@ export class WhatsAppService {
       // Determine from number (use fromCredentials if provided, otherwise use env)
       const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
-      // Extract template parameters from components
-      // Twilio expects contentVariables as JSON string: { "1": "value1", "2": "value2" } (string values, NOT arrays)
+      // Extract template parameters from components.
+      // Twilio contentVariables: keys can be numeric ("1","2") for {{1}},{{2}} OR named (e.g. "Store_Name") for {{Store Name}}.
+      // Named variable keys cannot contain spaces in Twilio; use underscores in template (e.g. {{Store_Name}}).
       const contentVariables: Record<string, string> = {};
 
       function sanitizeContentVariable(value: string): string {
@@ -152,13 +153,18 @@ export class WhatsAppService {
         return s.trim() === '' ? ' ' : s;
       }
 
+      function paramKey(parameter_name: string | undefined, index: number, offset: number = 0): string {
+        if (parameter_name != null && String(parameter_name).trim() !== '') return String(parameter_name).trim();
+        return String(offset + index + 1);
+      }
+
       if (components && components.length > 0) {
         const bodyComponent = components.find(c => c.type === 'body');
         if (bodyComponent && bodyComponent.parameters) {
           bodyComponent.parameters.forEach((param, index) => {
             if (param.type === 'text') {
-              const paramKey = String(index + 1);
-              contentVariables[paramKey] = sanitizeContentVariable(param.text ?? '');
+              const key = paramKey(param.parameter_name, index, 0);
+              contentVariables[key] = sanitizeContentVariable(param.text ?? '');
             }
           });
         }
@@ -168,8 +174,8 @@ export class WhatsAppService {
           const bodyParamCount = bodyComponent?.parameters?.length || 0;
           headerComponent.parameters.forEach((param, index) => {
             if (param.type === 'text') {
-              const paramKey = String(bodyParamCount + index + 1);
-              contentVariables[paramKey] = sanitizeContentVariable(param.text ?? '');
+              const key = paramKey(param.parameter_name, index, bodyParamCount);
+              contentVariables[key] = sanitizeContentVariable(param.text ?? '');
             }
           });
         }
