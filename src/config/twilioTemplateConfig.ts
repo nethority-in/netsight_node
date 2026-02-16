@@ -22,7 +22,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   // copy_netsightsdailyreportsv2: body params (Twilio: no spaces in names) → Store_Name, Previous_Date, Revenue, Orders, AOV, Revenue_Percent_Change, Orders_Percent_Change, Fb_ROAS, GoogleAds_ROAS
   'copy_netsightsdailyreportsv2':'HXfc65d48b6c59b6a83934b1620cbe45aa',
   'new_order_1': 'HX58c582e386bba2b32d315ac1c944d983',
-  'new_order_2': 'HXd95c79e63775b1e352e4faca22238a77'
+  'new_order_2': 'HXd95c79e63775b1e352e4faca22238a77',
+  'dailyreporttemplate':'HX4f80b6fc8ea9fbdacee0831f027f6161',
   // Additional mappings can be added here
 };
 
