@@ -140,8 +140,8 @@ export class WhatsAppService {
       const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
       // Extract template parameters from components.
-      // Twilio contentVariables: keys can be numeric ("1","2") for {{1}},{{2}} OR named (e.g. "Store_Name") for {{Store Name}}.
-      // Named variable keys cannot contain spaces in Twilio; use underscores in template (e.g. {{Store_Name}}).
+      // Twilio Content API expects numeric keys "1","2","3" in the same order as placeholders in the template.
+      // We use the order of parameters as received (body first, then header) so values from Postman/API are sent as-is.
       const contentVariables: Record<string, string> = {};
 
       function sanitizeContentVariable(value: string): string {
@@ -153,29 +153,22 @@ export class WhatsAppService {
         return s.trim() === '' ? ' ' : s;
       }
 
-      function paramKey(parameter_name: string | undefined, index: number, offset: number = 0): string {
-        if (parameter_name != null && String(parameter_name).trim() !== '') return String(parameter_name).trim();
-        return String(offset + index + 1);
-      }
-
       if (components && components.length > 0) {
         const bodyComponent = components.find(c => c.type === 'body');
         if (bodyComponent && bodyComponent.parameters) {
           bodyComponent.parameters.forEach((param, index) => {
             if (param.type === 'text') {
-              const key = paramKey(param.parameter_name, index, 0);
-              contentVariables[key] = sanitizeContentVariable(param.text ?? '');
+              contentVariables[String(index + 1)] = sanitizeContentVariable(param.text ?? '');
             }
           });
         }
 
         const headerComponent = components.find(c => c.type === 'header');
         if (headerComponent && headerComponent.parameters) {
-          const bodyParamCount = bodyComponent?.parameters?.length || 0;
+          const bodyParamCount = bodyComponent?.parameters?.length ?? 0;
           headerComponent.parameters.forEach((param, index) => {
             if (param.type === 'text') {
-              const key = paramKey(param.parameter_name, index, bodyParamCount);
-              contentVariables[key] = sanitizeContentVariable(param.text ?? '');
+              contentVariables[String(bodyParamCount + index + 1)] = sanitizeContentVariable(param.text ?? '');
             }
           });
         }
