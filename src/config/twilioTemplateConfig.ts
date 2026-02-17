@@ -23,8 +23,9 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'copy_netsightsdailyreportsv2':'HXfc65d48b6c59b6a83934b1620cbe45aa',
   'new_order_1': 'HX58c582e386bba2b32d315ac1c944d983',
   'new_order_2': 'HXd95c79e63775b1e352e4faca22238a77',
-  'copy_new_order_2':'HXe983efd49b2124c574b391d9595838d0'
+  'copy_new_order_2':'HXe983efd49b2124c574b391d9595838d0',
   // Additional mappings can be added here
+  'days_comparison':"HX3626f7195c6dabd89ada8d9ef8529742"
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
