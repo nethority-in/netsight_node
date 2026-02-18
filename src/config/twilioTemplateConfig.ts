@@ -26,7 +26,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'copy_new_order_2':'HXe983efd49b2124c574b391d9595838d0',
   // Additional mappings can be added here
   'days_comparison':"HX3626f7195c6dabd89ada8d9ef8529742",
-  'weeklyreport':"HX5cc19404b60ec57af5b865e2449e7e31"
+  'weeklyreport':"HX5cc19404b60ec57af5b865e2449e7e31",
+  'copy_weeklyreport':"HX20598758fa7247a30f2161db7ff43a84"
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
