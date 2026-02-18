@@ -4,6 +4,7 @@ import { parsePhoneNumberWithError, ParseError } from 'libphonenumber-js/max';
 import type { CountryCode } from 'libphonenumber-js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { getTwilioTemplateId } from '../config/twilioTemplateConfig.js';
+import { appendWhatsAppLog } from '../utils/logApiResponse.js';
 
 dotenv.config();
 
@@ -452,6 +453,471 @@ export class WhatsAppService {
 //   }
 // }
 
+// static async sendTemplate(
+//   to: string,
+//   templateName: string,
+//   _languageCode: string = 'en_US',
+//   components?:
+//     | Array<{
+//         type: string;
+//         parameters?: Array<{
+//           type: string;
+//           text?: string;
+//           payload?: string;
+//           parameter_name?: string;
+//         }>;
+//         sub_type?: string;
+//         index?: number;
+//       }>
+//     | {
+//         bodyNamed?: Record<string, unknown>;
+//         headerNamed?: Record<string, unknown>;
+//         body?: Record<string, unknown>;
+//         header?: Record<string, unknown>;
+//       },
+//   fromCredentials?: { phoneNumberId: string; accessToken: string }
+// ): Promise<WhatsAppServiceResponse> {
+//   try {
+//     const phoneResult = this.normalizePhoneForWhatsApp(to);
+//     if (!phoneResult.ok) {
+//       return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
+//     }
+//     const cleanedPhone = phoneResult.e164;
+
+//     if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
+//       return ErrorHandler.toServiceError(
+//         'Template name is required and must be a non-empty string.',
+//         400
+//       ) as WhatsAppServiceResponse;
+//     }
+
+//     const apiConfig = this.validateTwilioConfig();
+//     if (!apiConfig.valid) {
+//       return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+//     }
+
+//     const twilioTemplateId = getTwilioTemplateId(templateName);
+//     if (!twilioTemplateId) {
+//       return ErrorHandler.toServiceError(
+//         `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
+//         400
+//       ) as WhatsAppServiceResponse;
+//     }
+
+//     const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
+
+//     // ----------------------------
+//     // Build contentVariables (dynamic)
+//     // ----------------------------
+//     const contentVariables: Record<string, string> = {};
+
+//     function sanitizeContentVariable(value: unknown): string | null {
+//       if (value === null || value === undefined) return null;
+
+//       // Preserve line breaks (WhatsApp supports newlines in text)
+//       const s = String(value)
+//         .replace(/\r\n/g, '\n')
+//         .replace(/\r/g, '\n')
+//         .replace(/\t/g, ' ')
+//         .replace(/[ ]{5,}/g, '    ') // max 4 consecutive spaces
+//         .trim();
+
+//       return s === '' ? null : s;
+//     }
+
+//     function setVar(key: string, value: unknown) {
+//       const v = sanitizeContentVariable(value);
+//       if (v != null) contentVariables[key] = v;
+//     }
+
+//     // Normalize incoming keys (Store_Name -> StoreName etc.)
+//     function normalizeKey(k: string): string {
+//       const key = String(k ?? '').trim();
+//       const lower = key.toLowerCase();
+
+//       // ---- Highly-used mappings (fixes your exact issue) ----
+//       if (lower === 'store_name' || lower === 'store name') return 'StoreName';
+//       if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
+
+//       if (
+//         lower === 'revenue_percent_change' ||
+//         lower === 'revenue % change' ||
+//         lower === 'revenue%change'
+//       )
+//         return 'RevChgPct';
+
+//       if (
+//         lower === 'orders_percent_change' ||
+//         lower === 'orders % change' ||
+//         lower === 'orders%change'
+//       )
+//         return 'OrdChgPct';
+
+//       // Templates sometimes use "MetaSummary"/"GoogleSummary" instead of Fb_ROAS/GoogleAds_ROAS
+//       if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
+//       if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
+
+//       // ---- General snake_case -> CamelCase fallback ----
+//       // Example: meta_summary -> MetaSummary
+//       if (key.includes('_')) {
+//         const parts = key.split('_').filter(Boolean);
+//         if (parts.length === 0) return key;
+//         const camel =
+//           parts[0].charAt(0).toUpperCase() + parts[0].slice(1) +
+//           parts
+//             .slice(1)
+//             .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
+//             .join('');
+//         return camel;
+//       }
+
+//       return key;
+//     }
+
+//     // Apply named object variables (recommended)
+//     function applyNamed(obj: any) {
+//       if (!obj || typeof obj !== 'object') return;
+
+//       for (const [k, v] of Object.entries(obj)) {
+//         // 1) Always send the original key (in case it already matches the template)
+//         setVar(k, v);
+
+//         // 2) Also send the normalized key (fixes Store_Name -> StoreName, Fb_ROAS -> MetaSummary, etc.)
+//         const nk = normalizeKey(k);
+//         if (nk && nk !== k) setVar(nk, v);
+//       }
+//     }
+
+//     // ----------------------------
+//     // 1) ARRAY format
+//     // ----------------------------
+//     if (Array.isArray(components) && components.length > 0) {
+//       const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
+//       const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+
+//       const applyParams = (params: any[] | undefined, startIndex: number) => {
+//         if (!params?.length) return startIndex;
+
+//         params.forEach((param, idx) => {
+//           const t = String(param.type ?? '').toLowerCase();
+//           if (t !== 'text') return;
+
+//           const rawKey = String(param.parameter_name ?? '').trim();
+
+//           if (rawKey) {
+//             // send as named + normalized
+//             setVar(rawKey, param.text ?? '');
+//             const nk = normalizeKey(rawKey);
+//             if (nk !== rawKey) setVar(nk, param.text ?? '');
+//           } else {
+//             // numeric fallback for {{1}}, {{2}} templates
+//             setVar(String(startIndex + idx), param.text ?? '');
+//           }
+//         });
+
+//         return startIndex + params.length;
+//       };
+
+//       let nextIndex = 1;
+//       nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
+//       applyParams(headerComponent?.parameters, nextIndex);
+//     }
+
+//     // ----------------------------
+//     // 2) OBJECT format (Postman/Laravel)
+//     // ----------------------------
+//     else if (components && typeof components === 'object') {
+//       const c: any = components;
+//       const bodyNamed = c.bodyNamed ?? c.body;
+//       const headerNamed = c.headerNamed ?? c.header;
+
+//       applyNamed(bodyNamed);
+//       applyNamed(headerNamed);
+
+//       // OPTIONAL:
+//       // If your template uses numeric placeholders {{1}}, {{2}} but you send bodyNamed,
+//       // you can auto-number based on insertion order. Uncomment if needed:
+//       //
+//       // if (bodyNamed && typeof bodyNamed === 'object') {
+//       //   Object.values(bodyNamed).forEach((val, i) => setVar(String(i + 1), val));
+//       // }
+//     }
+// // console.log(variable);
+// process.exit();
+
+//     // ----------------------------
+//     // Build Twilio payload
+//     // ----------------------------
+//     const messagePayload: any = {
+//       from: `whatsapp:${fromNumber}`,
+//       to: `whatsapp:${cleanedPhone}`,
+//       contentSid: twilioTemplateId
+//     };
+
+//     if (Object.keys(contentVariables).length > 0) {
+//       messagePayload.contentVariables = JSON.stringify(contentVariables);
+//     }
+
+//     console.log('📤 Twilio send payload (debug):', {
+//       to: cleanedPhone,
+//       from: fromNumber,
+//       templateName,
+//       contentSid: twilioTemplateId,
+//       contentVariables
+//     });
+
+//     const client = getTwilioClient();
+//     const message = await client.messages.create(messagePayload);
+
+//     return {
+//       ok: true,
+//       meta: {
+//         sid: message.sid,
+//         status: message.status,
+//         to: message.to || cleanedPhone,
+//         from: message.from || fromNumber,
+//         dateCreated: message.dateCreated,
+//         dateUpdated: message.dateUpdated
+//       }
+//     };
+//   } catch (error) {
+//     return this.handleError(error);
+//   }
+// }
+
+// static async sendTemplate(
+//   to: string,
+//   templateName: string,
+//   _languageCode: string = 'en_US',
+//   components?:
+//     | Array<{
+//         type: string;
+//         parameters?: Array<{
+//           type: string;
+//           text?: string;
+//           payload?: string;
+//           parameter_name?: string;
+//         }>;
+//         sub_type?: string;
+//         index?: number;
+//       }>
+//     | {
+//         bodyNamed?: Record<string, unknown>;
+//         headerNamed?: Record<string, unknown>;
+//         body?: Record<string, unknown>;
+//         header?: Record<string, unknown>;
+//       },
+//   fromCredentials?: { phoneNumberId: string; accessToken: string }
+// ): Promise<WhatsAppServiceResponse> {
+//   try {
+//     const phoneResult = this.normalizePhoneForWhatsApp(to);
+//     if (!phoneResult.ok) {
+//       return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
+//     }
+//     const cleanedPhone = phoneResult.e164;
+
+//     if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
+//       return ErrorHandler.toServiceError(
+//         'Template name is required and must be a non-empty string.',
+//         400
+//       ) as WhatsAppServiceResponse;
+//     }
+
+//     const apiConfig = this.validateTwilioConfig();
+//     if (!apiConfig.valid) {
+//       return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
+//     }
+
+//     const twilioTemplateId = getTwilioTemplateId(templateName);
+//     if (!twilioTemplateId) {
+//       return ErrorHandler.toServiceError(
+//         `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
+//         400
+//       ) as WhatsAppServiceResponse;
+//     }
+
+//     const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
+
+//     // ----------------------------
+//     // Build contentVariables (dynamic)
+//     // ----------------------------
+//     const contentVariables: Record<string, string> = {};
+
+//     function sanitizeContentVariable(value: unknown): string | null {
+//       if (value === null || value === undefined) return null;
+
+//       // Preserve line breaks (WhatsApp supports newlines in text)
+//       const s = String(value)
+//         .replace(/\r\n/g, '\n')
+//         .replace(/\r/g, '\n')
+//         .replace(/\t/g, ' ')
+//         .replace(/[ ]{5,}/g, '    ') // max 4 consecutive spaces
+//         .trim();
+
+//       return s === '' ? null : s;
+//     }
+
+//     function setVar(key: string, value: unknown) {
+//       const v = sanitizeContentVariable(value);
+//       if (v != null) contentVariables[key] = v;
+//     }
+
+//     // Normalize incoming keys (Store_Name -> StoreName etc.)
+//     function normalizeKey(k: string): string {
+//       const key = String(k ?? '').trim();
+//       const lower = key.toLowerCase();
+
+//       // ---- Highly-used mappings (fixes your exact issue) ----
+//       if (lower === 'store_name' || lower === 'store name') return 'StoreName';
+//       if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
+
+//       if (
+//         lower === 'revenue_percent_change' ||
+//         lower === 'revenue % change' ||
+//         lower === 'revenue%change'
+//       )
+//         return 'RevChgPct';
+
+//       if (
+//         lower === 'orders_percent_change' ||
+//         lower === 'orders % change' ||
+//         lower === 'orders%change'
+//       )
+//         return 'OrdChgPct';
+
+//       // Templates sometimes use "MetaSummary"/"GoogleSummary" instead of Fb_ROAS/GoogleAds_ROAS
+//       if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
+//       if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
+
+//       // ---- General snake_case -> CamelCase fallback ----
+//       // Example: meta_summary -> MetaSummary
+//       if (key.includes('_')) {
+//         const parts = key.split('_').filter(Boolean);
+//         if (parts.length === 0) return key;
+//         const camel =
+//           parts[0].charAt(0).toUpperCase() + parts[0].slice(1) +
+//           parts
+//             .slice(1)
+//             .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
+//             .join('');
+//         return camel;
+//       }
+
+//       return key;
+//     }
+
+//     // Apply named object variables (recommended)
+//     function applyNamed(obj: any) {
+//       if (!obj || typeof obj !== 'object') return;
+
+//       for (const [k, v] of Object.entries(obj)) {
+//         // 1) Always send the original key (in case it already matches the template)
+//         setVar(k, v);
+
+//         // 2) Also send the normalized key (fixes Store_Name -> StoreName, Fb_ROAS -> MetaSummary, etc.)
+//         const nk = normalizeKey(k);
+//         if (nk && nk !== k) setVar(nk, v);
+//       }
+//     }
+
+//     // ----------------------------
+//     // 1) ARRAY format
+//     // ----------------------------
+//     if (Array.isArray(components) && components.length > 0) {
+//       const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
+//       const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+
+//       const applyParams = (params: any[] | undefined, startIndex: number) => {
+//         if (!params?.length) return startIndex;
+
+//         params.forEach((param, idx) => {
+//           const t = String(param.type ?? '').toLowerCase();
+//           if (t !== 'text') return;
+
+//           const rawKey = String(param.parameter_name ?? '').trim();
+
+//           if (rawKey) {
+//             // send as named + normalized
+//             setVar(rawKey, param.text ?? '');
+//             const nk = normalizeKey(rawKey);
+//             if (nk !== rawKey) setVar(nk, param.text ?? '');
+//           } else {
+//             // numeric fallback for {{1}}, {{2}} templates
+//             setVar(String(startIndex + idx), param.text ?? '');
+//           }
+//         });
+
+//         return startIndex + params.length;
+//       };
+
+//       let nextIndex = 1;
+//       nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
+//       applyParams(headerComponent?.parameters, nextIndex);
+//     }
+
+//     // ----------------------------
+//     // 2) OBJECT format (Postman/Laravel)
+//     // ----------------------------
+//     else if (components && typeof components === 'object') {
+//       const c: any = components;
+//       const bodyNamed = c.bodyNamed ?? c.body;
+//       const headerNamed = c.headerNamed ?? c.header;
+
+//       applyNamed(bodyNamed);
+//       applyNamed(headerNamed);
+
+//       // OPTIONAL:
+//       // If your template uses numeric placeholders {{1}}, {{2}} but you send bodyNamed,
+//       // you can auto-number based on insertion order. Uncomment if needed:
+//       //
+//       // if (bodyNamed && typeof bodyNamed === 'object') {
+//       //   Object.values(bodyNamed).forEach((val, i) => setVar(String(i + 1), val));
+//       // }
+//     }
+// // console.log(variable);
+// process.exit();
+
+//     // ----------------------------
+//     // Build Twilio payload
+//     // ----------------------------
+//     const messagePayload: any = {
+//       from: `whatsapp:${fromNumber}`,
+//       to: `whatsapp:${cleanedPhone}`,
+//       contentSid: twilioTemplateId
+//     };
+
+//     if (Object.keys(contentVariables).length > 0) {
+//       messagePayload.contentVariables = JSON.stringify(contentVariables);
+//     }
+
+//     console.log('📤 Twilio send payload (debug):', {
+//       to: cleanedPhone,
+//       from: fromNumber,
+//       templateName,
+//       contentSid: twilioTemplateId,
+//       contentVariables
+//     });
+
+//     const client = getTwilioClient();
+//     const message = await client.messages.create(messagePayload);
+
+//     return {
+//       ok: true,
+//       meta: {
+//         sid: message.sid,
+//         status: message.status,
+//         to: message.to || cleanedPhone,
+//         from: message.from || fromNumber,
+//         dateCreated: message.dateCreated,
+//         dateUpdated: message.dateUpdated
+//       }
+//     };
+//   } catch (error) {
+//     return this.handleError(error);
+//   }
+// }
+
+
 static async sendTemplate(
   to: string,
   templateName: string,
@@ -562,7 +1028,8 @@ static async sendTemplate(
         const parts = key.split('_').filter(Boolean);
         if (parts.length === 0) return key;
         const camel =
-          parts[0].charAt(0).toUpperCase() + parts[0].slice(1) +
+          parts[0].charAt(0).toUpperCase() +
+          parts[0].slice(1) +
           parts
             .slice(1)
             .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
@@ -643,7 +1110,7 @@ static async sendTemplate(
     }
 
     // ----------------------------
-    // Build Twilio payload
+    // Build Twilio payload (what we would send)
     // ----------------------------
     const messagePayload: any = {
       from: `whatsapp:${fromNumber}`,
@@ -655,33 +1122,63 @@ static async sendTemplate(
       messagePayload.contentVariables = JSON.stringify(contentVariables);
     }
 
-    console.log('📤 Twilio send payload (debug):', {
+    // ----------------------------
+    // TESTING PHASE: stop here, DO NOT send — log only (local & server)
+    // ----------------------------
+    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+    const logRequest = {
+      env: envLabel,
+      templateName,
       to: cleanedPhone,
       from: fromNumber,
-      templateName,
       contentSid: twilioTemplateId,
-      contentVariables
-    });
+      contentVariables,
+      // payload: messagePayload,
+    };
+    const logResponse = {
+      message: 'Message NOT sent',
+    };
 
-    const client = getTwilioClient();
-    const message = await client.messages.create(messagePayload);
+    appendWhatsAppLog(logRequest, logResponse);
+
+    console.log(`🧪 [${envLabel}] WHATSAPP TESTING — message NOT sent, logged only`);
+    console.log('templateName:', templateName);
+    console.log('to (cleaned):', cleanedPhone);
+    console.log('from:', fromNumber);
+    console.log('contentSid:', twilioTemplateId);
+    console.log('contentVariables:', contentVariables);
 
     return {
       ok: true,
       meta: {
-        sid: message.sid,
-        status: message.status,
-        to: message.to || cleanedPhone,
-        from: message.from || fromNumber,
-        dateCreated: message.dateCreated,
-        dateUpdated: message.dateUpdated
+        templateName,
+        to: cleanedPhone,
+        from: fromNumber,
+        contentSid: twilioTemplateId,
+        contentVariables
       }
-    };
+    } as unknown as WhatsAppServiceResponse;
+
+    // ----------------------------
+    // PRODUCTION: Uncomment below when ready to send real messages
+    // ----------------------------
+    // const client = getTwilioClient();
+    // const message = await client.messages.create(messagePayload);
+    // return {
+    //   ok: true,
+    //   meta: {
+    //     sid: message.sid,
+    //     status: message.status,
+    //     to: message.to || cleanedPhone,
+    //     from: message.from || fromNumber,
+    //     dateCreated: message.dateCreated,
+    //     dateUpdated: message.dateUpdated
+    //   }
+    // };
   } catch (error) {
     return this.handleError(error);
   }
 }
-
 
     // Send text message via Twilio WhatsApp API
   

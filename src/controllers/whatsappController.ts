@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsappService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
-import { appendWhatsAppLog, appendFromNumbersLog } from '../utils/logApiResponse.js';
+import { appendFromNumbersLog } from '../utils/logApiResponse.js';
 
 export class WhatsAppController {
       // POST /api/whatsapp/send-message
@@ -94,10 +94,8 @@ export class WhatsAppController {
 
       const fromCredentials = resolveFromNumber(fromNumberId);
       const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents || undefined, fromCredentials);
-      appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
     }
   }
@@ -108,12 +106,10 @@ export class WhatsAppController {
 
       const toStr = to != null ? String(to).trim() : '';
       if (!toStr) {
-        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "to" (recipient phone number) is required' });
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
         return;
       }
       if (templateName == null || String(templateName).trim() === '') {
-        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "templateName" is required' });
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
@@ -172,7 +168,6 @@ export class WhatsAppController {
 
         const fromCredentials = resolveFromNumber(fromNumberId);
         const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents, fromCredentials);
-        appendWhatsAppLog(req.body, result);
         ErrorHandler.sendServiceResult(res, result);
         return;
       }
@@ -200,10 +195,8 @@ export class WhatsAppController {
 
       const fromCredentials = resolveFromNumber(fromNumberId);
       const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, builtComponents, fromCredentials);
-      appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      appendWhatsAppLog(req.body, { error: error });
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
     }
   }
