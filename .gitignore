@@ -40,5 +40,6 @@ src/logs-notification-setting.json
 src/logs-notification.json
 src/logs-widget.json
 src/logs-auth.json
+src/logs-create-custom-template.json
 src/data/users.json
 data/

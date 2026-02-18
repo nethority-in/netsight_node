@@ -1159,7 +1159,7 @@ static async sendTemplate(
       background: #f5f5f5;
       margin: 0;
       padding: 24px;
-      max-width: 560px;
+      max-width: 460px;
       margin-left: auto;
       margin-right: auto;
     }
