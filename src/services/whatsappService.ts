@@ -917,7 +917,7 @@ export class WhatsAppService {
 //   }
 // }
 
-
+// http://localhost:3002/api/whatsapp/send-message?renderHtml=1
 static async sendTemplate(
   to: string,
   templateName: string,
@@ -979,7 +979,6 @@ static async sendTemplate(
     function sanitizeContentVariable(value: unknown): string | null {
       if (value === null || value === undefined) return null;
 
-      // Preserve line breaks (WhatsApp supports newlines in text)
       const s = String(value)
         .replace(/\r\n/g, '\n')
         .replace(/\r/g, '\n')
@@ -1000,7 +999,7 @@ static async sendTemplate(
       const key = String(k ?? '').trim();
       const lower = key.toLowerCase();
 
-      // ---- Highly-used mappings (fixes your exact issue) ----
+      // ---- Highly-used mappings ----
       if (lower === 'store_name' || lower === 'store name') return 'StoreName';
       if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
 
@@ -1018,12 +1017,10 @@ static async sendTemplate(
       )
         return 'OrdChgPct';
 
-      // Templates sometimes use "MetaSummary"/"GoogleSummary" instead of Fb_ROAS/GoogleAds_ROAS
       if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
       if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
 
-      // ---- General snake_case -> CamelCase fallback ----
-      // Example: meta_summary -> MetaSummary
+      // ---- snake_case -> CamelCase fallback ----
       if (key.includes('_')) {
         const parts = key.split('_').filter(Boolean);
         if (parts.length === 0) return key;
@@ -1040,15 +1037,11 @@ static async sendTemplate(
       return key;
     }
 
-    // Apply named object variables (recommended)
     function applyNamed(obj: any) {
       if (!obj || typeof obj !== 'object') return;
 
       for (const [k, v] of Object.entries(obj)) {
-        // 1) Always send the original key (in case it already matches the template)
         setVar(k, v);
-
-        // 2) Also send the normalized key (fixes Store_Name -> StoreName, Fb_ROAS -> MetaSummary, etc.)
         const nk = normalizeKey(k);
         if (nk && nk !== k) setVar(nk, v);
       }
@@ -1071,12 +1064,10 @@ static async sendTemplate(
           const rawKey = String(param.parameter_name ?? '').trim();
 
           if (rawKey) {
-            // send as named + normalized
             setVar(rawKey, param.text ?? '');
             const nk = normalizeKey(rawKey);
             if (nk !== rawKey) setVar(nk, param.text ?? '');
           } else {
-            // numeric fallback for {{1}}, {{2}} templates
             setVar(String(startIndex + idx), param.text ?? '');
           }
         });
@@ -1099,14 +1090,6 @@ static async sendTemplate(
 
       applyNamed(bodyNamed);
       applyNamed(headerNamed);
-
-      // OPTIONAL:
-      // If your template uses numeric placeholders {{1}}, {{2}} but you send bodyNamed,
-      // you can auto-number based on insertion order. Uncomment if needed:
-      //
-      // if (bodyNamed && typeof bodyNamed === 'object') {
-      //   Object.values(bodyNamed).forEach((val, i) => setVar(String(i + 1), val));
-      // }
     }
 
     // ----------------------------
@@ -1123,39 +1106,169 @@ static async sendTemplate(
     }
 
     // ----------------------------
-    // TESTING PHASE: stop here, DO NOT send — log only (local & server)
+    // HTML preview (WhatsApp-like layout for Postman)
+    // ----------------------------
+    const getVar = (key: string): string =>
+      contentVariables[key] ?? contentVariables[normalizeKey(key)] ?? '';
+
+    const renderBulletList = (text: string): string => {
+      if (!text || !String(text).trim()) return '';
+      const items = String(text)
+        .split(/\n+/)
+        .map(line => line.replace(/^[\s•\-*]+\s*/, '').trim())
+        .filter(Boolean);
+      if (items.length === 0) return `<p>${escapeHtml(text)}</p>`;
+      return `<ul class="bullet-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+    };
+
+    function escapeHtml(s: string): string {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const storeName = getVar('StoreName');
+    const prevDate = getVar('PrevDate');
+    const revenue = getVar('Revenue');
+    const orders = getVar('Orders');
+    const aov = getVar('AOV');
+    const revChgPct = getVar('RevChgPct');
+    const ordChgPct = getVar('OrdChgPct');
+    const metaSummary = getVar('MetaSummary');
+    const metaCac = getVar('MetaCAC');
+    const googleSummary = getVar('GoogleSummary');
+    const googleCac = getVar('GoogleCAC');
+    const day = getVar('day');
+    const positiveChanges = getVar('PositiveChanges');
+    const requiresReviews = getVar('RequiresReviews');
+
+    const htmlPreview = `<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Performance Summary</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 24px;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .message-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .message-card p { margin: 0 0 12px 0; }
+    .message-card p:last-child { margin-bottom: 0; }
+    .greeting { margin-bottom: 16px; }
+    .intro { margin-bottom: 20px; }
+    .section { margin-bottom: 20px; }
+    .section:last-of-type { margin-bottom: 0; }
+    .section-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin: 0 0 10px 0;
+      color: #1a1a1a;
+    }
+    .bullet-list {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+    .bullet-list li { margin-bottom: 6px; }
+    .footer-note {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .footer-note .info-text { font-weight: 700; margin-bottom: 12px; }
+    .regards { font-weight: 700; margin: 12px 0 4px 0; }
+    .signature { font-weight: 700; margin: 0; }
+    .block { display: block; margin-bottom: 8px; }
+    .block:empty { display: none; }
+  </style>
+</head>
+<body>
+  <div class="message-card">
+    <p class="greeting">Good day,</p>
+    <p class="intro">Please find below a summary of ${escapeHtml(storeName)}'s business performance for ${escapeHtml(prevDate)}.</p>
+
+    <section class="section">
+      <p class="section-title">𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</p>
+      <p>Total revenue of ${escapeHtml(revenue)} was generated from ${escapeHtml(orders)} orders, resulting in an Average Order Value (AOV) of ${escapeHtml(aov)}.</p>
+      <p>Compared to the previous day, revenue ${escapeHtml(revChgPct)} and order volume ${escapeHtml(ordChgPct)}.</p>
+    </section>
+
+    <section class="section">
+      <p class="section-title">𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</p>
+      <p class="block">${escapeHtml(metaSummary)}</p>
+      <p class="block">${escapeHtml(metaCac)}</p>
+      <p class="block">${escapeHtml(googleSummary)}</p>
+      <p class="block">${escapeHtml(googleCac)}</p>
+    </section>
+
+    <section class="section">
+      <p class="section-title">𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 ${escapeHtml(day)} 𝗱𝗮𝘆 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</p>
+      <p class="section-title">𝗣𝗼𝘀𝗶𝘁𝗶𝘃𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝘀</p>
+      ${positiveChanges ? renderBulletList(positiveChanges) : ''}
+      <p class="section-title" style="margin-top: 16px;">𝗥𝗲𝗾𝘂𝗶𝗿𝗲𝘀 𝗔 𝗥𝗲𝘃𝗶𝗲𝘄𝘀</p>
+      ${requiresReviews ? renderBulletList(requiresReviews) : ''}
+    </section>
+
+    <div class="footer-note">
+      <p class="info-text">ℹ️ 𝗧𝗵𝗶𝘀 𝗶𝘀 𝗮 𝘀𝘆𝘀𝘁𝗲𝗺-𝗴𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱 𝗼𝗽𝗲𝗿𝗮𝘁𝗶𝗼𝗻𝗮𝗹 𝘂𝗽𝗱𝗮𝘁𝗲 𝗳𝗼𝗿 𝘆𝗼𝘂𝗿 𝗮𝗰𝗰𝗼𝘂𝗻𝘁, 𝘀𝗵𝗮𝗿𝗲𝗱 𝘂𝗽𝗼𝗻 𝗿𝗲𝗾𝘂𝗲𝘀𝘁.</p>
+      <p class="regards">𝗥𝗲𝗴𝗮𝗿𝗱𝘀,</p>
+      <p class="signature">𝗡𝗲𝘁𝘀𝗶𝗴𝗵𝘁𝘀.𝗮𝗶</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    // ----------------------------
+    // TESTING: do NOT send, just log + return preview in JSON
     // ----------------------------
     const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+
     const logRequest = {
       env: envLabel,
       templateName,
       to: cleanedPhone,
       from: fromNumber,
       contentSid: twilioTemplateId,
-      contentVariables,
-      // payload: messagePayload,
+      contentVariables
+      // payload: messagePayload, // enable if you want
     };
-    const logResponse = {
-      message: 'Message NOT sent',
-    };
+    const logResponse = { message: 'Message NOT sent' };
 
-    appendWhatsAppLog(logRequest, logResponse);
+    try {
+      appendWhatsAppLog(logRequest, logResponse);
+    } catch (e) {
+      console.error('appendWhatsAppLog failed:', e);
+    }
 
-    console.log(`🧪 [${envLabel}] WHATSAPP TESTING — message NOT sent, logged only`);
-    console.log('templateName:', templateName);
-    console.log('to (cleaned):', cleanedPhone);
-    console.log('from:', fromNumber);
-    console.log('contentSid:', twilioTemplateId);
+    console.log(`🧪 [${envLabel}] WHATSAPP TESTING — message NOT sent, returning preview`);
     console.log('contentVariables:', contentVariables);
 
     return {
       ok: true,
       meta: {
+        dryRun: true,
         templateName,
         to: cleanedPhone,
         from: fromNumber,
         contentSid: twilioTemplateId,
-        contentVariables
+        contentVariables,
+        htmlPreview
       }
     } as unknown as WhatsAppServiceResponse;
 
@@ -1175,10 +1288,13 @@ static async sendTemplate(
     //     dateUpdated: message.dateUpdated
     //   }
     // };
-  } catch (error) {
+  } catch (error: any) {
+    console.error('sendTemplate error:', error?.message);
+    console.error(error?.stack);
     return this.handleError(error);
   }
 }
+
 
     // Send text message via Twilio WhatsApp API
   
