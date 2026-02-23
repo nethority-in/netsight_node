@@ -4,7 +4,7 @@ import { parsePhoneNumberWithError, ParseError } from 'libphonenumber-js/max';
 import type { CountryCode } from 'libphonenumber-js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { getTwilioTemplateId } from '../config/twilioTemplateConfig.js';
-import { appendWhatsAppLog } from '../utils/logApiResponse.js';
+// import { appendWhatsAppLog } from '../utils/logApiResponse.js';
 
 dotenv.config();
 
