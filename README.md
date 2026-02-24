@@ -383,36 +383,28 @@ http://localhost:3002/api/whatsapp/send-message
 }
 
 
-
+http://localhost:3000/api/email/send-dynamic
 
 {
-  "to": "recipient@example.com",
+  "to": "surendras@nethority.com",
   "templateName": "business_performance_summary",
   "parameters": {
-    "reportDate": "21st Dec 2024",
-    "revenue": "$46K",
-    "orders": "40",
-    "aov": "$115",
-    "revenueChange": "increased by 37%",
-    "ordersChange": "increased by 23%",
-    "metaRevenue": "$25K",
-    "metaRoas": "2.2",
-    "metaRevenueChange": "increased by 18%",
-    "metaRoasChange": "increased by 12%",
-    "metaCac": "increased to $3.2",
-    "googleRevenue": "$18K",
-    "googleRoas": "1.5",
-    "googleRevenueChange": "increased by 12%",
-    "googleRoasChange": "increased by 9%",
-    "googleCac": "increased to $5.7",
-    "positiveChange1": "31.6%",
-    "positiveChange2": "27.3%",
-    "reviewChange1": "increased by 37.7%",
-    "reviewChange2": "declined by 9%"
+    "StoreName": "My Store",
+    "PrevDate": "21st Dec 2024",
+    "Revenue": "$46K",
+    "Orders": "40",
+    "AOV": "$115",
+    "RevChgPct": "increased by 37%",
+    "OrdChgPct": "increased by 23%",
+    "MetaSummary": "Meta ads generated revenue of $25K with ROAS of 2.2. Revenue increased by 18% and ROAS increased by 12%.",
+    "MetaCAC": "Customer Acquisition Cost on Meta increased to $3.2.",
+    "GoogleSummary": "Google ads generated $18K with ROAS of 1.5. Revenue increased by 12% and ROAS increased by 9%.",
+    "GoogleCAC": "Customer Acquisition Cost on Google ads increased to $5.7.",
+    "day": "1 day",
+    "PositiveChanges": "• Revenue grew strongly by 31.6% vs previous day\n• Order volume increased by 27.3% vs previous day",
+    "RequiresReviews": "• Meta CAC increased by 37.7%\n• Traffic declined by 9%"
   },
-  "subject": "Daily business performance summary – 21st Dec 2024",
-  "cc": ["cc1@example.com", "cc2@example.com"],
-  "bcc": ["bcc@example.com"]
+  "subject": "Daily business performance summary – 21st Dec 2024"
 }
 
 https://api.netsights.ai/api/debug/whatsapp-payload?shop=celebrity-drapes.myshopify.com

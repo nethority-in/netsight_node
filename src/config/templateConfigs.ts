@@ -22,9 +22,9 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
   // Business performance summary – daily report (image-style email)
   business_performance_summary: {
     name: 'business_performance_summary',
-    requiredFields: ['reportDate', 'revenue', 'orders', 'aov', 'revenueChange', 'ordersChange', 'metaRevenue', 'metaRoas', 'metaRevenueChange', 'metaRoasChange', 'metaCac', 'googleRevenue', 'googleRoas', 'googleRevenueChange', 'googleRoasChange', 'googleCac', 'positiveChange1', 'positiveChange2', 'reviewChange1', 'reviewChange2'],
+    requiredFields: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct', 'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC', 'day', 'PositiveChanges', 'RequiresReviews'],
     optionalFields: [],
-    fieldOrder: ['reportDate', 'revenue', 'orders', 'aov', 'revenueChange', 'ordersChange', 'metaRevenue', 'metaRoas', 'metaRevenueChange', 'metaRoasChange', 'metaCac', 'googleRevenue', 'googleRoas', 'googleRevenueChange', 'googleRoasChange', 'googleCac', 'positiveChange1', 'positiveChange2', 'reviewChange1', 'reviewChange2']
+    fieldOrder: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct', 'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC', 'day', 'PositiveChanges', 'RequiresReviews']
   },
 
   // Matches WhatsApp daily_store_performance_summary – 32 body params in order
