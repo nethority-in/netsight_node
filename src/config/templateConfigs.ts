@@ -19,6 +19,14 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     optionalFields: ['subject', 'title', 'footer'],
     fieldOrder: ['subject', 'title', 'content', 'footer']
   },
+  // Business performance summary – daily report (image-style email)
+  business_performance_summary: {
+    name: 'business_performance_summary',
+    requiredFields: ['reportDate', 'revenue', 'orders', 'aov', 'revenueChange', 'ordersChange', 'metaRevenue', 'metaRoas', 'metaRevenueChange', 'metaRoasChange', 'metaCac', 'googleRevenue', 'googleRoas', 'googleRevenueChange', 'googleRoasChange', 'googleCac', 'positiveChange1', 'positiveChange2', 'reviewChange1', 'reviewChange2'],
+    optionalFields: [],
+    fieldOrder: ['reportDate', 'revenue', 'orders', 'aov', 'revenueChange', 'ordersChange', 'metaRevenue', 'metaRoas', 'metaRevenueChange', 'metaRoasChange', 'metaCac', 'googleRevenue', 'googleRoas', 'googleRevenueChange', 'googleRoasChange', 'googleCac', 'positiveChange1', 'positiveChange2', 'reviewChange1', 'reviewChange2']
+  },
+
   // Matches WhatsApp daily_store_performance_summary – 32 body params in order
   daily_store_performance_summary: {
     name: 'daily_store_performance_summary',

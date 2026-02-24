@@ -12,6 +12,7 @@ router.use(duplicateMessageMiddleware);
 
 // WhatsApp API routes
 router.post('/send-message', WhatsAppController.sendTemplate);
+router.post('/send-message-preview', WhatsAppController.sendTemplatePreview);
 router.post('/send-dynamic', WhatsAppController.sendDynamic);
 
 // From Numbers: list from Meta (GET), add in Meta (POST). Use fromNumberId (Meta phone_number_id) in send-dynamic/send-template/send-text to send from that number.

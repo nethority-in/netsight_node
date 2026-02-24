@@ -218,6 +218,60 @@ const templates: Record<string, EmailTemplate> = {
     `
   },
 
+  // Business Performance Summary – daily store report (image-style design)
+  // POST /api/email/send-dynamic with templateName: 'business_performance_summary'
+  business_performance_summary: {
+    subject: 'Daily business performance summary – {{reportDate}}',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Business performance summary – {{reportDate}}</title>
+      </head>
+      <body style="margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.6; color: #000; background-color: #e8e8e8;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 24px;">
+          <div style="background-color: #ffffff; border-radius: 12px; padding: 28px 32px; color: #000;">
+            <p style="margin: 0 0 16px 0;">Good day,</p>
+            <p style="margin: 0 0 24px 0;">Please find below a summary of your store's business performance for <strong>{{reportDate}}</strong>.</p>
+
+            <h2 style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold;">Business Overview</h2>
+            <p style="margin: 0 0 8px 0;">Total revenue of <strong>{{revenue}}</strong> was generated from <strong>{{orders}}</strong> orders, resulting in an Average Order Value (AOV) of <strong>{{aov}}</strong>.</p>
+            <p style="margin: 0 0 24px 0;">Compared to the previous day, revenue <strong>{{revenueChange}}</strong> and order volume <strong>{{ordersChange}}</strong>.</p>
+
+            <h2 style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold;">Marketing and Growth Efficiency</h2>
+            <p style="margin: 0 0 8px 0;">Meta ads generated revenue of <strong>{{metaRevenue}}</strong> with ROAS of <strong>{{metaRoas}}</strong>. Revenue <strong>{{metaRevenueChange}}</strong> and ROAS <strong>{{metaRoasChange}}</strong>.</p>
+            <p style="margin: 0 0 8px 0;">Customer Acquisition Cost on Meta <strong>{{metaCac}}</strong>.</p>
+            <p style="margin: 0 0 8px 0;">Google ads generated <strong>{{googleRevenue}}</strong> with ROAS of <strong>{{googleRoas}}</strong>. Revenue <strong>{{googleRevenueChange}}</strong> and ROAS <strong>{{googleRoasChange}}</strong>.</p>
+            <p style="margin: 0 0 24px 0;">Customer Acquisition Cost on Google ads <strong>{{googleCac}}</strong>.</p>
+
+            <h2 style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold;">Previous 1 day comparison</h2>
+            <p style="margin: 0 0 8px 0;"><strong>Positive Changes</strong></p>
+            <ul style="margin: 0 0 16px 0; padding-left: 20px;">
+              <li>Revenue grew strongly by <strong>{{positiveChange1}}</strong> vs previous day</li>
+              <li>Order volume increased by <strong>{{positiveChange2}}</strong> vs previous day</li>
+            </ul>
+            <p style="margin: 0 0 8px 0;"><strong>Requires a Review</strong></p>
+            <ul style="margin: 0 0 24px 0; padding-left: 20px;">
+              <li>Meta CAC <strong>{{reviewChange1}}</strong></li>
+              <li>Traffic <strong>{{reviewChange2}}</strong></li>
+            </ul>
+
+            <p style="margin: 0 0 20px 0; font-size: 13px; color: #555;">
+              <span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; background:#b3e0ff; color:#0066aa; border-radius:50%; font-weight:bold;">i</span>
+              This is a system-generated operational update for your account, shared upon request.
+            </p>
+            <p style="margin: 0;">Regards,</p>
+            <p style="margin: 4px 0 0 0;"><strong>Netsights.ai</strong></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `Good day,\n\nPlease find below a summary of your store's business performance for {{reportDate}}.\n\nBusiness Overview\nTotal revenue of {{revenue}} was generated from {{orders}} orders, resulting in an Average Order Value (AOV) of {{aov}}. Compared to the previous day, revenue {{revenueChange}} and order volume {{ordersChange}}.\n\nMarketing and Growth Efficiency\nMeta ads: {{metaRevenue}}, ROAS {{metaRoas}}. Revenue {{metaRevenueChange}}, ROAS {{metaRoasChange}}. Meta CAC {{metaCac}}. Google ads: {{googleRevenue}}, ROAS {{googleRoas}}. Revenue {{googleRevenueChange}}, ROAS {{googleRoasChange}}. Google CAC {{googleCac}}.\n\nPrevious 1 day comparison\nPositive Changes: Revenue grew strongly by {{positiveChange1}} vs previous day; Order volume increased by {{positiveChange2}} vs previous day.\nRequires a Review: Meta CAC {{reviewChange1}}; Traffic {{reviewChange2}}.\n\nRegards,\nNetsights.ai`
+  },
+
   // Custom template template 
   //api/email/send-template
   custom: {

@@ -351,3 +351,68 @@ npm start
     ]
   }
 }
+
+whsatpp request 
+for preview 
+http://localhost:3002/api/whatsapp/send-message-preview
+for sending
+http://localhost:3002/api/whatsapp/send-message
+
+{
+  "to": "+918698673161",
+  "templateName": "copy_new_order_2",
+  "languageCode": "en_US",
+  "components": {
+  "bodyNamed": {
+    "StoreName": "Celebrity Drapes",
+    "PrevDate": "15 Feb 2026",
+    "Revenue": "₹46,613.14",
+    "Orders": "14",
+    "AOV": "₹3,049.26",
+    "RevChgPct": "+31.6%",
+    "OrdChgPct": "+27.3%",
+    "MetaSummary": "Meta ads generated ₹ 300,696.86 with ROAS of 40.23. Revenue increased by 846.15% and ROAS increased by 504.96%.",
+    "MetaCAC": "Customer Acquisition Cost on Meta increased to ₹ 679.44.",
+    "GoogleSummary": "Google ads: No activity recorded for this period.",
+    "GoogleCAC": "customer",
+    "day":"5",
+    "PositiveChanges": "Revenue grew strongly by 31.6% vs previous day, Order volume increased by 27.3% vs previous day,• Meta ad revenue surged by ~846% — exceptional growth vs previous day, Meta ROAS surged by ~505% — exceptional ROAS improvement,",
+    "RequiresReviews": "Meta CAC increased by 13.7% — monitor closely,"
+  }
+}
+}
+
+
+
+
+{
+  "to": "recipient@example.com",
+  "templateName": "business_performance_summary",
+  "parameters": {
+    "reportDate": "21st Dec 2024",
+    "revenue": "$46K",
+    "orders": "40",
+    "aov": "$115",
+    "revenueChange": "increased by 37%",
+    "ordersChange": "increased by 23%",
+    "metaRevenue": "$25K",
+    "metaRoas": "2.2",
+    "metaRevenueChange": "increased by 18%",
+    "metaRoasChange": "increased by 12%",
+    "metaCac": "increased to $3.2",
+    "googleRevenue": "$18K",
+    "googleRoas": "1.5",
+    "googleRevenueChange": "increased by 12%",
+    "googleRoasChange": "increased by 9%",
+    "googleCac": "increased to $5.7",
+    "positiveChange1": "31.6%",
+    "positiveChange2": "27.3%",
+    "reviewChange1": "increased by 37.7%",
+    "reviewChange2": "declined by 9%"
+  },
+  "subject": "Daily business performance summary – 21st Dec 2024",
+  "cc": ["cc1@example.com", "cc2@example.com"],
+  "bcc": ["bcc@example.com"]
+}
+
+

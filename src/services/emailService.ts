@@ -2,6 +2,7 @@ import Mailjet from 'node-mailjet';
 import dotenv from 'dotenv';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { retryWithBackoff } from '../utils/retry.js';
+import { appendEmailLog } from '../utils/logApiResponse.js';
 
 dotenv.config();
 
@@ -213,10 +214,26 @@ export class EmailService {
 
       console.log('✅ Email sent successfully:', result.body);
 
-      return {
-        ok: true,
-        data: result.body
-      };
+      const serviceResponse: EmailServiceResponse = { ok: true, data: result.body };
+
+      try {
+        const logPayload = {
+          to: toArray,
+          subject,
+          from: MAIL_FROM_ADDRESS,
+          fromName: MAIL_FROM_NAME,
+          cc: ccList.length > 0 ? ccList : undefined,
+          bcc: bccList.length > 0 ? bccList : undefined,
+          hasHtml: true,
+          hasText: Boolean(textContent),
+          attachmentCount: mailjetAttachments?.length ?? 0
+        };
+        appendEmailLog(logPayload, serviceResponse);
+      } catch (e) {
+        console.error('appendEmailLog failed:', e);
+      }
+
+      return serviceResponse;
     } catch (error) {
       return this.handleError(error);
     }

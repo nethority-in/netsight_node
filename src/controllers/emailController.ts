@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { EmailService } from '../services/emailService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
-import { appendEmailLog } from '../utils/logApiResponse.js';
 
 export class EmailController {
   // POST /api/email/send-template
@@ -29,7 +28,6 @@ export class EmailController {
         attachments
       );
 
-      appendEmailLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
@@ -118,7 +116,6 @@ export class EmailController {
         attachments
       );
 
-      appendEmailLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendEmail', 500);
@@ -196,7 +193,6 @@ export class EmailController {
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
 
       const result = await EmailService.sendEmail(toVal.length === 1 ? toVal[0] : toVal, emailSubject, htmlContent, textContent, cc, bcc, attachments);
-      appendEmailLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
