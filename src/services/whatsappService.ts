@@ -130,12 +130,16 @@ static async sendTemplate(
       },
   fromCredentials?: { phoneNumberId: string; accessToken: string }
 ): Promise<WhatsAppServiceResponse> {
+  let cleanedPhone = '';
+  let fromNumber = '';
+  let twilioTemplateId: string | null | undefined;
+  let contentVariables: Record<string, string> = {};
   try {
     const phoneResult = this.normalizePhoneForWhatsApp(to);
     if (!phoneResult.ok) {
       return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
     }
-    const cleanedPhone = phoneResult.e164;
+    cleanedPhone = phoneResult.e164;
 
     if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
       return ErrorHandler.toServiceError(
@@ -149,7 +153,7 @@ static async sendTemplate(
       return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
     }
 
-    const twilioTemplateId = getTwilioTemplateId(templateName);
+    twilioTemplateId = getTwilioTemplateId(templateName);
     if (!twilioTemplateId) {
       return ErrorHandler.toServiceError(
         `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
@@ -157,12 +161,12 @@ static async sendTemplate(
       ) as WhatsAppServiceResponse;
     }
 
-    const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
+    fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
     // ----------------------------
     // Build contentVariables (dynamic)
     // ----------------------------
-    const contentVariables: Record<string, string> = {};
+    contentVariables = {};
 
     function sanitizeContentVariable(value: unknown): string | null {
       if (value === null || value === undefined) return null;
@@ -322,11 +326,29 @@ static async sendTemplate(
     const client = getTwilioClient();
     const message = await client.messages.create(messagePayload);
 
+    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+    const logRequest = {
+      endpoint: 'send-message',
+      env: envLabel,
+      to: cleanedPhone,
+      from: fromNumber,
+      templateName,
+      contentSid: twilioTemplateId,
+      contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined
+    };
+    const logResponse = {
+      sid: message.sid,
+      status: message.status,
+      to: message.to || cleanedPhone,
+      from: message.from || fromNumber
+    };
     try {
-      appendWhatsAppLog(messagePayload, message);
+      appendWhatsAppLog(logRequest, logResponse);
     } catch (e) {
       console.error('appendWhatsAppLog failed:', e);
     }
+
+    console.log(`[${envLabel}] WhatsApp send-message: to=${cleanedPhone}, template=${templateName}, sid=${message.sid}`);
 
     return {
       ok: true,
@@ -340,7 +362,28 @@ static async sendTemplate(
       }
     };
   } catch (error) {
-    return this.handleError(error);
+    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+    console.error(`[${envLabel}] WhatsApp send-message failed:`, error instanceof Error ? error.message : error);
+    const errResponse = this.handleError(error);
+    try {
+      const logRequest = {
+        endpoint: 'send-message',
+        env: envLabel,
+        to: cleanedPhone,
+        from: fromNumber,
+        templateName,
+        contentSid: twilioTemplateId,
+        contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined,
+        error: true
+      };
+      const logResponse = errResponse?.error
+        ? { message: errResponse.error.message, status: errResponse.error.status, code: errResponse.error.code }
+        : { message: 'Unknown error' };
+      appendWhatsAppLog(logRequest, logResponse);
+    } catch (e) {
+      console.error('appendWhatsAppLog failed:', e);
+    }
+    return errResponse;
   }
 }
 
@@ -767,12 +810,14 @@ static async sendTemplatePreview(
     text: string,
     fromCredentials?: { phoneNumberId: string; accessToken: string }
   ): Promise<WhatsAppServiceResponse> {
+    let cleanedPhone = '';
+    let fromNumber = '';
     try {
       const phoneResult = this.normalizePhoneForWhatsApp(to);
       if (!phoneResult.ok) {
         return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
       }
-      const cleanedPhone = phoneResult.e164;
+      cleanedPhone = phoneResult.e164;
 
       if (text == null || typeof text !== 'string') {
         return ErrorHandler.toServiceError('Message text is required and must be a string.', 400) as WhatsAppServiceResponse;
@@ -793,7 +838,7 @@ static async sendTemplatePreview(
       }
 
       // Determine from number (use fromCredentials if provided, otherwise use env)
-      const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
+      fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
       console.log('📤 Sending WhatsApp text message via Twilio:', {
         to: cleanedPhone,
@@ -808,6 +853,27 @@ static async sendTemplatePreview(
         to: `whatsapp:${cleanedPhone}`,
         body: trimmedText
       });
+
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      try {
+        appendWhatsAppLog(
+          {
+            endpoint: 'send-text',
+            env: envLabel,
+            to: cleanedPhone,
+            from: fromNumber,
+            textLength: trimmedText.length
+          },
+          {
+            sid: message.sid,
+            status: message.status,
+            to: message.to || cleanedPhone,
+            from: message.from || fromNumber
+          }
+        );
+      } catch (e) {
+        console.error('appendWhatsAppLog failed:', e);
+      }
 
       console.log('✅ WhatsApp text message sent successfully via Twilio:', {
         sid: message.sid,
@@ -827,7 +893,25 @@ static async sendTemplatePreview(
         }
       };
     } catch (error) {
-      return this.handleError(error);
+      const errResponse = this.handleError(error);
+      try {
+        const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+        appendWhatsAppLog(
+          {
+            endpoint: 'send-text',
+            env: envLabel,
+            to: cleanedPhone,
+            from: fromNumber,
+            error: true
+          },
+          errResponse?.error
+            ? { message: errResponse.error.message, status: errResponse.error.status, code: errResponse.error.code }
+            : { message: 'Unknown error' }
+        );
+      } catch (e) {
+        console.error('appendWhatsAppLog failed:', e);
+      }
+      return errResponse;
     }
   }
 

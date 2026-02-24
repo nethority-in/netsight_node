@@ -407,6 +407,20 @@ http://localhost:3000/api/email/send-dynamic
   "subject": "Daily business performance summary – 21st Dec 2024"
 }
 
+whastapp
 https://api.netsights.ai/api/debug/whatsapp-payload?shop=celebrity-drapes.myshopify.com
 
+https://api.netsights.ai/api/debug/whatsapp-payload?shop=celebrity-drapes.myshopify.com&date_from=2026-02-20&date_to=2026-02-20
+
+preview
+
 https://api.netsights.ai/api/notifications/whatsapp-payload?shop=celebrity-drapes.myshopify.com&preview=1
+
+https://api.netsights.ai/api/notifications/whatsapp-payload?shop=celebrity-drapes.myshopify.com&date_from=2026-02-20&date_to=2026-02-20&preview=1
+
+email
+https://api.netsights.ai/api/debug/email-payload?shop=celebrity-drapes.myshopify.com
+
+if want to check specific date
+https://api.netsights.ai/api/debug/email-payload?shop=celebrity-drapes.myshopify.com&date_from=2026-02-20&date_to=2026-02-20
+

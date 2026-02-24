@@ -91,7 +91,25 @@ export interface EmailServiceResponse {
   };
 }
 
+const envLabel = () => (process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL');
+
 export class EmailService {
+
+  /** Log email error to file (logs-email.json) and return the same response — ensures 100% of attempts are stored. */
+  private static logEmailErrorAndReturn(
+    requestInfo: Record<string, unknown>,
+    errorResponse: EmailServiceResponse
+  ): EmailServiceResponse {
+    try {
+      appendEmailLog(
+        { ...requestInfo, env: envLabel(), error: true },
+        errorResponse
+      );
+    } catch (e) {
+      console.error('appendEmailLog failed:', e);
+    }
+    return errorResponse;
+  }
 
   private static validateCredentials(): boolean {
     if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
@@ -112,6 +130,7 @@ export class EmailService {
     return emailRegex.test(email.trim());
   }
 
+  //use 
   static async sendEmail(
     to: string | string[],
     subject: string,
@@ -119,40 +138,56 @@ export class EmailService {
     textContent?: string,
     cc?: string[],
     bcc?: string[],
-    attachments?: Array<{ filename: string; content: string }>
+    attachments?: Array<{ filename: string; content: string }>,
+    logContext?: { endpoint?: string }
   ): Promise<EmailServiceResponse> {
+    const toArray = Array.isArray(to) ? to.map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [String(to ?? '').trim()].filter(Boolean);
+    const endpoint = logContext?.endpoint ?? 'send';
+    const baseLogRequest = { endpoint, to: toArray, subject: subject?.slice(0, 200), from: MAIL_FROM_ADDRESS, fromName: MAIL_FROM_NAME };
+    const ccList = Array.isArray(cc) ? cc : (cc != null ? [cc] : []);
+    const bccList = Array.isArray(bcc) ? bcc : (bcc != null ? [bcc] : []);
+
     try {
       if (!this.validateCredentials()) {
-        return ErrorHandler.toServiceError('Mailjet credentials not configured. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in .env', 500) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('Mailjet credentials not configured. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in .env', 500) as EmailServiceResponse
+        );
       }
 
-      // Normalize recipients to array
-      const toArray = Array.isArray(to) ? to.map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [String(to ?? '').trim()].filter(Boolean);
       if (toArray.length === 0) {
-        return ErrorHandler.toServiceError('At least one recipient email address is required. "to" cannot be empty or invalid.', 400) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('At least one recipient email address is required. "to" cannot be empty or invalid.', 400) as EmailServiceResponse
+        );
       }
 
       if (subject == null || typeof subject !== 'string' || subject.trim().length === 0) {
-        return ErrorHandler.toServiceError('Email subject is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('Email subject is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse
+        );
       }
       if (htmlContent == null || typeof htmlContent !== 'string' || htmlContent.trim().length === 0) {
-        return ErrorHandler.toServiceError('HTML content is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('HTML content is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse
+        );
       }
 
       if (!MAIL_FROM_ADDRESS || !this.validateEmail(MAIL_FROM_ADDRESS)) {
-        return ErrorHandler.toServiceError('MAIL_FROM_ADDRESS in .env is missing or invalid. Set a valid sender email.', 500) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('MAIL_FROM_ADDRESS in .env is missing or invalid. Set a valid sender email.', 500) as EmailServiceResponse
+        );
       }
 
-      // Validate all email addresses
       const invalidEmails: string[] = [];
       toArray.forEach(email => {
         if (!this.validateEmail(email)) {
           invalidEmails.push(email);
         }
       });
-      
-      const ccList = Array.isArray(cc) ? cc : (cc != null ? [cc] : []);
-      const bccList = Array.isArray(bcc) ? bcc : (bcc != null ? [bcc] : []);
       ccList.forEach((email: unknown) => {
         const e = email != null ? String(email).trim() : '';
         if (e && !this.validateEmail(e)) invalidEmails.push(e);
@@ -163,14 +198,20 @@ export class EmailService {
       });
 
       if (invalidEmails.length > 0) {
-        return ErrorHandler.toServiceError(`Invalid email address(es): ${invalidEmails.join(', ')}`, 400) as EmailServiceResponse;
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError(`Invalid email address(es): ${invalidEmails.join(', ')}`, 400) as EmailServiceResponse
+        );
       }
 
       let mailjetAttachments: Array<{ Filename: string; ContentType: string; Base64Content: string }> | undefined;
       if (attachments != null && Array.isArray(attachments) && attachments.length > 0) {
         const validated = validateAttachments(attachments);
         if (!validated.valid) {
-          return ErrorHandler.toServiceError(validated.message, 400) as EmailServiceResponse;
+          return this.logEmailErrorAndReturn(
+            baseLogRequest,
+            ErrorHandler.toServiceError(validated.message, 400) as EmailServiceResponse
+          );
         }
         mailjetAttachments = validated.mailjet;
       }
@@ -218,6 +259,8 @@ export class EmailService {
 
       try {
         const logPayload = {
+          endpoint: logContext?.endpoint ?? 'send',
+          env: envLabel(),
           to: toArray,
           subject,
           from: MAIL_FROM_ADDRESS,
@@ -233,9 +276,24 @@ export class EmailService {
         console.error('appendEmailLog failed:', e);
       }
 
+      console.log(`[${envLabel()}] Email ${endpoint}: to=${toArray.join(',')}, subject=${subject.slice(0, 50)}${subject.length > 50 ? '...' : ''}`);
+
       return serviceResponse;
     } catch (error) {
-      return this.handleError(error);
+      const errResponse = this.handleError(error) as EmailServiceResponse;
+      this.logEmailErrorAndReturn(
+        {
+          endpoint,
+          to: toArray,
+          subject: subject?.slice(0, 200),
+          from: MAIL_FROM_ADDRESS,
+          fromName: MAIL_FROM_NAME,
+          cc: ccList?.length ? ccList : undefined,
+          bcc: bccList?.length ? bccList : undefined
+        },
+        errResponse
+      );
+      return errResponse;
     }
   }
  

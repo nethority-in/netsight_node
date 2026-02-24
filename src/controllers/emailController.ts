@@ -135,6 +135,7 @@ export class EmailController {
     }
   }
 
+  // use 
   // POST /api/email/send-dynamic - Flexible template with dynamic parameters
   // For daily_store_performance_summary, accepts same format as WhatsApp: components: { body: string[] } (32 values in order)
   static async sendDynamic(req: Request, res: Response): Promise<void> {
@@ -158,7 +159,7 @@ export class EmailController {
         const { getTemplateConfig } = await import('../config/templateConfigs.js');
         const config = getTemplateConfig(templateName);
         const fieldOrder = config?.fieldOrder ?? [
-          'recipientName', 'storeName', 'date', 'revenue', 'orders', 'avgOrderValue', 'revenueChange', 'ordersChange',
+          'recipientName', 'storeName', 'date', 'revenue', 'Orders', 'AOV', 'revenueChange', 'ordersChange',
           'conversionRate', 'revenuePerVisitor', 'crChange', 'rpvChange', 'roas', 'cac', 'roasChange', 'cacChange',
           'contributionMargin', 'contributionMarginChange', 'returns', 'rto', 'returnsChange', 'rtoChange',
           'slaAdherence', 'slaChange', 'positiveMetric1', 'positiveChange1', 'positiveMetric2', 'positiveChange2',
@@ -192,9 +193,20 @@ export class EmailController {
       let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
 
-      const result = await EmailService.sendEmail(toVal.length === 1 ? toVal[0] : toVal, emailSubject, htmlContent, textContent, cc, bcc, attachments);
+      const result = await EmailService.sendEmail(
+        toVal.length === 1 ? toVal[0] : toVal,
+        emailSubject,
+        htmlContent,
+        textContent,
+        cc,
+        bcc,
+        attachments,
+        { endpoint: 'send-dynamic' }
+      );
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      console.error(`[${envLabel}] Email send-dynamic failed:`, error instanceof Error ? error.message : error);
       ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
     }
   }
