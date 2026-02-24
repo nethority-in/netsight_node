@@ -579,15 +579,15 @@ static async sendTemplatePreview(
 
     const htmlPreview = `<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Business Performance Summary</title>
   <style>
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       font-size: 15px;
-      line-height: 1.5;
+      line-height: 1.6;
       color: #1a1a1a;
       background: #f5f5f5;
       margin: 0;
@@ -596,70 +596,101 @@ static async sendTemplatePreview(
       margin-left: auto;
       margin-right: auto;
     }
+
     .message-card {
       background: #ffffff;
       border-radius: 8px;
       padding: 20px 24px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .message-card p { margin: 0 0 12px 0; }
-    .message-card p:last-child { margin-bottom: 0; }
-    .greeting { margin-bottom: 16px; }
-    .intro { margin-bottom: 20px; }
-    .section { margin-bottom: 20px; }
+
+    p { margin: 0 0 12px 0; }
+    p:last-child { margin-bottom: 0; }
+
+    .greeting { margin-bottom: 14px; }
+    .intro { margin-bottom: 18px; }
+
+    .section { margin: 0 0 18px 0; }
     .section:last-of-type { margin-bottom: 0; }
+
     .section-title {
       font-weight: 700;
       font-size: 15px;
       margin: 0 0 10px 0;
       color: #1a1a1a;
     }
+
+    /* Keep spacing clean when some lines are empty */
+    .block { display: block; margin: 0 0 10px 0; white-space: pre-wrap; }
+    .block:empty { display: none; }
+
     .bullet-list {
       margin: 8px 0 0 0;
       padding-left: 20px;
     }
     .bullet-list li { margin-bottom: 6px; }
+
     .footer-note {
-      margin-top: 20px;
-      padding-top: 16px;
+      margin-top: 18px;
+      padding-top: 14px;
       border-top: 1px solid #eee;
     }
-    .footer-note .info-text { font-weight: 700; margin-bottom: 12px; }
-    .regards { font-weight: 700; margin: 12px 0 4px 0; }
+
+    .disclaimer {
+      margin: 0 0 14px 0;
+      color: #333;
+    }
+
+    .regards { font-weight: 700; margin: 8px 0 4px 0; }
     .signature { font-weight: 700; margin: 0; }
-    .block { display: block; margin-bottom: 8px; }
-    .block:empty { display: none; }
   </style>
 </head>
+
 <body>
   <div class="message-card">
     <p class="greeting">Good day,</p>
-    <p class="intro">Please find below a summary of ${escapeHtml(storeName)}'s business performance for ${escapeHtml(prevDate)}.</p>
+
+    <p class="intro">
+      This is an automated performance summary for
+      ${escapeHtml(storeName)}’s business performance for ${escapeHtml(prevDate)}.
+    </p>
 
     <section class="section">
       <p class="section-title">𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</p>
-      <p>Total revenue of ${escapeHtml(revenue)} was generated from ${escapeHtml(orders)} orders, resulting in an Average Order Value (AOV) of ${escapeHtml(aov)}.</p>
-      <p>Compared to the previous day, revenue ${escapeHtml(revChgPct)} and order volume ${escapeHtml(ordChgPct)}.</p>
+      <p>
+        Total revenue of ${escapeHtml(revenue)} was generated from ${escapeHtml(orders)} orders,
+        resulting in an Average Order Value (AOV) of ${escapeHtml(aov)}.
+      </p>
+      <p>
+        Compared to the previous day, revenue ${escapeHtml(revChgPct)} and order volume ${escapeHtml(ordChgPct)}.
+      </p>
     </section>
 
     <section class="section">
-      <p class="section-title">𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</p>
+      <p class="section-title">𝗖𝗵𝗮𝗻𝗻𝗲𝗹 𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲</p>
+
       <p class="block">${escapeHtml(metaSummary)}</p>
       <p class="block">${escapeHtml(metaCac)}</p>
+
       <p class="block">${escapeHtml(googleSummary)}</p>
       <p class="block">${escapeHtml(googleCac)}</p>
     </section>
 
     <section class="section">
-      <p class="section-title">𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 ${escapeHtml(day)} 𝗱𝗮𝘆 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</p>
-      <p class="section-title">𝗣𝗼𝘀𝗶𝘁𝗶𝘃𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝘀</p>
+      <p class="section-title">𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 ${escapeHtml(day)} 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</p>
+
+      <p class="section-title">𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀</p>
       ${positiveChanges ? renderBulletList(positiveChanges) : ''}
-      <p class="section-title" style="margin-top: 16px;">𝗥𝗲𝗾𝘂𝗶𝗿𝗲𝘀 𝗔 𝗥𝗲𝘃𝗶𝗲𝘄𝘀</p>
+
+      <p class="section-title" style="margin-top: 14px;">𝗥𝗲𝘃𝗶𝗲𝘄 𝗥𝗲𝗾𝘂𝗶𝗿𝗲𝗱</p>
       ${requiresReviews ? renderBulletList(requiresReviews) : ''}
     </section>
 
     <div class="footer-note">
-      <p class="info-text">ℹ️ 𝗧𝗵𝗶𝘀 𝗶𝘀 𝗮 𝘀𝘆𝘀𝘁𝗲𝗺-𝗴𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱 𝗼𝗽𝗲𝗿𝗮𝘁𝗶𝗼𝗻𝗮𝗹 𝘂𝗽𝗱𝗮𝘁𝗲 𝗳𝗼𝗿 𝘆𝗼𝘂𝗿 𝗮𝗰𝗰𝗼𝘂𝗻𝘁, 𝘀𝗵𝗮𝗿𝗲𝗱 𝘂𝗽𝗼𝗻 𝗿𝗲𝗾𝘂𝗲𝘀𝘁.</p>
+      <p class="disclaimer">
+        This message contains automatically generated factual account data for reference purposes only.
+      </p>
+
       <p class="regards">𝗥𝗲𝗴𝗮𝗿𝗱𝘀,</p>
       <p class="signature">𝗡𝗲𝘁𝘀𝗶𝗴𝗵𝘁𝘀.𝗮𝗶</p>
     </div>

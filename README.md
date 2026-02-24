@@ -415,4 +415,6 @@ http://localhost:3002/api/whatsapp/send-message
   "bcc": ["bcc@example.com"]
 }
 
+https://api.netsights.ai/api/debug/whatsapp-payload?shop=celebrity-drapes.myshopify.com
 
+https://api.netsights.ai/api/notifications/whatsapp-payload?shop=celebrity-drapes.myshopify.com&preview=1
