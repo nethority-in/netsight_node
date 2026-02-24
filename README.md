@@ -256,6 +256,26 @@ Note: Your approved template has repeated placeholders (e.g. **Metric** and **% 
 
 ---
 
+## Logs — Server आणि local वर कुठे आहेत (Where logs are stored)
+
+Server वर logs दिसत नसल्यास: **`NODE_ENV=production`** असल्यावर logs **project root च्या `logs/` folder** मध्ये जातात. Local वर `src/` मध्ये जातात.
+
+| Environment | Location (project root = जिथून server start होतो) |
+|-------------|--------------------------------------------------------|
+| **Server (production)** | `logs/logs-whatsapp.json`, `logs/logs-email.json`, `logs/logs-auth.json`, इ. |
+| **Local (dev)** | `src/logs-whatsapp.json`, `src/logs-email.json`, `src/logs-auth.json`, इ. |
+
+**Server वर logs बघण्यासाठी:**
+
+1. **`.env` मध्ये किंवा start command मध्ये `NODE_ENV=production` सेट करा** (PM2 / ecosystem.config.js मध्ये `env: { NODE_ENV: 'production' }`).
+2. Project root मध्ये **`logs/` folder** तुमच्या app च्या working directory मध्ये तयार होईल (पहिल्या log write वेळी auto-create होतो).
+3. Path: ज्या directory मधून तुम्ही `npm start` किंवा `node dist/...` चालवता त्या **त्याच folder मध्ये** `logs/` दिसेल.  
+   - उदा. जर server `/var/www/myapp` मधून चालत असेल तर logs येथे: **`/var/www/myapp/logs/logs-whatsapp.json`**, **`/var/www/myapp/logs/logs-email.json`**.
+
+**फाइल्स:** `logs-whatsapp.json`, `logs-email.json`, `logs-auth.json`, `logs-meta-api.json`, `logs-notification.json`, `logs-from-numbers.json`, `logs-create-custom-template.json`, इ.
+
+---
+
 ## Prisma commands
 
 - `npm run prisma:generate` – Generate Prisma Client

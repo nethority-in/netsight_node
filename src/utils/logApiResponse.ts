@@ -50,6 +50,7 @@ async function appendToJsonFile(
     }
 
     data.push(entry);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
     console.error('Failed to write API log:', err);
