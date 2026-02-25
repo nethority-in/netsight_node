@@ -399,12 +399,18 @@ http://localhost:3002/api/whatsapp/send-message
     "PositiveChanges": "Revenue grew strongly by 31.6% vs previous day, Order volume increased by 27.3% vs previous day,• Meta ad revenue surged by ~846% — exceptional growth vs previous day, Meta ROAS surged by ~505% — exceptional ROAS improvement,",
     "RequiresReviews": "Meta CAC increased by 13.7% — monitor closely,"
   }
+ }
 }
-}
 
 
-http://localhost:3000/api/email/send-dynamic
+**Postman: send-dynamic (business_performance_summary)**
 
+- **Method:** `POST`
+- **URL:** `http://localhost:3000/api/email/send-dynamic`
+- **Headers:** `Content-Type: application/json`
+- **Body (raw JSON):**
+
+```json
 {
   "to": "surendras@nethority.com",
   "templateName": "business_performance_summary",
@@ -426,6 +432,11 @@ http://localhost:3000/api/email/send-dynamic
   },
   "subject": "Daily business performance summary – 21st Dec 2024"
 }
+```
+
+- **Optional:** Add `"subject": "Daily business performance summary – 21st Dec 2024"` at the same level as `"parameters"` to override the subject. If omitted, subject is built from the template using `PrevDate`.
+- **Optional:** `"cc"`: `["email@example.com"]`, `"bcc"`: `["email@example.com"]` (arrays of strings).
+- **Note:** Parameter keys are case-sensitive (e.g. `StoreName`, `PrevDate`, not `storeName`).
 
 whastapp
 https://api.netsights.ai/api/debug/whatsapp-payload?shop=celebrity-drapes.myshopify.com

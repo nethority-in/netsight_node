@@ -135,12 +135,11 @@ export class EmailController {
     }
   }
 
-  // use 
-  // POST /api/email/send-dynamic - Flexible template with dynamic parameters
-  // For daily_store_performance_summary, accepts same format as WhatsApp: components: { body: string[] } (32 values in order)
+  // use
+  // POST /api/email/send-dynamic – template + parameters (e.g. business_performance_summary from templateConfigs)
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, parameters, components, subject, cc, bcc, attachments } = req.body;
+      const { to, templateName, parameters, subject, cc, bcc, attachments } = req.body;
 
       const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
       if (toVal.length === 0) {
@@ -152,23 +151,8 @@ export class EmailController {
         return;
       }
 
-      let params: Record<string, any> = parameters != null ? { ...parameters } : {};
-
-      // Same payload as WhatsApp: components.body array (32 values) for daily_store_performance_summary
-      if (templateName === 'daily_store_performance_summary' && components?.body && Array.isArray(components.body)) {
-        const { getTemplateConfig } = await import('../config/templateConfigs.js');
-        const config = getTemplateConfig(templateName);
-        const fieldOrder = config?.fieldOrder ?? [
-          'recipientName', 'storeName', 'date', 'revenue', 'Orders', 'AOV', 'revenueChange', 'ordersChange',
-          'conversionRate', 'revenuePerVisitor', 'crChange', 'rpvChange', 'roas', 'cac', 'roasChange', 'cacChange',
-          'contributionMargin', 'contributionMarginChange', 'returns', 'rto', 'returnsChange', 'rtoChange',
-          'slaAdherence', 'slaChange', 'positiveMetric1', 'positiveChange1', 'positiveMetric2', 'positiveChange2',
-          'monitorMetric1', 'monitorChange1', 'monitorMetric2', 'monitorChange2'
-        ];
-        fieldOrder.forEach((key, i) => {
-          if (i < components.body.length) params[key] = components.body[i];
-        });
-      }
+      // Parameters only (e.g. business_performance_summary). No components.body mapping.
+      const params: Record<string, any> = parameters != null ? { ...parameters } : {};
 
       const { TemplateBuilder } = await import('../services/templateBuilder.js');
       const { getTemplateConfig } = await import('../config/templateConfigs.js');
