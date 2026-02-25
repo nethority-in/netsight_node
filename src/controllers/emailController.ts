@@ -185,7 +185,7 @@ export class EmailController {
         cc,
         bcc,
         attachments,
-        { endpoint: 'send-dynamic' }
+        { endpoint: 'send-dynamic', parameters: params }
       );
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {

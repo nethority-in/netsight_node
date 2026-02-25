@@ -139,11 +139,18 @@ export class EmailService {
     cc?: string[],
     bcc?: string[],
     attachments?: Array<{ filename: string; content: string }>,
-    logContext?: { endpoint?: string }
+    logContext?: { endpoint?: string; parameters?: Record<string, unknown> }
   ): Promise<EmailServiceResponse> {
     const toArray = Array.isArray(to) ? to.map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [String(to ?? '').trim()].filter(Boolean);
     const endpoint = logContext?.endpoint ?? 'send';
-    const baseLogRequest = { endpoint, to: toArray, subject: subject?.slice(0, 200), from: MAIL_FROM_ADDRESS, fromName: MAIL_FROM_NAME };
+    const baseLogRequest = {
+      endpoint,
+      to: toArray,
+      subject: subject?.slice(0, 200),
+      from: MAIL_FROM_ADDRESS,
+      fromName: MAIL_FROM_NAME,
+      ...(logContext?.parameters != null && { parameters: logContext.parameters })
+    };
     const ccList = Array.isArray(cc) ? cc : (cc != null ? [cc] : []);
     const bccList = Array.isArray(bcc) ? bcc : (bcc != null ? [bcc] : []);
 
@@ -269,7 +276,8 @@ export class EmailService {
           bcc: bccList.length > 0 ? bccList : undefined,
           hasHtml: true,
           hasText: Boolean(textContent),
-          attachmentCount: mailjetAttachments?.length ?? 0
+          attachmentCount: mailjetAttachments?.length ?? 0,
+          ...(logContext?.parameters != null && { parameters: logContext.parameters })
         };
         appendEmailLog(logPayload, serviceResponse);
       } catch (e) {
@@ -289,7 +297,8 @@ export class EmailService {
           from: MAIL_FROM_ADDRESS,
           fromName: MAIL_FROM_NAME,
           cc: ccList?.length ? ccList : undefined,
-          bcc: bccList?.length ? bccList : undefined
+          bcc: bccList?.length ? bccList : undefined,
+          ...(logContext?.parameters != null && { parameters: logContext.parameters })
         },
         errResponse
       );
