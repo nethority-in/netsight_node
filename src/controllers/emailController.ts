@@ -122,6 +122,66 @@ export class EmailController {
     }
   }
 
+  // POST /api/email/preview – Preview template without sending (like WhatsApp send-message-preview)
+  // Existing (JSON)
+static async previewTemplate(req: Request, res: Response): Promise<void> {
+  try {
+    const { templateName, parameters, templateVariables } = req.body;
+
+    if (templateName == null || String(templateName).trim() === "") {
+      ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
+      return;
+    }
+
+    const params: Record<string, any> =
+      parameters != null ? { ...parameters } : templateVariables != null ? { ...templateVariables } : {};
+
+    const result = await EmailService.previewTemplate(String(templateName).trim(), params);
+    ErrorHandler.sendServiceResult(res, result);
+  } catch (error) {
+    ErrorHandler.sendErrorResponse(res, error, "Error in previewTemplate", 500);
+  }
+}
+
+// ✅ NEW (HTML direct render)
+static async previewTemplateHtml(req: Request, res: Response): Promise<void> {
+  try {
+    // ✅ GET query OR POST body dono support
+    const templateName = String(req.query.templateName ?? req.body?.templateName ?? "").trim();
+    if (!templateName) {
+      res.status(400).send('Missing "templateName"');
+      return;
+    }
+
+    // parameters (query me JSON string) or body object
+    let params: Record<string, any> = {};
+    if (req.query.parameters != null) {
+      try {
+        params = JSON.parse(String(req.query.parameters));
+      } catch {
+        params = {};
+      }
+    } else {
+      const { parameters, templateVariables } = req.body ?? {};
+      params = parameters != null ? { ...parameters } : templateVariables != null ? { ...templateVariables } : {};
+    }
+
+    const result = await EmailService.previewTemplate(templateName, params);
+
+    if (!result?.ok) {
+      // agar error aaya to JSON hi bhej do
+      res.status(400).json(result);
+      return;
+    }
+
+    const html = (result as any)?.meta?.html ?? "";
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.status(200).send(html);
+  } catch (error) {
+    res.status(500).send("Error in previewTemplateHtml");
+  }
+}
+
   // GET /api/email/templates
   static async getTemplates(_req: Request, res: Response): Promise<void> {
     try {
@@ -137,46 +197,107 @@ export class EmailController {
 
   // use
   // POST /api/email/send-dynamic – template + parameters (e.g. business_performance_summary from templateConfigs)
+  // static async sendDynamic(req: Request, res: Response): Promise<void> {
+  //   try {
+  //     const { to, templateName, parameters, subject, cc, bcc, attachments } = req.body;
+
+  //     const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+  //     if (toVal.length === 0) {
+  //       ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+  //       return;
+  //     }
+  //     if (templateName == null || String(templateName).trim() === '') {
+  //       ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
+  //       return;
+  //     }
+
+  //     // Parameters only (e.g. business_performance_summary). No components.body mapping.
+  //     const params: Record<string, any> = parameters != null ? { ...parameters } : {};
+
+  //     const { TemplateBuilder } = await import('../services/templateBuilder.js');
+  //     const { getTemplateConfig } = await import('../config/templateConfigs.js');
+  //     const { getEmailTemplate } = await import('../templates/emailTemplates.js');
+
+  //     const config = getTemplateConfig(templateName);
+  //     if (config) {
+  //       const validation = TemplateBuilder.validateParameters(params, config);
+  //       if (!validation.valid) {
+  //         ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
+  //         return;
+  //       }
+  //     }
+
+  //     const template = getEmailTemplate(templateName);
+  //     if (!template) {
+  //       ErrorHandler.sendNotFoundError(res, `Template "${templateName}"`);
+  //       return;
+  //     }
+
+  //     let htmlContent = TemplateBuilder.buildEmailContent(template.html, params);
+  //     let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
+  //     const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
+
+  //     const result = await EmailService.sendEmail(
+  //       toVal.length === 1 ? toVal[0] : toVal,
+  //       emailSubject,
+  //       htmlContent,
+  //       textContent,
+  //       cc,
+  //       bcc,
+  //       attachments,
+  //       { endpoint: 'send-dynamic', parameters: params }
+  //     );
+  //     ErrorHandler.sendServiceResult(res, result);
+  //   } catch (error) {
+  //     const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+  //     console.error(`[${envLabel}] Email send-dynamic failed:`, error instanceof Error ? error.message : error);
+  //     ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
+  //   }
+  // }
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
       const { to, templateName, parameters, subject, cc, bcc, attachments } = req.body;
-
-      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+  
+      const toVal =
+        to != null
+          ? (Array.isArray(to) ? to : [to])
+              .map((e: unknown) => (e != null ? String(e).trim() : ""))
+              .filter(Boolean)
+          : [];
       if (toVal.length === 0) {
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
         return;
       }
-      if (templateName == null || String(templateName).trim() === '') {
+      if (templateName == null || String(templateName).trim() === "") {
         ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
         return;
       }
-
-      // Parameters only (e.g. business_performance_summary). No components.body mapping.
+  
       const params: Record<string, any> = parameters != null ? { ...parameters } : {};
-
-      const { TemplateBuilder } = await import('../services/templateBuilder.js');
-      const { getTemplateConfig } = await import('../config/templateConfigs.js');
-      const { getEmailTemplate } = await import('../templates/emailTemplates.js');
-
+  
+      const { TemplateBuilder } = await import("../services/templateBuilder.js");
+      const { getTemplateConfig } = await import("../config/templateConfigs.js");
+      const { getEmailTemplate } = await import("../templates/emailTemplates.js");
+  
       const config = getTemplateConfig(templateName);
       if (config) {
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
-          ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
+          ErrorHandler.sendValidationError(res, "Missing required fields", validation.missing);
           return;
         }
       }
-
+  
       const template = getEmailTemplate(templateName);
       if (!template) {
         ErrorHandler.sendNotFoundError(res, `Template "${templateName}"`);
         return;
       }
-
-      let htmlContent = TemplateBuilder.buildEmailContent(template.html, params);
-      let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
+  
+      const htmlContent = TemplateBuilder.buildEmailContent(template.html, params);
+      const emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
-
+  
       const result = await EmailService.sendEmail(
         toVal.length === 1 ? toVal[0] : toVal,
         emailSubject,
@@ -185,13 +306,14 @@ export class EmailController {
         cc,
         bcc,
         attachments,
-        { endpoint: 'send-dynamic', parameters: params }
+        { endpoint: "send-dynamic", parameters: params } // ✅ this triggers logo only for this flow
       );
+  
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
-      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      const envLabel = process.env.NODE_ENV === "production" ? "SERVER" : "LOCAL";
       console.error(`[${envLabel}] Email send-dynamic failed:`, error instanceof Error ? error.message : error);
-      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendDynamic", 500);
     }
   }
 }

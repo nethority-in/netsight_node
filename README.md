@@ -403,6 +403,38 @@ http://localhost:3002/api/whatsapp/send-message
 }
 
 
+**Postman: Email Preview (no Mailjet send)**
+
+- **Method:** `POST`
+- **URL:** `http://localhost:3000/api/email/preview` (or your port)
+- **Headers:** `Content-Type: application/json`
+- **Body (raw JSON):**
+
+```json
+{
+  "templateName": "business_performance_summary",
+  "parameters": {
+    "StoreName": "My Store",
+    "PrevDate": "21st Dec 2024",
+    "Revenue": "$46K",
+    "Orders": "40",
+    "AOV": "$115",
+    "RevChgPct": "+37%",
+    "OrdChgPct": "+23%",
+    "MetaSummary": "Meta ads generated revenue of $25K with ROAS of 2.2.",
+    "MetaCAC": "Customer Acquisition Cost on Meta increased to $3.2.",
+    "GoogleSummary": "Google ads generated $18K with ROAS of 1.5.",
+    "GoogleCAC": "Customer Acquisition Cost on Google ads increased to $5.7.",
+    "day": "1 day",
+    "PositiveChanges": "Revenue grew strongly by 31.6% vs previous day.",
+    "RequiresReviews": "Meta CAC increased by 37.7%."
+  }
+}
+```
+
+- **Response:** `{ ok: true, meta: { dryRun: true, templateName, subject, html, text, parameters } }` — email NOT sent via Mailjet.
+- **Note:** Use `parameters` or `templateVariables` — both work. Same templates as `send-dynamic` / `send-template`.
+
 **Postman: send-dynamic (business_performance_summary)**
 
 - **Method:** `POST`

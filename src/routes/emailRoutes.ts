@@ -10,6 +10,10 @@ router.use(notificationRateLimiter);
 router.use(duplicateMessageMiddleware);
 
 // Email API routes
+router.post("preview", EmailController.previewTemplate);        // JSON
+router.post("preview/html", EmailController.previewTemplateHtml); // optional (Postman body)
+
+
 router.post('/send-template', EmailController.sendTemplate);
 router.post('/send', EmailController.sendEmail);
 router.post('/send-daily-kpi-snapshot', EmailController.sendDailyKpiSnapshot);

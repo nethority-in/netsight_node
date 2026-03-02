@@ -1,5 +1,3 @@
-import { EMAIL_LOGO_DATA_URI } from '../logo/emailLogo.js';
-
 export interface EmailTemplate {
   subject: string;
   html: string;
@@ -339,7 +337,6 @@ const templates: Record<string, EmailTemplate> = {
 
         .highlight-box {
             background: linear-gradient(to bottom right, rgba(93, 187, 184, 0.05), rgba(93, 187, 184, 0.1));
-            border-left: 4px solid #5DBBB8;
             border-radius: 0 8px 8px 0;
             padding: 24px;
             margin: 24px 0;
@@ -497,7 +494,9 @@ const templates: Record<string, EmailTemplate> = {
 <body>
     <div class="email-container">
         <!-- Header -->
-       
+       <div class="header">
+  <img src="cid:netsights-logo" alt="Netsights Logo">
+</div>
 
         <!-- Content -->
         <div class="content">
@@ -757,9 +756,9 @@ body {
 <body>
 
 <div class="container">
-  // <div class="logo-container">
-  //   <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo" class="logo" />
-  // </div>
+  <div class="logo-container">
+    <img src="cid:netsights-logo" alt="Netsights Logo" class="logo" />
+  </div>
   <div class="title">Your Store’s Daily Performance Summary</div>
 
   <!-- UNIT ECONOMICS -->
@@ -917,7 +916,6 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
 
         .highlight-box {
             background: linear-gradient(to bottom right, rgba(93, 187, 184, 0.05), rgba(93, 187, 184, 0.1));
-            border-left: 4px solid #5DBBB8;
             border-radius: 0 8px 8px 0;
             padding: 24px;
             margin: 24px 0;
@@ -1075,7 +1073,9 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
 <body>
     <div class="email-container">
         <!-- Header -->
-      
+        <div class="header">
+  <img src="cid:netsights-logo" alt="Netsights Logo">
+</div>
 
         <!-- Content -->
         <div class="content">
