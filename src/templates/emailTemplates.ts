@@ -1,3 +1,5 @@
+import { EMAIL_LOGO_DATA_URI } from '../logo/emailLogo.js';
+
 export interface EmailTemplate {
   subject: string;
   html: string;
@@ -267,30 +269,904 @@ const templates: Record<string, EmailTemplate> = {
     text: `Good day,\n\nThis is an automated performance summary for {{StoreName}}'s business performance for {{PrevDate}}.\n\nBusiness Overview\nTotal revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}. Compared to the previous day, revenue {{RevChgPct}} and order volume {{OrdChgPct}}.\n\nChannel Performance\n{{MetaSummary}}\n{{MetaCAC}}\n{{GoogleSummary}}\n{{GoogleCAC}}\n\nPrevious {{day}} comparison\nPerformance Highlights\n{{PositiveChanges}}\n\nReview Required\n{{RequiresReviews}}\n\nThis message contains automatically generated factual account data for reference purposes only.\n\nRegards,\nNetsights.ai`
   },
 
-  // Custom template template 
-  //api/email/send-template
-  custom: {
-    subject: '{{subject || "Custom Email Subject"}}',
+  ns_temp_Notification_temp1: {
+    subject: '{{StoreName}} Daily Performance Summary',
     html: `
       <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{subject || "Custom Email Subject"}}</title>
-      </head>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background-color: #f4f4f4; padding: 20px; border-radius: 5px;">
-          <h2 style="color: #2c3e50; margin-top: 0;">{{subject || "Custom Email Subject"}}</h2>
-          <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
-            {{content}}
-          </div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netsights Email Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f9fafb;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #ffffff, #f9fafb);
+            padding: 24px 32px;
+            border-bottom: 4px solid #5DBBB8;
+        }
+
+        .header img {
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .content {
+            padding: 40px 32px;
+            background-color: white;
+        }
+
+        .content h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .accent-line {
+            width: 64px;
+            height: 4px;
+            background-color: #5DBBB8;
+            border-radius: 2px;
+            margin-bottom: 24px;
+        }
+
+        .content p {
+            color: #374151;
+            line-height: 1.625;
+            margin-bottom: 16px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(to bottom right, rgba(93, 187, 184, 0.05), rgba(93, 187, 184, 0.1));
+            border-left: 4px solid #5DBBB8;
+            border-radius: 0 8px 8px 0;
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .highlight-box h3 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+        }
+
+        .highlight-box li {
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+
+        .highlight-box li span:first-child {
+            color: #5DBBB8;
+            margin-right: 8px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #5DBBB8;
+            color: white;
+            font-weight: 600;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 32px 0;
+        }
+
+        .cta-button:hover {
+            background-color: #4da9a6;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+            padding: 24px 32px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-contact-item svg {
+            width: 16px;
+            height: 16px;
+            color: #5DBBB8;
+            flex-shrink: 0;
+        }
+
+        .footer-info {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .footer-location {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .footer-location svg {
+            width: 12px;
+            height: 12px;
+            color: #5DBBB8;
+        }
+
+        .footer-divider {
+            border-top: 1px solid #d1d5db;
+            margin: 12px 0;
+            padding-top: 8px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding-top: 8px;
+        }
+
+        .footer-links a {
+            color: #5DBBB8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #4da9a6;
+        }
+
+        .footer-separator {
+            color: #d1d5db;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 24px 20px;
+            }
+
+            .header {
+                padding: 20px 20px;
+            }
+
+            .footer {
+                padding: 20px 20px;
+            }
+
+            .footer-contact {
+                gap: 16px;
+            }
+
+            .content h2 {
+                font-size: 20px;
+            }
+        }
+      
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo">
         </div>
-        <div style="margin-top: 20px; text-align: center; color: #7f8c8d; font-size: 12px;">
-          <p>This email was sent from Netsight</p>
+
+        <!-- Content -->
+        <div class="content">
+            <!--<h2>Welcome to Netsights</h2>
+            <div class="accent-line"></div>-->
+
+            <p>Good day,</p>
+
+            <p>Please find below a summary of {{StoreName}}’s business performance for {{PrevDate}}.</p>
+
+          
+
+            <div class="highlight-box">
+                <h3>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h3>
+            <ul>
+                    <li>
+                        <span>•</span> <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
+Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}}.</span>
+                    </li>
+            </ul>
+             <h3>Top 3 bestsellers</h3>
+            <ul>
+                    <li>
+                        <span>•</span> <span>{{Bestseller1}}</span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>{{Bestseller2}}</span>
+                    </li>
+                     <li>
+                        <span>•</span> <span>{{Bestseller3}}</span>
+                    </li>
+                  
+            </ul>
+             <h3>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h3>
+            <ul>
+                    <li>
+                        <span>•</span> <span>Meta ads generated revenue of {{MetaRevenue}} with ROAS of {{MetaROAS}}. Compared to the previous day, revenue increased by {{MetaRevChgPct}} and ROAS increased by {{MetaROASChgPct}}.</span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>Customer Acquisition Cost on Meta increased to {{MetaCAC}}</span>
+                    </li>
+                     <li>
+                        <span>•</span> <span>Google ads generated revenue of {{GoogleRevenue}} with ROAS of {{GoogleROAS}}. Compared to the previous day, revenue increased by {{GoogleRevChgPct}} and ROAS increased by {{GoogleROASChgPct}}.</span>
+                    </li>
+                     <li>
+                        <span>•</span> <span>Customer Acquisition Cost on Google ads increased to {{GoogleCAC}}</span>
+                    </li>
+            </ul>
+             <h3>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 7 day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h3>
+            <ul>
+                    <li>
+                        <span>•</span> <span><b>𝗣𝗼𝘀𝗶𝘁𝗶𝘃𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝘀</b></span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>Revenue grew strongly by {{RevChgPct}} </span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>Order volume increased by {{OrdChgPct}} </span>
+                    </li>
+            </ul>
+        
+            <ul>
+                    <li>
+                        <span>•</span> <span><b>Requires a review</b></span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>Meta CAC increased by {{MetaCACChgPct}}  </span>
+                    </li>
+                    <li>
+                        <span>•</span> <span>Traffic declined by {{TrafficChgPct}} </span>
+                    </li>
+            </ul>
+            </div>
+
+         <!--   <div style="text-align: center;">
+                <a href="#" class="cta-button">Get Started Now</a>
+            </div>
+
+            <p>If you have any questions or need assistance, our team is here to help. Don't hesitate to reach out.</p>-->
+
+            <p style="margin-top: 32px;">
+                Regards,<br>
+                <span style="font-weight: 600; color: #111827;">Netsights.ai</span>
+            </p>
         </div>
-      </body>
-      </html>
+
+        <!-- Footer -->
+        <div class="footer">
+          <!--  <div class="footer-contact">
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>hello@netsights.com</span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span><a  target="_blank" href="https://netsights.ai">https://netsights.ai</a></span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>+1 (555) 123-4567</span>
+                </div>
+            </div>-->
+
+            <div class="footer-info">
+              <!--  <div class="footer-location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>123 Business Avenue, Suite 100, City, State 12345</span>
+                </div>
+                <div class="footer-divider"></div>-->
+                <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
+                <div class="footer-links">
+                    <a target="_blank" href="https://netsights.ai/support/">Support</a>
+                    <span class="footer-separator">|</span>
+                    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `,
+    text: '{{content}}'
+  },
+
+  ns_temp_Notification_temp2: {
+    subject: '{{StoreName}} Daily Performance Summary',
+    html: `
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Store Daily Performance</title>
+
+<style>
+:root {
+  --bg: #0b0b0b;
+  --card-bg: #1a1a1a;
+  --border: #2a2a2a;
+  --primary: #ffffff;
+  --secondary: #a1a1aa;
+  --accent: #2dd4bf;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--primary);
+  padding: 40px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: auto;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.card {
+  background: linear-gradient(145deg, #1c1c1c, #181818);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 28px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.card-header .accent {
+  width: 8px;
+  height: 24px;
+  background: var(--accent);
+  margin-right: 12px;
+  border-radius: 2px;
+}
+
+.card-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 32px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  color: var(--secondary);
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+@media (max-width: 1200px) {
+  .metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="logo-container">
+    <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo" class="logo" />
+  </div>
+  <div class="title">Your Store’s Daily Performance Summary</div>
+
+  <!-- UNIT ECONOMICS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>UNIT ECONOMICS (FOUNDATION)</h2>
+    </div>
+    <div class="metrics" id="unitEconomics"></div>
+  </div>
+
+  <!-- OPERATIONAL METRICS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>OPERATIONAL METRICS (GROWTH DRIVERS)</h2>
+    </div>
+    <div class="metrics" id="operationalMetrics"></div>
+  </div>
+
+  <!-- CAMPAIGN PERFORMANCE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>CAMPAIGN PERFORMANCE (MARKETING EFFICIENCY)</h2>
+    </div>
+    <div class="metrics" id="campaignPerformance"></div>
+  </div>
+</div>
+
+<script>
+// 🔥 Replace this with API/backend values
+const data = {
+  unitEconomics: [
+    { label: "AOV (Average Order Value)", value: "$115" },
+    { label: "Customer LTV", value: "$89" },
+    { label: "LTV CAC Ratio", value: "3:1" },
+    { label: "Gross Revenue", value: "$46K" },
+    { label: "Net Sale", value: "$38.6" },
+    { label: "Refund Rate", value: "7%" }
+  ],
+  operationalMetrics: [
+    { label: "New vs Repeat", value: "11.5x" },
+    { label: "Order Frequency", value: "1.18x" },
+    { label: "Total Discount Rate", value: "2.25%" },
+    { label: "Order per day", value: "45" },
+    { label: "Top Customer LTV", value: "$89" },
+    { label: "Active Customer Base", value: "250" }
+  ],
+  campaignPerformance: [
+    { label: "Meta Ads Spend", value: "$25K" },
+    { label: "Meta ROAS", value: "2.2x" },
+    { label: "Meta Spend Growth", value: "-56.7%" },
+    { label: "Google Ads Spend", value: "$18K" },
+    { label: "Google ROAS", value: "1.5x" },
+    { label: "Blended ROAS", value: "4.52x" },
+    { label: "Meta Conversion Rate", value: "0.81%" },
+    { label: "Best Campaign", value: "Black Friday Sale" },
+    { label: "CAC", value: "$3.8" }
+  ]
+};
+
+function renderMetrics(sectionId, metrics) {
+  const container = document.getElementById(sectionId);
+  container.innerHTML = "";
+  metrics.forEach(metric => {
+    const metricDiv = document.createElement("div");
+    metricDiv.className = "metric";
+    metricDiv.innerHTML = \`
+      <div class="metric-label">\${metric.label}</div>
+      <div class="metric-value">\${metric.value}</div>
+    \`;
+    container.appendChild(metricDiv);
+  });
+}
+
+renderMetrics("unitEconomics", data.unitEconomics);
+renderMetrics("operationalMetrics", data.operationalMetrics);
+renderMetrics("campaignPerformance", data.campaignPerformance);
+</script>
+
+</body>
+</html>
+    `,
+    text: '{{content}}'
+  },
+
+  ns_temp_OTP: {
+    subject: '{{StoreName}} OTP Verification',
+    html: `
+     <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netsights Email Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f9fafb;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #ffffff, #f9fafb);
+            padding: 24px 32px;
+            border-bottom: 4px solid #5DBBB8;
+        }
+
+        .header img {
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .content {
+            padding: 40px 32px;
+            background-color: white;
+        }
+
+        .content h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .accent-line {
+            width: 64px;
+            height: 4px;
+            background-color: #5DBBB8;
+            border-radius: 2px;
+            margin-bottom: 24px;
+        }
+
+        .content p {
+            color: #374151;
+            line-height: 1.625;
+            margin-bottom: 16px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(to bottom right, rgba(93, 187, 184, 0.05), rgba(93, 187, 184, 0.1));
+            border-left: 4px solid #5DBBB8;
+            border-radius: 0 8px 8px 0;
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .highlight-box h3 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+        }
+
+        .highlight-box li {
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+
+        .highlight-box li span:first-child {
+            color: #5DBBB8;
+            margin-right: 8px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #5DBBB8;
+            color: white;
+            font-weight: 600;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 32px 0;
+        }
+
+        .cta-button:hover {
+            background-color: #4da9a6;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+            padding: 24px 32px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-contact-item svg {
+            width: 16px;
+            height: 16px;
+            color: #5DBBB8;
+            flex-shrink: 0;
+        }
+
+        .footer-info {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .footer-location {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .footer-location svg {
+            width: 12px;
+            height: 12px;
+            color: #5DBBB8;
+        }
+
+        .footer-divider {
+            border-top: 1px solid #d1d5db;
+            margin: 12px 0;
+            padding-top: 8px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding-top: 8px;
+        }
+
+        .footer-links a {
+            color: #5DBBB8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #4da9a6;
+        }
+
+        .footer-separator {
+            color: #d1d5db;
+        }
+
+        @media (max-width: 600px) {
+            .email-container {
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 24px 20px;
+            }
+
+            .header {
+                padding: 20px 20px;
+            }
+
+            .footer {
+                padding: 20px 20px;
+            }
+
+            .footer-contact {
+                gap: 16px;
+            }
+
+            .content h2 {
+                font-size: 20px;
+            }
+        }
+      
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+           <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo">
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!--<h2>Welcome to Netsights</h2>
+            <div class="accent-line"></div>-->
+
+            <p>Hello,</p>
+
+            <p>You're receiving this email because you requested to verify your email address for {{StoreName}} notifications.</p>
+
+          
+
+            <div class="highlight-box">
+                <h3>Your verification code is: {{OTP}}</h3>
+               <!-- <ul>
+                    <li>
+                        <span>•</span>
+                        <span>{{OTP}}</span>
+                    </li>
+                    <li>
+                        <span>•</span>
+                        <span>Explore our dashboard features</span>
+                    </li>
+                    <li>
+                        <span>•</span>
+                        <span>Connect with our support team</span>
+                    </li>
+                </ul>-->
+            </div>
+
+         <!--   <div style="text-align: center;">
+                <a href="#" class="cta-button">Get Started Now</a>
+            </div>
+
+            <p>If you have any questions or need assistance, our team is here to help. Don't hesitate to reach out.</p>-->
+
+            <p style="margin-top: 32px;">
+                Regards,<br>
+                <span style="font-weight: 600; color: #111827;">Netsights.ai</span>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+          <!--  <div class="footer-contact">
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>hello@netsights.com</span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span><a  target="_blank" href="https://netsights.ai">https://netsights.ai</a></span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>+1 (555) 123-4567</span>
+                </div>
+            </div>-->
+
+            <div class="footer-info">
+              <!--  <div class="footer-location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>123 Business Avenue, Suite 100, City, State 12345</span>
+                </div>
+                <div class="footer-divider"></div>-->
+                <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
+                <div class="footer-links">
+                    <a target="_blank" href="https://netsights.ai/support/">Support</a>
+                    <span class="footer-separator">|</span>
+                    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
     `,
     text: '{{content}}'
   }

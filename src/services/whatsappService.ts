@@ -619,8 +619,140 @@ static async sendTemplatePreview(
     const day = getVar('day');
     const positiveChanges = getVar('PositiveChanges');
     const requiresReviews = getVar('RequiresReviews');
+    const bestseller1 = getVar('Bestseller1');
+    const bestseller2 = getVar('Bestseller2');
+    const bestseller3 = getVar('Bestseller3');
 
-    const htmlPreview = `<html lang="en">
+    const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
+
+    const htmlPreview = isBestsellTemplate
+      ? `<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Performance Summary (Bestsellers)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 24px;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .message-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    p { margin: 0 0 12px 0; }
+    p:last-child { margin-bottom: 0; }
+
+    .greeting { margin-bottom: 14px; }
+    .intro { margin-bottom: 18px; }
+
+    .section { margin: 0 0 18px 0; }
+    .section:last-of-type { margin-bottom: 0; }
+
+    .section-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin: 0 0 10px 0;
+      color: #1a1a1a;
+    }
+
+    .block { display: block; margin: 0 0 10px 0; white-space: pre-wrap; }
+    .block:empty { display: none; }
+
+    .bullet-list {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+    .bullet-list li { margin-bottom: 6px; }
+
+    .footer-note {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #eee;
+    }
+
+    .disclaimer {
+      margin: 0 0 14px 0;
+      color: #333;
+    }
+
+    .regards { font-weight: 700; margin: 8px 0 4px 0; }
+    .signature { font-weight: 700; margin: 0; }
+  </style>
+</head>
+
+<body>
+  <div class="message-card">
+    <p class="greeting">Good day,</p>
+
+    <p class="intro">
+      This is an automated performance summary for
+      ${escapeHtml(storeName)}'s business performance for ${escapeHtml(prevDate)}.
+    </p>
+
+    <section class="section">
+      <p class="section-title">𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</p>
+      <p>
+        Total revenue of ${escapeHtml(revenue)} was generated from ${escapeHtml(orders)} orders,
+        resulting in an Average Order Value (AOV) of ${escapeHtml(aov)}.
+      </p>
+      <p>
+        Compared to the previous day, revenue ${escapeHtml(revChgPct)} and order volume ${escapeHtml(ordChgPct)}.
+      </p>
+    </section>
+
+    <section class="section">
+      <p class="section-title">𝗧𝗼𝗽 𝟯 𝗕𝗲𝘀𝘁𝘀𝗲𝗹𝗹𝗲𝗿'𝘀</p>
+      <p class="block">${escapeHtml(bestseller1)}</p>
+      <p class="block">${escapeHtml(bestseller2)}</p>
+      <p class="block">${escapeHtml(bestseller3)}</p>
+    </section>
+
+    <section class="section">
+      <p class="section-title">𝗖𝗵𝗮𝗻𝗻𝗲𝗹 𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲</p>
+
+      <p class="block">${escapeHtml(metaSummary)}</p>
+      <p class="block">${escapeHtml(metaCac)}</p>
+
+      <p class="block">${escapeHtml(googleSummary)}</p>
+      <p class="block">${escapeHtml(googleCac)}</p>
+    </section>
+
+    <section class="section">
+      <p class="section-title">𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 ${escapeHtml(day)} 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</p>
+
+      <p class="section-title">𝗣𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀</p>
+      ${positiveChanges ? renderBulletList(positiveChanges) : ''}
+
+      <p class="section-title" style="margin-top: 14px;">𝗥𝗲𝘃𝗶𝗲𝘄 𝗥𝗲𝗾𝘂𝗶𝗿𝗲𝗱</p>
+      ${requiresReviews ? renderBulletList(requiresReviews) : ''}
+    </section>
+
+    <div class="footer-note">
+      <p class="disclaimer">
+        This message contains automatically generated factual account data for reference purposes only.
+      </p>
+
+      <p class="regards">𝗥𝗲𝗴𝗮𝗿𝗱𝘀,</p>
+      <p class="signature">𝗡𝗲𝘁𝘀𝗶𝗴𝗵𝘁𝘀.𝗮𝗶</p>
+    </div>
+  </div>
+</body>
+</html>`
+      : `<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

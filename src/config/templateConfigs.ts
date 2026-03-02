@@ -27,6 +27,27 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     fieldOrder: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct', 'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC', 'day', 'PositiveChanges', 'RequiresReviews']
   },
 
+  ns_temp_Notification_temp1:{
+    name: 'ns_temp_Notification_temp1',
+    requiredFields: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct',  'Bestseller1', 'Bestseller2', 'Bestseller3','MetaRevenue', 'MetaROAS', 'MetaRevChgPct', 'MetaROASChgPct',"MetaCAC", "MetaCACChgPct", 'GoogleRevenue', 'GoogleROAS', 'GoogleRevChgPct', 'GoogleROASChgPct', 'TrafficChgPct'],
+    optionalFields: [],
+    fieldOrder: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct',  'Bestseller1', 'Bestseller2', 'Bestseller3','MetaRevenue', 'MetaROAS', 'MetaRevChgPct', 'MetaROASChgPct',"MetaCAC", "MetaCACChgPct", 'GoogleRevenue', 'GoogleROAS', 'GoogleRevChgPct', 'GoogleROASChgPct', 'TrafficChgPct']
+  },
+
+  ns_temp_Notification_temp2:{
+    name: 'ns_temp_Notification_temp2',
+    requiredFields: [],
+    optionalFields: [],
+    fieldOrder: []
+  },
+
+  ns_temp_OTP:{
+    name: 'ns_temp_OTP',
+    requiredFields: ['StoreName', 'OTP'],
+    optionalFields: [],
+    fieldOrder: ['StoreName', 'OTP']
+  },
+
   // Matches WhatsApp daily_store_performance_summary – 32 body params in order
   daily_store_performance_summary: {
     name: 'daily_store_performance_summary',

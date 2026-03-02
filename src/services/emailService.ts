@@ -130,6 +130,7 @@ export class EmailService {
     return emailRegex.test(email.trim());
   }
 
+  // use
   /** Sends email. For send-dynamic, controller builds content from template + parameters (e.g. business_performance_summary from templateConfigs). */
   static async sendEmail(
     to: string | string[],

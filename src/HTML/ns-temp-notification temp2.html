@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Store Daily Performance</title>
+
+<style>
+:root {
+  --bg: #0b0b0b;
+  --card-bg: #1a1a1a;
+  --border: #2a2a2a;
+  --primary: #ffffff;
+  --secondary: #a1a1aa;
+  --accent: #2dd4bf;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--primary);
+  padding: 40px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: auto;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.card {
+  background: linear-gradient(145deg, #1c1c1c, #181818);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 28px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.card-header .accent {
+  width: 8px;
+  height: 24px;
+  background: var(--accent);
+  margin-right: 12px;
+  border-radius: 2px;
+}
+
+.card-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 32px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  color: var(--secondary);
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+@media (max-width: 1200px) {
+  .metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="logo-container">
+    <img src="nights-logo.png" alt="Netsights Logo" class="logo" />
+  </div>
+  <div class="title">Your Store’s Daily Performance Summary</div>
+
+  <!-- UNIT ECONOMICS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>UNIT ECONOMICS (FOUNDATION)</h2>
+    </div>
+    <div class="metrics" id="unitEconomics"></div>
+  </div>
+
+  <!-- OPERATIONAL METRICS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>OPERATIONAL METRICS (GROWTH DRIVERS)</h2>
+    </div>
+    <div class="metrics" id="operationalMetrics"></div>
+  </div>
+
+  <!-- CAMPAIGN PERFORMANCE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="accent"></div>
+      <h2>CAMPAIGN PERFORMANCE (MARKETING EFFICIENCY)</h2>
+    </div>
+    <div class="metrics" id="campaignPerformance"></div>
+  </div>
+</div>
+
+<script>
+// 🔥 Replace this with API/backend values
+const data = {
+  unitEconomics: [
+    { label: "AOV (Average Order Value)", value: "$115" },
+    { label: "Customer LTV", value: "$89" },
+    { label: "LTV CAC Ratio", value: "3:1" },
+    { label: "Gross Revenue", value: "$46K" },
+    { label: "Net Sale", value: "$38.6" },
+    { label: "Refund Rate", value: "7%" }
+  ],
+  operationalMetrics: [
+    { label: "New vs Repeat", value: "11.5x" },
+    { label: "Order Frequency", value: "1.18x" },
+    { label: "Total Discount Rate", value: "2.25%" },
+    { label: "Order per day", value: "45" },
+    { label: "Top Customer LTV", value: "$89" },
+    { label: "Active Customer Base", value: "250" }
+  ],
+  campaignPerformance: [
+    { label: "Meta Ads Spend", value: "$25K" },
+    { label: "Meta ROAS", value: "2.2x" },
+    { label: "Meta Spend Growth", value: "-56.7%" },
+    { label: "Google Ads Spend", value: "$18K" },
+    { label: "Google ROAS", value: "1.5x" },
+    { label: "Blended ROAS", value: "4.52x" },
+    { label: "Meta Conversion Rate", value: "0.81%" },
+    { label: "Best Campaign", value: "Black Friday Sale" },
+    { label: "CAC", value: "$3.8" }
+  ]
+};
+
+function renderMetrics(sectionId, metrics) {
+  const container = document.getElementById(sectionId);
+  container.innerHTML = "";
+  metrics.forEach(metric => {
+    const metricDiv = document.createElement("div");
+    metricDiv.className = "metric";
+    metricDiv.innerHTML = `
+      <div class="metric-label">${metric.label}</div>
+      <div class="metric-value">${metric.value}</div>
+    `;
+    container.appendChild(metricDiv);
+  });
+}
+
+renderMetrics("unitEconomics", data.unitEconomics);
+renderMetrics("operationalMetrics", data.operationalMetrics);
+renderMetrics("campaignPerformance", data.campaignPerformance);
+</script>
+
+</body>
+</html>
