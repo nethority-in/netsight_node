@@ -1,0 +1,267 @@
+ controller
+ // use
+  // POST /api/email/send-dynamic – template + parameters (e.g. business_performance_summary from templateConfigs)
+  static async sendDynamic(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, templateName, parameters, subject, cc, bcc, attachments } = req.body;
+
+      const toVal = to != null ? (Array.isArray(to) ? to : [to]).map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [];
+      if (toVal.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
+        return;
+      }
+
+      // Parameters only (e.g. business_performance_summary). No components.body mapping.
+      const params: Record<string, any> = parameters != null ? { ...parameters } : {};
+
+      const { TemplateBuilder } = await import('../services/templateBuilder.js');
+      const { getTemplateConfig } = await import('../config/templateConfigs.js');
+      const { getEmailTemplate } = await import('../templates/emailTemplates.js');
+
+      const config = getTemplateConfig(templateName);
+      if (config) {
+        const validation = TemplateBuilder.validateParameters(params, config);
+        if (!validation.valid) {
+          ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
+          return;
+        }
+      }
+
+      const template = getEmailTemplate(templateName);
+      if (!template) {
+        ErrorHandler.sendNotFoundError(res, `Template "${templateName}"`);
+        return;
+      }
+
+      let htmlContent = TemplateBuilder.buildEmailContent(template.html, params);
+      let emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
+      const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
+
+      // TEMPORARY: Mail sending paused for testing – uncomment below to resume
+      // const result = await EmailService.sendEmail(
+      //   toVal.length === 1 ? toVal[0] : toVal,
+      //   emailSubject,
+      //   htmlContent,
+      //   textContent,
+      //   cc,
+      //   bcc,
+      //   attachments,
+      //   { endpoint: 'send-dynamic', parameters: params }
+      // );
+      // ErrorHandler.sendServiceResult(res, result);
+      
+      // Return built values for Postman testing (no mail sent)
+      ErrorHandler.sendSuccess(res, {
+        data: {
+          _paused: true,
+          message: 'Mail sending paused for testing',
+          to: toVal,
+          subject: emailSubject,
+          parameters: params,
+          htmlContentLength: htmlContent?.length ?? 0,
+          textContentLength: textContent?.length ?? 0
+        }
+      });
+      // to here
+
+    } catch (error) {
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      console.error(`[${envLabel}] Email send-dynamic failed:`, error instanceof Error ? error.message : error);
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
+    }
+  }
+
+
+
+
+  service
+    // use
+  /** Sends email. For send-dynamic, controller builds content from template + parameters (e.g. business_performance_summary from templateConfigs). */
+  static async sendEmail(
+    to: string | string[],
+    subject: string,
+    htmlContent: string,
+    textContent?: string,
+    cc?: string[],
+    bcc?: string[],
+    attachments?: Array<{ filename: string; content: string }>,
+    logContext?: { endpoint?: string; parameters?: Record<string, unknown> }
+  ): Promise<EmailServiceResponse> {
+    const toArray = Array.isArray(to) ? to.map((e: unknown) => (e != null ? String(e).trim() : '')).filter(Boolean) : [String(to ?? '').trim()].filter(Boolean);
+    const endpoint = logContext?.endpoint ?? 'send';
+    const baseLogRequest = {
+      endpoint,
+      to: toArray,
+      subject: subject?.slice(0, 200),
+      from: MAIL_FROM_ADDRESS,
+      fromName: MAIL_FROM_NAME,
+      ...(logContext?.parameters != null && { parameters: logContext.parameters })
+    };
+    const ccList = Array.isArray(cc) ? cc : (cc != null ? [cc] : []);
+    const bccList = Array.isArray(bcc) ? bcc : (bcc != null ? [bcc] : []);
+
+    try {
+      if (!this.validateCredentials()) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('Mailjet credentials not configured. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in .env', 500) as EmailServiceResponse
+        );
+      }
+
+      if (toArray.length === 0) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('At least one recipient email address is required. "to" cannot be empty or invalid.', 400) as EmailServiceResponse
+        );
+      }
+
+      if (subject == null || typeof subject !== 'string' || subject.trim().length === 0) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('Email subject is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse
+        );
+      }
+      if (htmlContent == null || typeof htmlContent !== 'string' || htmlContent.trim().length === 0) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('HTML content is required and cannot be empty or whitespace only.', 400) as EmailServiceResponse
+        );
+      }
+
+      if (!MAIL_FROM_ADDRESS || !this.validateEmail(MAIL_FROM_ADDRESS)) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError('MAIL_FROM_ADDRESS in .env is missing or invalid. Set a valid sender email.', 500) as EmailServiceResponse
+        );
+      }
+
+      const invalidEmails: string[] = [];
+      toArray.forEach(email => {
+        if (!this.validateEmail(email)) {
+          invalidEmails.push(email);
+        }
+      });
+      ccList.forEach((email: unknown) => {
+        const e = email != null ? String(email).trim() : '';
+        if (e && !this.validateEmail(e)) invalidEmails.push(e);
+      });
+      bccList.forEach((email: unknown) => {
+        const e = email != null ? String(email).trim() : '';
+        if (e && !this.validateEmail(e)) invalidEmails.push(e);
+      });
+
+      if (invalidEmails.length > 0) {
+        return this.logEmailErrorAndReturn(
+          baseLogRequest,
+          ErrorHandler.toServiceError(`Invalid email address(es): ${invalidEmails.join(', ')}`, 400) as EmailServiceResponse
+        );
+      }
+
+      let mailjetAttachments: Array<{ Filename: string; ContentType: string; Base64Content: string }> | undefined;
+      if (attachments != null && Array.isArray(attachments) && attachments.length > 0) {
+        const validated = validateAttachments(attachments);
+        if (!validated.valid) {
+          return this.logEmailErrorAndReturn(
+            baseLogRequest,
+            ErrorHandler.toServiceError(validated.message, 400) as EmailServiceResponse
+          );
+        }
+        mailjetAttachments = validated.mailjet;
+      }
+
+      // Prepare recipients
+      const recipients = toArray.map((email: string) => ({ Email: email.trim() }));
+      const ccRecipients = ccList.length > 0 ? ccList.map((email: unknown) => ({ Email: String(email).trim() })) : undefined;
+      const bccRecipients = bccList.length > 0 ? bccList.map((email: unknown) => ({ Email: String(email).trim() })) : undefined;
+
+      const messagePayload: Record<string, unknown> = {
+        From: {
+          Email: MAIL_FROM_ADDRESS,
+          Name: MAIL_FROM_NAME
+        },
+        To: recipients,
+        ...(ccRecipients && ccRecipients.length > 0 && { Cc: ccRecipients }),
+        ...(bccRecipients && bccRecipients.length > 0 && { Bcc: bccRecipients }),
+        Subject: subject,
+        HTMLPart: htmlContent,
+        ...(textContent && { TextPart: textContent })
+      };
+
+      if (mailjetAttachments && mailjetAttachments.length > 0) {
+        messagePayload.Attachments = mailjetAttachments;
+      }
+
+      const emailData = { Messages: [messagePayload] };
+
+      console.log('📧 Sending email:', {
+        to: toArray,
+        subject,
+        from: MAIL_FROM_ADDRESS,
+        fromName: MAIL_FROM_NAME
+      });
+
+      // TEMPORARY: Mail sending paused for testing – uncomment below to resume
+      // Send email via Mailjet
+      // const result = await retryWithBackoff(
+      //   () => mailjetClient!.post('send', { version: 'v3.1' }).request(emailData),
+      //   { maxAttempts: 3, initialDelayMs: 1000, maxDelayMs: 10000 }
+      // ) as { body: EmailServiceResponse['data'] };
+      // console.log('✅ Email sent successfully:', result.body);
+
+      // from here
+      const serviceResponse: EmailServiceResponse = {
+        ok: true,
+        data: {
+          Messages: [{ Status: 'Paused', To: toArray.map((e) => ({ Email: e, MessageID: 0 })) }],
+          _paused: true,
+          _wouldHaveSent: { to: toArray, subject, from: MAIL_FROM_ADDRESS }
+        } as any
+      };
+      console.log('⏸️ Mail sending PAUSED (testing mode) – would have sent to:', toArray);
+      // to here
+      
+      try {
+        const logPayload = {
+          endpoint: logContext?.endpoint ?? 'send',
+          env: envLabel(),
+          to: toArray,
+          subject,
+          from: MAIL_FROM_ADDRESS,
+          fromName: MAIL_FROM_NAME,
+          cc: ccList.length > 0 ? ccList : undefined,
+          bcc: bccList.length > 0 ? bccList : undefined,
+          hasHtml: true,
+          hasText: Boolean(textContent),
+          attachmentCount: mailjetAttachments?.length ?? 0,
+          ...(logContext?.parameters != null && { parameters: logContext.parameters })
+        };
+        appendEmailLog(logPayload, serviceResponse);
+      } catch (e) {
+        console.error('appendEmailLog failed:', e);
+      }
+
+      console.log(`[${envLabel()}] Email ${endpoint}: to=${toArray.join(',')}, subject=${subject.slice(0, 50)}${subject.length > 50 ? '...' : ''}`);
+
+      return serviceResponse;
+    } catch (error) {
+      const errResponse = this.handleError(error) as EmailServiceResponse;
+      this.logEmailErrorAndReturn(
+        {
+          endpoint,
+          to: toArray,
+          subject: subject?.slice(0, 200),
+          from: MAIL_FROM_ADDRESS,
+          fromName: MAIL_FROM_NAME,
+          cc: ccList?.length ? ccList : undefined,
+          bcc: bccList?.length ? bccList : undefined,
+          ...(logContext?.parameters != null && { parameters: logContext.parameters })
+        },
+        errResponse
+      );
+      return errResponse;
+    }
+  }

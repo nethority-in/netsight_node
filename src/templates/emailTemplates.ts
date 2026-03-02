@@ -497,9 +497,7 @@ const templates: Record<string, EmailTemplate> = {
 <body>
     <div class="email-container">
         <!-- Header -->
-        <div class="header">
-            <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo">
-        </div>
+       
 
         <!-- Content -->
         <div class="content">
@@ -759,9 +757,9 @@ body {
 <body>
 
 <div class="container">
-  <div class="logo-container">
-    <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo" class="logo" />
-  </div>
+  // <div class="logo-container">
+  //   <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo" class="logo" />
+  // </div>
   <div class="title">Your Store’s Daily Performance Summary</div>
 
   <!-- UNIT ECONOMICS -->
@@ -1077,9 +1075,7 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
 <body>
     <div class="email-container">
         <!-- Header -->
-        <div class="header">
-           <img src="${EMAIL_LOGO_DATA_URI}" alt="Netsights Logo">
-        </div>
+      
 
         <!-- Content -->
         <div class="content">
