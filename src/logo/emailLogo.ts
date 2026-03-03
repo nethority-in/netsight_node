@@ -22,7 +22,7 @@ export const LOGO_CID = "netsights-logo"; // html me cid:netsights-logo
 function loadLogoBase64(): string {
   const cwd = process.cwd();
 
-  // Best: directly read the PNG
+  // Best: directly read the PNG cwd = current working directory
   const logoPath = join(cwd, "src/img/netsights-logo.png");
   return readFileSync(logoPath).toString("base64"); // only base64 string
 }

@@ -277,6 +277,12 @@ const templates: Record<string, EmailTemplate> = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netsights Email Template</title>
     <style>
+        :root {
+            --ns-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            --ns-font-size: 16px;
+            --ns-font-weight: 400;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -284,9 +290,19 @@ const templates: Record<string, EmailTemplate> = {
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-family: var(--ns-font-family);
+            font-size: var(--ns-font-size);
+            font-weight: var(--ns-font-weight);
             background-color: #f9fafb;
             padding: 20px;
+        }
+
+        /* Force consistent font across typical text elements */
+        h1, h2, h3, h4, h5, h6,
+        p, span, a, li, ul, ol, div, td, th, small, strong, b, em {
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
         }
 
         .email-container {
@@ -314,9 +330,8 @@ const templates: Record<string, EmailTemplate> = {
             background-color: white;
         }
 
+        /* Removed custom font-size/font-weight so it inherits uniformly */
         .content h2 {
-            font-size: 24px;
-            font-weight: bold;
             color: #111827;
             margin-bottom: 8px;
         }
@@ -342,11 +357,10 @@ const templates: Record<string, EmailTemplate> = {
             margin: 24px 0;
         }
 
+        /* Removed custom font-size/font-weight so it inherits uniformly */
         .highlight-box h3 {
-            font-weight: 600;
             color: #111827;
             margin-bottom: 12px;
-            font-size: 18px;
         }
 
         .highlight-box ul {
@@ -365,14 +379,14 @@ const templates: Record<string, EmailTemplate> = {
             color: #5DBBB8;
             margin-right: 8px;
             margin-top: 4px;
-            font-weight: bold;
+            font-weight: inherit; /* keep uniform */
         }
 
         .cta-button {
             display: inline-block;
             background-color: #5DBBB8;
             color: white;
-            font-weight: 600;
+            font-weight: inherit; /* keep uniform */
             padding: 12px 32px;
             border-radius: 8px;
             text-decoration: none;
@@ -398,7 +412,6 @@ const templates: Record<string, EmailTemplate> = {
             justify-content: center;
             gap: 24px;
             margin-bottom: 16px;
-            font-size: 14px;
             color: #4b5563;
         }
 
@@ -417,7 +430,6 @@ const templates: Record<string, EmailTemplate> = {
 
         .footer-info {
             text-align: center;
-            font-size: 12px;
             color: #6b7280;
             line-height: 1.6;
         }
@@ -484,9 +496,7 @@ const templates: Record<string, EmailTemplate> = {
                 gap: 16px;
             }
 
-            .content h2 {
-                font-size: 20px;
-            }
+            /* Removed responsive font-size change to keep uniform */
         }
       
     </style>
@@ -505,19 +515,17 @@ const templates: Record<string, EmailTemplate> = {
 
             <p>Good day,</p>
 
-            <p>Please find below a summary of {{StoreName}}’s business performance for {{PrevDate}}.</p>
-
-          
+            <p>Please find below a summary of {{StoreName}}’s business performance for {{PrevDate}} .</p>
 
             <div class="highlight-box">
-                <h3>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h3>
+                <h1>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h1>
             <ul>
                     <li>
                         <span>•</span> <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
-Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}}.</span>
+Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}} .</span>
                     </li>
             </ul>
-             <h3>Top 3 bestsellers</h3>
+             <h2>Top 3 bestsellers</h2>
             <ul>
                     <li>
                         <span>•</span> <span>{{Bestseller1}}</span>
@@ -528,95 +536,57 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
                      <li>
                         <span>•</span> <span>{{Bestseller3}}</span>
                     </li>
-                  
             </ul>
-             <h3>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h3>
+             <h1>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h1>
             <ul>
                     <li>
-                        <span>•</span> <span>Meta ads generated revenue of {{MetaRevenue}} with ROAS of {{MetaROAS}}. Compared to the previous day, revenue increased by {{MetaRevChgPct}} and ROAS increased by {{MetaROASChgPct}}.</span>
+                        <span>•</span> <span>Meta ads generated revenue of {{MetaRevenue}} with ROAS of {{MetaROAS}}. Compared to the previous day, revenue increased by {{MetaRevChgPct}} and ROAS increased by {{MetaROASChgPct}} .</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Customer Acquisition Cost on Meta increased to {{MetaCAC}}</span>
+                        <span>•</span> <span>Customer Acquisition Cost on Meta increased to {{MetaCAC}} .</span>
                     </li>
                      <li>
-                        <span>•</span> <span>Google ads generated revenue of {{GoogleRevenue}} with ROAS of {{GoogleROAS}}. Compared to the previous day, revenue increased by {{GoogleRevChgPct}} and ROAS increased by {{GoogleROASChgPct}}.</span>
+                        <span>•</span> <span>Google ads generated revenue of {{GoogleRevenue}} with ROAS of {{GoogleROAS}} . Compared to the previous day, revenue increased by {{GoogleRevChgPct}} and ROAS increased by {{GoogleROASChgPct}} .</span>
                     </li>
                      <li>
-                        <span>•</span> <span>Customer Acquisition Cost on Google ads increased to {{GoogleCAC}}</span>
+                        <span>•</span> <span>Customer Acquisition Cost on Google ads increased to {{GoogleCAC}} .</span>
                     </li>
             </ul>
-             <h3>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 7 day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h3>
+             <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{day}} day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
             <ul>
                     <li>
-                        <span>•</span> <span><b>𝗣𝗼𝘀𝗶𝘁𝗶𝘃𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝘀</b></span>
+                        <span>•</span> <span style="font-weight: bold;">Positive changes</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Revenue grew strongly by {{RevChgPct}} </span>
+                        <span>•</span> <span>Revenue grew strongly by {{RevChgPct}} .</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Order volume increased by {{OrdChgPct}} </span>
+                        <span>•</span> <span>Order volume increased by {{OrdChgPct}} .</span>
                     </li>
             </ul>
         
             <ul>
                     <li>
-                        <span>•</span> <span><b>Requires a review</b></span>
+                        <span>•</span> <span style="font-weight: bold;">Requires a review</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Meta CAC increased by {{MetaCACChgPct}}  </span>
+                        <span>•</span> <span>Meta CAC increased by {{MetaCACChgPct}} .</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Traffic declined by {{TrafficChgPct}} </span>
+                        <span>•</span> <span>Traffic declined by {{TrafficChgPct}} .</span>
                     </li>
             </ul>
             </div>
 
-         <!--   <div style="text-align: center;">
-                <a href="#" class="cta-button">Get Started Now</a>
-            </div>
-
-            <p>If you have any questions or need assistance, our team is here to help. Don't hesitate to reach out.</p>-->
-
             <p style="margin-top: 32px;">
                 Regards,<br>
-                <span style="font-weight: 600; color: #111827;">Netsights.ai</span>
+                <span style="font-weight: inherit; color: #111827;">Netsights.ai</span>
             </p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-          <!--  <div class="footer-contact">
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    <span>hello@netsights.com</span>
-                </div>
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
-                    <span><a  target="_blank" href="https://netsights.ai">https://netsights.ai</a></span>
-                </div>
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    <span>+1 (555) 123-4567</span>
-                </div>
-            </div>-->
-
             <div class="footer-info">
-              <!--  <div class="footer-location">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    <span>123 Business Avenue, Suite 100, City, State 12345</span>
-                </div>
-                <div class="footer-divider"></div>-->
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
                 <div class="footer-links">
                     <a target="_blank" href="https://netsights.ai/support/">Support</a>
@@ -856,6 +826,12 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netsights Email Template</title>
     <style>
+        :root {
+            --ns-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            --ns-font-size: 16px;
+            --ns-font-weight: 400;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -863,9 +839,19 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-family: var(--ns-font-family);
+            font-size: var(--ns-font-size);
+            font-weight: var(--ns-font-weight);
             background-color: #f9fafb;
             padding: 20px;
+        }
+
+        /* Force consistent font across typical text elements */
+        h1, h2, h3, h4, h5, h6,
+        p, span, a, li, ul, ol, div, td, th, small, strong, b, em {
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
         }
 
         .email-container {
@@ -893,9 +879,8 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
             background-color: white;
         }
 
+        /* Removed custom font-size/font-weight so it inherits uniformly */
         .content h2 {
-            font-size: 24px;
-            font-weight: bold;
             color: #111827;
             margin-bottom: 8px;
         }
@@ -921,11 +906,10 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
             margin: 24px 0;
         }
 
+        /* Removed custom font-size/font-weight so it inherits uniformly */
         .highlight-box h3 {
-            font-weight: 600;
             color: #111827;
             margin-bottom: 12px;
-            font-size: 18px;
         }
 
         .highlight-box ul {
@@ -944,14 +928,14 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
             color: #5DBBB8;
             margin-right: 8px;
             margin-top: 4px;
-            font-weight: bold;
+            font-weight: inherit; /* keep uniform */
         }
 
         .cta-button {
             display: inline-block;
             background-color: #5DBBB8;
             color: white;
-            font-weight: 600;
+            font-weight: inherit; /* keep uniform */
             padding: 12px 32px;
             border-radius: 8px;
             text-decoration: none;
@@ -977,7 +961,6 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
             justify-content: center;
             gap: 24px;
             margin-bottom: 16px;
-            font-size: 14px;
             color: #4b5563;
         }
 
@@ -996,7 +979,6 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
 
         .footer-info {
             text-align: center;
-            font-size: 12px;
             color: #6b7280;
             line-height: 1.6;
         }
@@ -1063,9 +1045,7 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
                 gap: 16px;
             }
 
-            .content h2 {
-                font-size: 20px;
-            }
+            /* Removed responsive font-size change to keep uniform */
         }
       
     </style>
@@ -1074,84 +1054,28 @@ renderMetrics("campaignPerformance", data.campaignPerformance);
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-  <img src="cid:netsights-logo" alt="Netsights Logo">
-</div>
+            <img src="cid:netsights-logo" alt="Netsights Logo">
+        </div>
 
         <!-- Content -->
         <div class="content">
-            <!--<h2>Welcome to Netsights</h2>
-            <div class="accent-line"></div>-->
-
             <p>Hello,</p>
 
             <p>You're receiving this email because you requested to verify your email address for {{StoreName}} notifications.</p>
 
-          
-
             <div class="highlight-box">
                 <h3>Your verification code is: {{OTP}}</h3>
-               <!-- <ul>
-                    <li>
-                        <span>•</span>
-                        <span>{{OTP}}</span>
-                    </li>
-                    <li>
-                        <span>•</span>
-                        <span>Explore our dashboard features</span>
-                    </li>
-                    <li>
-                        <span>•</span>
-                        <span>Connect with our support team</span>
-                    </li>
-                </ul>-->
             </div>
-
-         <!--   <div style="text-align: center;">
-                <a href="#" class="cta-button">Get Started Now</a>
-            </div>
-
-            <p>If you have any questions or need assistance, our team is here to help. Don't hesitate to reach out.</p>-->
 
             <p style="margin-top: 32px;">
                 Regards,<br>
-                <span style="font-weight: 600; color: #111827;">Netsights.ai</span>
+                <span style="font-weight: inherit; color: #111827;">Netsights.ai</span>
             </p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-          <!--  <div class="footer-contact">
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    <span>hello@netsights.com</span>
-                </div>
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
-                    <span><a  target="_blank" href="https://netsights.ai">https://netsights.ai</a></span>
-                </div>
-                <div class="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    <span>+1 (555) 123-4567</span>
-                </div>
-            </div>-->
-
             <div class="footer-info">
-              <!--  <div class="footer-location">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    <span>123 Business Avenue, Suite 100, City, State 12345</span>
-                </div>
-                <div class="footer-divider"></div>-->
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
                 <div class="footer-links">
                     <a target="_blank" href="https://netsights.ai/support/">Support</a>
