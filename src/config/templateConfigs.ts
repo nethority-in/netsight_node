@@ -27,21 +27,63 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     fieldOrder: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', 'RevChgPct', 'OrdChgPct', 'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC', 'day', 'PositiveChanges', 'RequiresReviews']
   },
 
-  ns_temp_Notification_temp1:{
+  ns_temp_Notification_temp1: {
     name: 'ns_temp_Notification_temp1',
-    requiredFields: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV',"day", 'RevChgPct', 'OrdChgPct',  'Bestseller1', 'Bestseller2', 'Bestseller3','MetaRevenue', 'MetaROAS',"GoogleCAC", 'MetaRevChgPct', 'MetaROASChgPct',"MetaCAC", "MetaCACChgPct", 'GoogleRevenue', 'GoogleROAS', 'GoogleRevChgPct', 'GoogleROASChgPct', 'TrafficChgPct'],
+    requiredFields: [
+      'StoreName',
+      'PrevDate',
+      'Revenue',
+      'Orders',
+      'AOV',
+      'day',
+      'RevChgPct',
+      'OrdChgPct',
+
+      // extra in second template (allowed)
+      'Bestseller1',
+      'Bestseller2',
+      'Bestseller3',
+
+      // aligned with first template dynamic fields
+      'MetaSummary',
+      'MetaCAC',
+      'GoogleSummary',
+      'GoogleCAC',
+      'PositiveChanges',
+      'RequiresReviews'
+    ],
     optionalFields: [],
-    fieldOrder: ['StoreName', 'PrevDate', 'Revenue', 'Orders', 'AOV', "day", 'RevChgPct', 'OrdChgPct',  'Bestseller1', 'Bestseller2', 'Bestseller3','MetaRevenue', 'MetaROAS',"GoogleCAC", 'MetaRevChgPct', 'MetaROASChgPct',"MetaCAC", "MetaCACChgPct", 'GoogleRevenue', 'GoogleROAS', 'GoogleRevChgPct', 'GoogleROASChgPct', 'TrafficChgPct']
+    fieldOrder: [
+      'StoreName',
+      'PrevDate',
+      'Revenue',
+      'Orders',
+      'AOV',
+      'day',
+      'RevChgPct',
+      'OrdChgPct',
+
+      'Bestseller1',
+      'Bestseller2',
+      'Bestseller3',
+
+      'MetaSummary',
+      'MetaCAC',
+      'GoogleSummary',
+      'GoogleCAC',
+      'PositiveChanges',
+      'RequiresReviews'
+    ]
   },
 
-  ns_temp_Notification_temp2:{
+  ns_temp_Notification_temp2: {
     name: 'ns_temp_Notification_temp2',
     requiredFields: [],
     optionalFields: [],
     fieldOrder: []
   },
 
-  ns_temp_OTP:{
+  ns_temp_OTP: {
     name: 'ns_temp_OTP',
     requiredFields: ['StoreName', 'OTP'],
     optionalFields: [],

@@ -330,7 +330,6 @@ const templates: Record<string, EmailTemplate> = {
             background-color: white;
         }
 
-        /* Removed custom font-size/font-weight so it inherits uniformly */
         .content h2 {
             color: #111827;
             margin-bottom: 8px;
@@ -357,7 +356,6 @@ const templates: Record<string, EmailTemplate> = {
             margin: 24px 0;
         }
 
-        /* Removed custom font-size/font-weight so it inherits uniformly */
         .highlight-box h3 {
             color: #111827;
             margin-bottom: 12px;
@@ -379,14 +377,14 @@ const templates: Record<string, EmailTemplate> = {
             color: #5DBBB8;
             margin-right: 8px;
             margin-top: 4px;
-            font-weight: inherit; /* keep uniform */
+            font-weight: inherit;
         }
 
         .cta-button {
             display: inline-block;
             background-color: #5DBBB8;
             color: white;
-            font-weight: inherit; /* keep uniform */
+            font-weight: inherit;
             padding: 12px 32px;
             border-radius: 8px;
             text-decoration: none;
@@ -495,8 +493,6 @@ const templates: Record<string, EmailTemplate> = {
             .footer-contact {
                 gap: 16px;
             }
-
-            /* Removed responsive font-size change to keep uniform */
         }
       
     </style>
@@ -505,77 +501,69 @@ const templates: Record<string, EmailTemplate> = {
     <div class="email-container">
         <!-- Header -->
        <div class="header">
-  <img src="cid:netsights-logo" alt="Netsights Logo">
-</div>
+          <img src="cid:netsights-logo" alt="Netsights Logo">
+       </div>
 
         <!-- Content -->
         <div class="content">
-            <!--<h2>Welcome to Netsights</h2>
-            <div class="accent-line"></div>-->
-
             <p>Good day,</p>
 
             <p>Please find below a summary of {{StoreName}}’s business performance for {{PrevDate}} .</p>
 
             <div class="highlight-box">
                 <h1>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h1>
-            <ul>
+                <ul>
                     <li>
-                        <span>•</span> <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
+                        <span>•</span>
+                        <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
 Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}} .</span>
                     </li>
-            </ul>
-             <h2>Top 3 bestsellers</h2>
-            <ul>
+                </ul>
+
+                <!-- IGNORE block for variable matching (but keep it; these are extra vars) -->
+                <h2>Top 3 bestsellers</h2>
+                <ul>
                     <li>
                         <span>•</span> <span>{{Bestseller1}}</span>
                     </li>
                     <li>
                         <span>•</span> <span>{{Bestseller2}}</span>
                     </li>
-                     <li>
+                    <li>
                         <span>•</span> <span>{{Bestseller3}}</span>
                     </li>
-            </ul>
-             <h1>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h1>
-            <ul>
+                </ul>
+
+                <h1>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h1>
+                <ul>
                     <li>
-                        <span>•</span> <span>Meta ads generated revenue of {{MetaRevenue}} with ROAS of {{MetaROAS}}. Compared to the previous day, revenue increased by {{MetaRevChgPct}} and ROAS increased by {{MetaROASChgPct}} .</span>
+                        <span>•</span> <span>{{MetaSummary}}</span>
                     </li>
                     <li>
-                        <span>•</span> <span>Customer Acquisition Cost on Meta increased to {{MetaCAC}} .</span>
+                        <span>•</span> <span>{{MetaCAC}}</span>
                     </li>
-                     <li>
-                        <span>•</span> <span>Google ads generated revenue of {{GoogleRevenue}} with ROAS of {{GoogleROAS}} . Compared to the previous day, revenue increased by {{GoogleRevChgPct}} and ROAS increased by {{GoogleROASChgPct}} .</span>
+                    <li>
+                        <span>•</span> <span>{{GoogleSummary}}</span>
                     </li>
-                     <li>
-                        <span>•</span> <span>Customer Acquisition Cost on Google ads increased to {{GoogleCAC}} .</span>
+                    <li>
+                        <span>•</span> <span>{{GoogleCAC}}</span>
                     </li>
-            </ul>
-             <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{day}} day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
-            <ul>
+                </ul>
+
+                <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{day}} day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
+                <ul>
                     <li>
                         <span>•</span> <span style="font-weight: bold;">Positive changes</span>
                     </li>
-                    <li>
-                        <span>•</span> <span>Revenue grew strongly by {{RevChgPct}} .</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>Order volume increased by {{OrdChgPct}} .</span>
-                    </li>
-            </ul>
-        
-            <ul>
+                </ul>
+                <div style="margin: 0 0 16px 0; padding-left: 20px; white-space: pre-line;">{{PositiveChanges}}</div>
+
+                <ul>
                     <li>
                         <span>•</span> <span style="font-weight: bold;">Requires a review</span>
                     </li>
-                    <li>
-                        <span>•</span> <span>Meta CAC increased by {{MetaCACChgPct}} .</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>Traffic declined by {{TrafficChgPct}} .</span>
-                    </li>
-            </ul>
+                </ul>
+                <div style="margin: 0 0 24px 0; padding-left: 20px; white-space: pre-line;">{{RequiresReviews}}</div>
             </div>
 
             <p style="margin-top: 32px;">
