@@ -349,13 +349,6 @@ const templates: Record<string, EmailTemplate> = {
             margin-bottom: 16px;
         }
 
-        .highlight-box {
-            background: linear-gradient(to bottom right, rgba(93, 187, 184, 0.05), rgba(93, 187, 184, 0.1));
-            border-radius: 0 8px 8px 0;
-            padding: 24px;
-            margin: 24px 0;
-        }
-
         .highlight-box h3 {
             color: #111827;
             margin-bottom: 12px;
