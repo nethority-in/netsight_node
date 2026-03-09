@@ -15,6 +15,8 @@ const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Netsights';
 
 const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024; // 5MB per attachment
 
+
+
 const MIME_TYPES: Record<string, string> = {
   pdf: 'application/pdf',
   doc: 'application/msword',

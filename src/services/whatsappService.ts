@@ -616,12 +616,12 @@ static async sendTemplatePreview(
     const metaCac = getVar('MetaCAC');
     const googleSummary = getVar('GoogleSummary');
     const googleCac = getVar('GoogleCAC');
-    const day = getVar('day');
+    const day = getVar('𝗱𝗮𝘆');
     const positiveChanges = getVar('PositiveChanges');
     const requiresReviews = getVar('RequiresReviews');
-    const bestseller1 = getVar('Bestseller1');
-    const bestseller2 = getVar('Bestseller2');
-    const bestseller3 = getVar('Bestseller3');
+    const bestseller1 = getVar('best_seller1');
+    const bestseller2 = getVar('best_seller2');
+    const bestseller3 = getVar('best_seller3');
 
     const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
 
@@ -715,7 +715,7 @@ static async sendTemplatePreview(
     </section>
 
     <section class="section">
-      <p class="section-title">𝗧𝗼𝗽 𝟯 𝗕𝗲𝘀𝘁𝘀𝗲𝗹𝗹𝗲𝗿'𝘀</p>
+      <p class="section-title">𝗠𝗼𝘀𝘁 𝗢𝗿𝗱𝗲𝗿𝗲𝗱 𝗣𝗿𝗼𝗱𝘂𝗰𝘁𝘀</p>
       <p class="block">${escapeHtml(bestseller1)}</p>
       <p class="block">${escapeHtml(bestseller2)}</p>
       <p class="block">${escapeHtml(bestseller3)}</p>

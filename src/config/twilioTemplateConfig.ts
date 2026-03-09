@@ -29,7 +29,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'weeklyreport':"HX5cc19404b60ec57af5b865e2449e7e31",
   'copy_weeklyreport':"HX20598758fa7247a30f2161db7ff43a84",
   'netsight_dailyreport_7day':"HXee48a4e4ba57b4a15c9e445f08d64322",
-  'netsight_dailyreport_7day_bestsell':"HX82487e826116ddd742e563a9c28"
+  // 'netsight_dailyreport_7day_bestsell':"HX82487e826116ddd742e563a9c28"
+  'netsight_dailyreport_7day_bestsell':"HXe70face30e556b6d380bdc2a8f0d9abd"
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
