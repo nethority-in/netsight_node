@@ -78,9 +78,67 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
 
   ns_temp_Notification_temp2: {
     name: 'ns_temp_Notification_temp2',
-    requiredFields: [],
+    requiredFields: [
+      'StoreName',
+      'PrevDate',
+  
+      'AOV',
+      'LTV',
+      'LTVCACRatio',
+      'GrossRevenue',
+      'NetSales',
+      'RefundRate',
+  
+      'NewVsRepeat',
+      'OrderFrequency',
+      'TotalDiscountRate',
+      'OrdersPerDay',
+      'TopCustomerLTV',
+      'ActiveCustomerBase',
+  
+      'MetaAdsSpend',
+      'MetaROAS',
+      'MetaSpendGrowth',
+      'GoogleAdsSpend',
+      'GoogleROAS',
+      'BlendedROAS',
+  
+      'iSightsAnalysis',
+      'PositiveChanges',
+      'RequiresReviews'
+    ],
+  
     optionalFields: [],
-    fieldOrder: []
+  
+    fieldOrder: [
+      'StoreName',
+      'PrevDate',
+  
+      'AOV',
+      'LTV',
+      'LTVCACRatio',
+      'GrossRevenue',
+      'NetSales',
+      'RefundRate',
+  
+      'NewVsRepeat',
+      'OrderFrequency',
+      'TotalDiscountRate',
+      'OrdersPerDay',
+      'TopCustomerLTV',
+      'ActiveCustomerBase',
+  
+      'MetaAdsSpend',
+      'MetaROAS',
+      'MetaSpendGrowth',
+      'GoogleAdsSpend',
+      'GoogleROAS',
+      'BlendedROAS',
+  
+      'iSightsAnalysis',
+      'PositiveChanges',
+      'RequiresReviews'
+    ]
   },
 
   ns_temp_OTP: {

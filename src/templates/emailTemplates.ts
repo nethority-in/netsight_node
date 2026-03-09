@@ -586,215 +586,372 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   ns_temp_Notification_temp2: {
     subject: '{{StoreName}} Daily Performance Summary',
     html: `
-      <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Store Daily Performance</title>
-
-<style>
-:root {
-  --bg: #0b0b0b;
-  --card-bg: #1a1a1a;
-  --border: #2a2a2a;
-  --primary: #ffffff;
-  --secondary: #a1a1aa;
-  --accent: #2dd4bf;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
-}
-
-body {
-  background: var(--bg);
-  color: var(--primary);
-  padding: 40px;
-}
-
-.container {
-  max-width: 1400px;
-  margin: auto;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.logo {
-  width: 180px;
-  height: auto;
-  object-fit: contain;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.card {
-  background: linear-gradient(145deg, #1c1c1c, #181818);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
-  margin-bottom: 28px;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.card-header .accent {
-  width: 8px;
-  height: 24px;
-  background: var(--accent);
-  margin-right: 12px;
-  border-radius: 2px;
-}
-
-.card-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 32px;
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-}
-
-.metric-label {
-  color: var(--secondary);
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-
-.metric-value {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-@media (max-width: 1200px) {
-  .metrics {
-    grid-template-columns: repeat(3, 1fr);
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <title>Email Template</title>
+  
+  <style>
+  
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:40px 0;
   }
-}
-
-@media (max-width: 768px) {
-  .metrics {
-    grid-template-columns: repeat(2, 1fr);
+  
+  .container{
+    max-width:900px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:14px;
+    padding:40px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.05);
   }
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-  <div class="logo-container">
-    <img src="cid:netsights-logo" alt="Netsights Logo" class="logo" />
+  
+  .header{
+    background:linear-gradient(to right, #ffffff, #f9fafb);
+    padding:24px 32px;
+    border-bottom:4px solid #5DBBB8;
+  }
+  
+  .header img{
+    height:48px;
+    object-fit:contain;
+  }
+  
+  h1{
+    font-size:20px;
+    margin:0;
+  }
+  
+  h2{
+    font-size:18px;
+    margin-top:25px;
+  }
+  
+  h3{
+    font-size:14px;
+    margin:0;
+  }
+  
+  p{
+    font-size:14px;
+    color:#555;
+  }
+  
+  .layer{
+    border-left:4px solid;
+    border-right:4px solid;
+    border-radius:12px;
+    padding:24px;
+    margin-top:20px;
+  }
+  
+  .layer-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+  }
+  
+  .layer-number{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+  }
+  
+  .metric-label{
+    font-size:12px;
+    color:#666;
+    margin-bottom:4px;
+  }
+  
+  .metric-value{
+    font-size:14px;
+    font-weight:600;
+    color:#111;
+  }
+  
+  .metrics-table td{
+    width:16%;
+    padding:8px;
+    vertical-align:top;
+  }
+  
+  .teal{
+    background:#ecfeff;
+    border-color:#5eead4;
+  }
+  
+  .teal .layer-number{
+    background:#5eead4;
+    color:#0f766e;
+    font-weight:600;
+  }
+  
+  .pink{
+    background:#fdf2f8;
+    border-color:#f9a8d4;
+  }
+  
+  .pink .layer-number{
+    background:#f9a8d4;
+    color:#9d174d;
+    font-weight:600;
+  }
+  
+  .indigo{
+    background:#eef2ff;
+    border-color:#c7d2fe;
+  }
+  
+  .indigo .layer-number{
+    background:#6366f1;
+    color:#fff;
+    font-weight:600;
+  }
+  
+  .highlight{
+    border-left:4px solid #6ee7b7;
+    border-right:4px solid #6ee7b7;
+    background:#ecfdf5;
+    padding:24px;
+    border-radius:12px;
+    margin-top:25px;
+  }
+  
+  ul{
+    margin:10px 0 0 0;
+    padding-left:18px;
+  }
+  
+  li{
+    margin-bottom:8px;
+    font-size:14px;
+    color:#444;
+  }
+  
+  .footer{
+    border-top:1px solid #eee;
+    margin-top:30px;
+    padding-top:20px;
+    font-size:14px;
+  }
+  
+  </style>
+  </head>
+  
+  <body>
+  
+  <div class="container">
+  
+  <div class="header">
+  <img src="cid:netsights-logo" alt="Netsights Logo">
   </div>
-  <div class="title">Your Store’s Daily Performance Summary</div>
+  
+  <h1 style="margin-top: 1rem;">Good day,</h1>
+  
+  <p>
+  This is an automated performance summary for
+  <b>{{StoreName}}</b>
+  for <b>{{PrevDate}}</b>.
+  </p>
+  
+  <h2>3 Layers of E-commerce Performance</h2>
+  
+  
+  <!-- ================= LAYER 1 ================= -->
+  
+  <div class="layer teal">
+  
+  <div class="layer-header">
+  <h3>🏆 UNIT ECONOMICS (FOUNDATION)</h3>
+  
+  </div>
+  
+  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+  
+  <td>
+  <div class="metric-label">AOV</div>
+  <div class="metric-value">{{AOV}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Customer LTV</div>
+  <div class="metric-value">{{LTV}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">LTV:CAC Ratio</div>
+  <div class="metric-value">{{LTVCACRatio}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Gross Revenue</div>
+  <div class="metric-value">{{GrossRevenue}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Net Sales</div>
+  <div class="metric-value">{{NetSales}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Refund Rate</div>
+  <div class="metric-value">{{RefundRate}}</div>
+  </td>
+  
+  </tr>
+  </table>
+  
+  </div>
+  
+  
+  <!-- ================= LAYER 2 ================= -->
+  
+  <div class="layer pink">
+  
+  <div class="layer-header">
+  <h3>⚙️ LAYER 2: OPERATIONAL METRICS (GROWTH DRIVERS)</h3>
+ 
+  </div>
+  
+  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+  
+  <td>
+  <div class="metric-label">New vs Repeat</div>
+  <div class="metric-value">{{NewVsRepeat}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Order Frequency</div>
+  <div class="metric-value">{{OrderFrequency}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Total Discount Rate</div>
+  <div class="metric-value">{{TotalDiscountRate}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Orders per Day</div>
+  <div class="metric-value">{{OrdersPerDay}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Top Customer LTV</div>
+  <div class="metric-value">{{TopCustomerLTV}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Active Customer Base</div>
+  <div class="metric-value">{{ActiveCustomerBase}}</div>
+  </td>
+  
+  </tr>
+  </table>
+  
+  </div>
+  
+  
+  <!-- ================= LAYER 3 ================= -->
+  
+  <div class="layer indigo">
+  
+  <div class="layer-header">
+  <h3> CAMPAIGN PERFORMANCE (MARKETING EFFICIENCY)</h3>
 
-  <!-- UNIT ECONOMICS -->
-  <div class="card">
-    <div class="card-header">
-      <div class="accent"></div>
-      <h2>UNIT ECONOMICS (FOUNDATION)</h2>
+  </div>
+  
+  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+  
+  <td>
+  <div class="metric-label">Meta Ads Spend</div>
+  <div class="metric-value">{{MetaAdsSpend}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Meta ROAS</div>
+  <div class="metric-value">{{MetaROAS}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Meta Spend Growth</div>
+  <div class="metric-value">{{MetaSpendGrowth}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Google Ads Spend</div>
+  <div class="metric-value">{{GoogleAdsSpend}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Google ROAS</div>
+  <div class="metric-value">{{GoogleROAS}}</div>
+  </td>
+  
+  <td>
+  <div class="metric-label">Blended ROAS</div>
+  <div class="metric-value">{{BlendedROAS}}</div>
+  </td>
+  
+  </tr>
+  </table>
+  
+  </div>
+  
+  
+  <!-- ================= ANALYSIS ================= -->
+  
+  <ul style="margin-top: 1rem;">
+  <li><span></span> <span style="font-weight:bold; font-size: 20px; color:black;">iSight's Analysis</span></li>
+  </ul>
+  
+  <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
+  {{iSightsAnalysis}}
+  </div>
+  
+  
+  <!-- ================= HIGHLIGHTS ================= -->
+  
+  <div class="highlight" style="border-left: 4px solid #6ee7b7; background: #ecfdf5; padding:24px; border-radius:12px; margin-top:25px;">
+    <ul>
+      <li><span></span> <span style="font-weight:bold;">🚀 PERFORMANCE HIGHLIGHTS</span></li>
+    </ul>
+    <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
+      {{PositiveChanges}}
     </div>
-    <div class="metrics" id="unitEconomics"></div>
   </div>
-
-  <!-- OPERATIONAL METRICS -->
-  <div class="card">
-    <div class="card-header">
-      <div class="accent"></div>
-      <h2>OPERATIONAL METRICS (GROWTH DRIVERS)</h2>
+  <div style="border-left: 4px solid #f87171; border-right: 4px solid #f87171; background: #fef2f2; padding:24px; border-radius:12px; margin-top:20px;">
+    <ul>
+      <li><span></span> <span style="font-weight:bold;">⚠️ REVIEW REQUIRED</span></li>
+    </ul>
+    <div style="margin:0 0 24px 0;padding-left:20px;white-space:pre-line;">
+      {{RequiresReviews}}
     </div>
-    <div class="metrics" id="operationalMetrics"></div>
   </div>
-
-  <!-- CAMPAIGN PERFORMANCE -->
-  <div class="card">
-    <div class="card-header">
-      <div class="accent"></div>
-      <h2>CAMPAIGN PERFORMANCE (MARKETING EFFICIENCY)</h2>
-    </div>
-    <div class="metrics" id="campaignPerformance"></div>
+   
+  
+  <div class="footer">
+  <p>Regards,</p>
+  <b>Netsights.ai</b>
   </div>
-</div>
-
-<script>
-// 🔥 Replace this with API/backend values
-const data = {
-  unitEconomics: [
-    { label: "AOV (Average Order Value)", value: "$115" },
-    { label: "Customer LTV", value: "$89" },
-    { label: "LTV CAC Ratio", value: "3:1" },
-    { label: "Gross Revenue", value: "$46K" },
-    { label: "Net Sale", value: "$38.6" },
-    { label: "Refund Rate", value: "7%" }
-  ],
-  operationalMetrics: [
-    { label: "New vs Repeat", value: "11.5x" },
-    { label: "Order Frequency", value: "1.18x" },
-    { label: "Total Discount Rate", value: "2.25%" },
-    { label: "Order per day", value: "45" },
-    { label: "Top Customer LTV", value: "$89" },
-    { label: "Active Customer Base", value: "250" }
-  ],
-  campaignPerformance: [
-    { label: "Meta Ads Spend", value: "$25K" },
-    { label: "Meta ROAS", value: "2.2x" },
-    { label: "Meta Spend Growth", value: "-56.7%" },
-    { label: "Google Ads Spend", value: "$18K" },
-    { label: "Google ROAS", value: "1.5x" },
-    { label: "Blended ROAS", value: "4.52x" },
-    { label: "Meta Conversion Rate", value: "0.81%" },
-    { label: "Best Campaign", value: "Black Friday Sale" },
-    { label: "CAC", value: "$3.8" }
-  ]
-};
-
-function renderMetrics(sectionId, metrics) {
-  const container = document.getElementById(sectionId);
-  container.innerHTML = "";
-  metrics.forEach(metric => {
-    const metricDiv = document.createElement("div");
-    metricDiv.className = "metric";
-    metricDiv.innerHTML = \`
-      <div class="metric-label">\${metric.label}</div>
-      <div class="metric-value">\${metric.value}</div>
-    \`;
-    container.appendChild(metricDiv);
-  });
-}
-
-renderMetrics("unitEconomics", data.unitEconomics);
-renderMetrics("operationalMetrics", data.operationalMetrics);
-renderMetrics("campaignPerformance", data.campaignPerformance);
-</script>
-
-</body>
-</html>
-    `,
-    text: '{{content}}'
+  
+  </div>
+  
+  </body>
+  </html>
+  `,
+  text: '{{content}}'
   },
 
   ns_temp_OTP: {
