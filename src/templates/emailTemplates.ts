@@ -275,6 +275,8 @@ const templates: Record<string, EmailTemplate> = {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
     <title>Netsights Email Template</title>
     <style>
         :root {
@@ -315,10 +317,11 @@ const templates: Record<string, EmailTemplate> = {
         }
 
         .header {
-            background: linear-gradient(to right, #ffffff, #f9fafb);
-            padding: 24px 32px;
-            border-bottom: 4px solid #5DBBB8;
-        }
+    background: linear-gradient(to right, #ffffff, #f9fafb);
+    padding: 15px;
+    border-bottom: 4px solid #5DBBB8;
+    text-align: center;
+}
 
         .header img {
             height: 48px;
@@ -326,7 +329,7 @@ const templates: Record<string, EmailTemplate> = {
         }
 
         .content {
-            padding: 40px 32px;
+            padding: 15px;
             background-color: white;
         }
 
@@ -355,8 +358,9 @@ const templates: Record<string, EmailTemplate> = {
         }
 
         .highlight-box ul {
-            list-style: none;
-        }
+list-style: none;
+padding-left:0;
+}
 
         .highlight-box li {
             color: #374151;
@@ -465,6 +469,54 @@ const templates: Record<string, EmailTemplate> = {
         .footer-separator {
             color: #d1d5db;
         }
+
+        @media (prefers-color-scheme: dark) {
+
+    body {
+        background-color: #0b0b0b !important;
+        color: #e5e7eb !important;
+    }
+
+    .email-container {
+        background-color: #111111 !important;
+        box-shadow: none !important;
+    }
+
+    .header {
+        background: #111111 !important;
+        border-bottom: 4px solid #2dd4bf !important;
+    }
+
+    .content {
+        background-color: #111111 !important;
+    }
+
+    .content p,
+    .highlight-box li,
+    .footer-info {
+        color: #d1d5db !important;
+    }
+
+    .highlight-box h1,
+    .highlight-box h2,
+    .highlight-box h3 {
+        color: #f3f4f6 !important;
+    }
+
+    .highlight-box li span:first-child {
+        color: #2dd4bf !important;
+    }
+
+    .footer {
+        background: #111111 !important;
+        border-top: 1px solid #2a2a2a !important;
+    }
+
+    .footer-links a {
+        color: #5eead4 !important;
+    }
+
+}
 
         @media (max-width: 600px) {
             .email-container {
@@ -586,372 +638,498 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   ns_temp_Notification_temp2: {
     subject: '{{StoreName}} Daily Performance Summary',
     html: `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-  <meta charset="UTF-8">
-  <title>Email Template</title>
-  
-  <style>
-  
-  body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#f5f5f5;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Email Template</title>
+    
+    <style>
+    
+    /* ---------------- BASE ---------------- */
+    
+    body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
+    background:#f9fafb;
     margin:0;
-    padding:40px 0;
-  }
-  
-  .container{
-    max-width:900px;
+    padding:20px;
+    color:#111827;
+    }
+    
+    .container{
+    max-width:600px;
     margin:auto;
     background:#ffffff;
-    border-radius:14px;
-    padding:40px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.05);
-  }
-  
-  .header{
-    background:linear-gradient(to right, #ffffff, #f9fafb);
-    padding:24px 32px;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    
+    /* ---------------- HEADER ---------------- */
+    
+    .header{
+    background:linear-gradient(to right,#ffffff,#f9fafb);
+    padding:15px;
     border-bottom:4px solid #5DBBB8;
-  }
-  
-  .header img{
-    height:48px;
-    object-fit:contain;
-  }
-  
-  h1{
+    text-align:center;
+    }
+    
+    .header img{
+    height:46px;
+    }
+    
+    /* ---------------- CONTENT ---------------- */
+    
+    .content{
+    padding:15px;
+    }
+    
+    h1{
     font-size:20px;
-    margin:0;
-  }
-  
-  h2{
+    }
+    
+    h2{
     font-size:18px;
-    margin-top:25px;
-  }
-  
-  h3{
+    }
+    
+    p{
     font-size:14px;
-    margin:0;
-  }
-  
-  p{
-    font-size:14px;
-    color:#555;
-  }
-  
-  .layer{
+    color:#374151;
+    line-height:1.6;
+    }
+    
+    /* ---------------- LAYER CARD ---------------- */
+    
+    .layer{
+    border-radius:14px;
+    padding:15px;
+    margin-top:10px;
     border-left:4px solid;
-    border-right:4px solid;
-    border-radius:12px;
-    padding:24px;
-    margin-top:20px;
-  }
-  
-  .layer-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
-  }
-  
-  .layer-number{
-    width:28px;
-    height:28px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-  }
-  
-  .metric-label{
-    font-size:12px;
-    color:#666;
-    margin-bottom:4px;
-  }
-  
-  .metric-value{
-    font-size:14px;
+    }
+    
+    .layer-header{
     font-weight:600;
-    color:#111;
-  }
-  
-  .metrics-table td{
-    width:16%;
-    padding:8px;
+    margin-bottom:10px;
+    font-size:14px;
+    letter-spacing:0.2px;
+    }
+    
+    /* ---------------- METRIC GRID ---------------- */
+    
+    .metrics-table{
+    width:100%;
+    }
+    
+    .metrics-table td{
+    width:33%;
+    padding:6px 3px;
     vertical-align:top;
-  }
-  
-  .teal{
+    }
+    
+    .metric-label{
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:2px;
+    }
+    
+    .metric-value{
+    font-size:15px;
+    font-weight:600;
+    color:#111827;
+    }
+    
+    /* ---------------- COLORS LIGHT MODE ---------------- */
+    
+    .teal{
     background:#ecfeff;
     border-color:#5eead4;
-  }
-  
-  .teal .layer-number{
-    background:#5eead4;
-    color:#0f766e;
-    font-weight:600;
-  }
-  
-  .pink{
+    }
+    
+    .pink{
     background:#fdf2f8;
     border-color:#f9a8d4;
-  }
-  
-  .pink .layer-number{
-    background:#f9a8d4;
-    color:#9d174d;
-    font-weight:600;
-  }
-  
-  .indigo{
+    }
+    
+    .indigo{
     background:#eef2ff;
     border-color:#c7d2fe;
-  }
-  
-  .indigo .layer-number{
-    background:#6366f1;
-    color:#fff;
-    font-weight:600;
-  }
-  
-  .highlight{
+    }
+    
+    /* ---------------- ANALYSIS ---------------- */
+    
+    .highlight{
     border-left:4px solid #6ee7b7;
-    border-right:4px solid #6ee7b7;
     background:#ecfdf5;
-    padding:24px;
+    padding:15px;
     border-radius:12px;
-    margin-top:25px;
-  }
-  
-  ul{
-    margin:10px 0 0 0;
+    margin-top:10px;
+    }
+    
+    ul{
+    margin:5px 0 0 0;
     padding-left:18px;
-  }
-  
-  li{
-    margin-bottom:8px;
+    }
+    
+    li{
+    margin-bottom:5px;
     font-size:14px;
     color:#444;
-  }
-  
-  .footer{
-    border-top:1px solid #eee;
-    margin-top:30px;
-    padding-top:20px;
-    font-size:14px;
-  }
-  
-  </style>
-  </head>
-  
-  <body>
-  
-  <div class="container">
-  
-  <div class="header">
-  <img src="cid:netsights-logo" alt="Netsights Logo">
-  </div>
-  
-  <h1 style="margin-top: 1rem;">Good day,</h1>
-  
-  <p>
-  This is an automated performance summary for
-  <b>{{StoreName}}</b>
-  for <b>{{PrevDate}}</b>.
-  </p>
-  
-  <h2>3 Layers of E-commerce Performance</h2>
-  
-  
-  <!-- ================= LAYER 1 ================= -->
-  
-  <div class="layer teal">
-  
-  <div class="layer-header">
-  <h3>🏆 UNIT ECONOMICS (FOUNDATION)</h3>
-  
-  </div>
-  
-  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
-  <tr>
-  
-  <td>
-  <div class="metric-label">AOV</div>
-  <div class="metric-value">{{AOV}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Customer LTV</div>
-  <div class="metric-value">{{LTV}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">LTV:CAC Ratio</div>
-  <div class="metric-value">{{LTVCACRatio}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Gross Revenue</div>
-  <div class="metric-value">{{GrossRevenue}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Net Sales</div>
-  <div class="metric-value">{{NetSales}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Refund Rate</div>
-  <div class="metric-value">{{RefundRate}}</div>
-  </td>
-  
-  </tr>
-  </table>
-  
-  </div>
-  
-  
-  <!-- ================= LAYER 2 ================= -->
-  
-  <div class="layer pink">
-  
-  <div class="layer-header">
-  <h3>⚙️ LAYER 2: OPERATIONAL METRICS (GROWTH DRIVERS)</h3>
- 
-  </div>
-  
-  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
-  <tr>
-  
-  <td>
-  <div class="metric-label">New vs Repeat</div>
-  <div class="metric-value">{{NewVsRepeat}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Order Frequency</div>
-  <div class="metric-value">{{OrderFrequency}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Total Discount Rate</div>
-  <div class="metric-value">{{TotalDiscountRate}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Orders per Day</div>
-  <div class="metric-value">{{OrdersPerDay}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Top Customer LTV</div>
-  <div class="metric-value">{{TopCustomerLTV}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Active Customer Base</div>
-  <div class="metric-value">{{ActiveCustomerBase}}</div>
-  </td>
-  
-  </tr>
-  </table>
-  
-  </div>
-  
-  
-  <!-- ================= LAYER 3 ================= -->
-  
-  <div class="layer indigo">
-  
-  <div class="layer-header">
-  <h3> CAMPAIGN PERFORMANCE (MARKETING EFFICIENCY)</h3>
+    }
+    
+    /* ---------------- FOOTER ---------------- */
+    
+    .footer{
+    background:linear-gradient(to right,#f9fafb,#f3f4f6);
+    padding:15px;
+    border-top:1px solid #e5e7eb;
+    text-align:center;
+    }
+    
+    .footer-links{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    padding-top:5px;
+    }
+    
+    .footer-links a{
+    color:#5DBBB8;
+    text-decoration:none;
+    font-size:13px;
+    }
+    
+    .footer-separator{
+    color:#d1d5db;
+    }
+    
+    /* ---------------- RESPONSIVE ---------------- */
+    
+    @media (max-width:600px){
 
-  </div>
-  
-  <table class="metrics-table" width="100%" cellpadding="0" cellspacing="0">
-  <tr>
-  
-  <td>
-  <div class="metric-label">Meta Ads Spend</div>
-  <div class="metric-value">{{MetaAdsSpend}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Meta ROAS</div>
-  <div class="metric-value">{{MetaROAS}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Meta Spend Growth</div>
-  <div class="metric-value">{{MetaSpendGrowth}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Google Ads Spend</div>
-  <div class="metric-value">{{GoogleAdsSpend}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Google ROAS</div>
-  <div class="metric-value">{{GoogleROAS}}</div>
-  </td>
-  
-  <td>
-  <div class="metric-label">Blended ROAS</div>
-  <div class="metric-value">{{BlendedROAS}}</div>
-  </td>
-  
-  </tr>
-  </table>
-  
-  </div>
-  
-  
-  <!-- ================= ANALYSIS ================= -->
-  
-  <ul style="margin-top: 1rem;">
-  <li><span></span> <span style="font-weight:bold; font-size: 20px; color:black;">iSight's Analysis</span></li>
-  </ul>
-  
-  <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
-  {{iSightsAnalysis}}
-  </div>
-  
-  
-  <!-- ================= HIGHLIGHTS ================= -->
-  
-  <div class="highlight" style="border-left: 4px solid #6ee7b7; background: #ecfdf5; padding:24px; border-radius:12px; margin-top:25px;">
+.container{
+border-radius:0;
+}
+
+.content{
+padding:15px;
+}
+
+.metrics-table td{
+width:50%;
+display:inline-block;
+box-sizing:border-box;
+padding:5px 3px;
+vertical-align:top;
+}
+
+.layer{
+padding:15px;
+}
+
+}
+    
+    /* ---------------- DARK MODE ---------------- */
+    
+    @media (prefers-color-scheme: dark){
+    
+    body{
+    background:#0b0b0b;
+    color:#f3f4f6;
+    }
+    
+    .container{
+    background:#0b0b0b;
+    box-shadow:none;
+    }
+    
+    .header{
+    background:#0b0b0b;
+    border-bottom:4px solid #2dd4bf;
+    }
+    
+    p{
+    color:#d1d5db;
+    }
+    
+    /* LAYERS */
+    
+    .layer{
+    background:#0f0f0f;
+    }
+    
+    .teal{
+    border-color:#2dd4bf;
+    }
+    
+    .pink{
+    border-color:#ec4899;
+    }
+    
+    .indigo{
+    border-color:#6366f1;
+    }
+    
+    .metric-label{
+    color:#9ca3af;
+    }
+    
+    .metric-value{
+    color:#f9fafb;
+    }
+    
+    /* HIGHLIGHT */
+    
+    .highlight{
+    background:#052e16;
+    border-color:#22c55e;
+    }
+    
+    /* REVIEW */
+    
+    .review{
+    background:#2a0b0b;
+    border-left:4px solid #ef4444;
+    }
+    
+    /* FOOTER */
+    
+    .footer{
+    background:#0b0b0b;
+    border-top:1px solid #222;
+    }
+    
+    .footer-links a{
+    color:#5eead4;
+    }
+    
+    }
+    
+    </style>
+    </head>
+    
+    <body>
+    
+    <div class="container">
+    
+    <div class="header">
+    <img src="cid:netsights-logo" alt="Netsights Logo">
+    </div>
+    
+    <div class="content">
+    
+    <h1>Good day,</h1>
+    
+    <p>
+    This is a performance summary for
+    <b>{{StoreName}}</b>
+    for <b>{{PrevDate}}</b>.
+    </p>
+
+    <!-- LAYER 1 -->
+    
+    <div class="layer teal">
+    
+    <div class="layer-header">
+   UNIT ECONOMICS 
+    </div>
+    
+    <table class="metrics-table" cellpadding="0" cellspacing="0">
+    
+    <tr>
+    <td>
+    <div class="metric-label">AOV</div>
+    <div class="metric-value">{{AOV}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Customer LTV</div>
+    <div class="metric-value">{{LTV}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">LTV:CAC Ratio</div>
+    <div class="metric-value">{{LTVCACRatio}}</div>
+    </td>
+    </tr>
+    
+    <tr>
+    <td>
+    <div class="metric-label">Gross Revenue</div>
+    <div class="metric-value">{{GrossRevenue}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Net Sales</div>
+    <div class="metric-value">{{NetSales}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Refund Rate</div>
+    <div class="metric-value">{{RefundRate}}</div>
+    </td>
+    </tr>
+    
+    </table>
+    </div>
+    
+    
+    <!-- LAYER 2 -->
+    
+    <div class="layer pink">
+    
+    <div class="layer-header">
+    OPERATIONAL METRICS
+    </div>
+    
+    <table class="metrics-table">
+    
+    <tr>
+    <td>
+    <div class="metric-label">New vs Repeat</div>
+    <div class="metric-value">{{NewVsRepeat}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Order Frequency</div>
+    <div class="metric-value">{{OrderFrequency}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Total Discount Rate</div>
+    <div class="metric-value">{{TotalDiscountRate}}</div>
+    </td>
+    </tr>
+    
+    <tr>
+    <td>
+    <div class="metric-label">Orders per Day</div>
+    <div class="metric-value">{{OrdersPerDay}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Top Customer LTV</div>
+    <div class="metric-value">{{TopCustomerLTV}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Active Customer Base</div>
+    <div class="metric-value">{{ActiveCustomerBase}}</div>
+    </td>
+    </tr>
+    
+    </table>
+    </div>
+    
+    
+    <!-- LAYER 3 -->
+    
+    <div class="layer indigo">
+    
+    <div class="layer-header">
+    CAMPAIGN PERFORMANCE
+    </div>
+    
+    <table class="metrics-table">
+    
+    <tr>
+    <td>
+    <div class="metric-label">Meta Ads Spend</div>
+    <div class="metric-value">{{MetaAdsSpend}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Meta ROAS</div>
+    <div class="metric-value">{{MetaROAS}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Meta Spend Growth</div>
+    <div class="metric-value">{{MetaSpendGrowth}}</div>
+    </td>
+    </tr>
+    
+    <tr>
+    <td>
+    <div class="metric-label">Google Ads Spend</div>
+    <div class="metric-value">{{GoogleAdsSpend}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Google ROAS</div>
+    <div class="metric-value">{{GoogleROAS}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Blended ROAS</div>
+    <div class="metric-value">{{BlendedROAS}}</div>
+    </td>
+    </tr>
+    
+    </table>
+    </div>
+     
+    <!-- POSITIVE -->
+    
+    <div class="highlight">
+    
     <ul>
-      <li><span></span> <span style="font-weight:bold;">🚀 PERFORMANCE HIGHLIGHTS</span></li>
+    <li><b>🚀 PERFORMANCE HIGHLIGHTS</b></li>
     </ul>
+    
     <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
-      {{PositiveChanges}}
+    {{PositiveChanges}}
     </div>
-  </div>
-  <div style="border-left: 4px solid #f87171; border-right: 4px solid #f87171; background: #fef2f2; padding:24px; border-radius:12px; margin-top:20px;">
+    
+    </div>
+    
+    
+    <!-- REVIEW -->
+    
+    <div class="review" style="background:#fef2f2;padding:22px;border-radius:12px;margin-top:20px;border-left:4px solid #f87171; #f87171;">
+    
     <ul>
-      <li><span></span> <span style="font-weight:bold;">⚠️ REVIEW REQUIRED</span></li>
+    <li><b>⚠️ REVIEW REQUIRED</b></li>
     </ul>
+    
     <div style="margin:0 0 24px 0;padding-left:20px;white-space:pre-line;">
-      {{RequiresReviews}}
+    {{RequiresReviews}}
     </div>
-  </div>
+    
+     <!-- ANALYSIS -->
+    
    
-  
-  <div class="footer">
-  <p>Regards,</p>
-  <b>Netsights.ai</b>
-  </div>
-  
-  </div>
-  
-  </body>
-  </html>
-  `,
-  text: '{{content}}'
+
+    </div>
+     <ul style="margin-top:20px;">
+    <li><b style="font-size:18px;">iSight's Analysis</b></li>
+    </ul>
+    
+    <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
+    {{iSightsAnalysis}}
+    </div>
+    
+    </div>
+    
+    
+    <div class="footer">
+    
+    <p style="margin-bottom:8px;">© 2026 Netsights.ai. All rights reserved</p>
+    
+    <div class="footer-links">
+    <a target="_blank" href="https://netsights.ai/support/">Support</a>
+    <span class="footer-separator">|</span>
+    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
+    </div>
+    
+    </div>
+    
+    </div>
+    
+    </body>
+    </html>
+    `,
+    text: '{{content}}'
   },
 
   ns_temp_OTP: {
@@ -1002,10 +1180,11 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
         }
 
         .header {
-            background: linear-gradient(to right, #ffffff, #f9fafb);
-            padding: 24px 32px;
-            border-bottom: 4px solid #5DBBB8;
-        }
+    background:linear-gradient(to right,#ffffff,#f9fafb);
+    padding: 24px 32px;
+    border-bottom: 4px solid #5DBBB8;
+    text-align: center;
+}
 
         .header img {
             height: 48px;
@@ -1013,7 +1192,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
         }
 
         .content {
-            padding: 40px 32px;
+            padding: 15px;
             background-color: white;
         }
 
@@ -1051,10 +1230,11 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
         }
 
         .highlight-box ul {
-            list-style: none;
-        }
+list-style: none;
+padding-left:0;
+}
 
-        .highlight-box li {
+        .highlight-box li { 
             color: #374151;
             margin-bottom: 8px;
             display: flex;
@@ -1089,7 +1269,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
 
         .footer {
             background: linear-gradient(to right, #f9fafb, #f3f4f6);
-            padding: 24px 32px;
+            padding: 15px;
             border-top: 1px solid #e5e7eb;
         }
 
@@ -1196,7 +1376,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
         </div>
 
         <!-- Content -->
-        <div class="content">
+        <div style="background-color: #f9fafb;" class="content">
             <p>Hello,</p>
 
             <p>You're receiving this email because you requested to verify your email address for {{StoreName}} notifications.</p>
