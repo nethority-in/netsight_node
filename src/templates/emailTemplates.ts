@@ -709,13 +709,12 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     background:#ffffff;
     border-radius:10px;
     overflow:hidden;
-    box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);
     }
     
     /* ---------------- HEADER ---------------- */
     
     .header{
-    background:linear-gradient(to right,#ffffff,#f9fafb);
+    background:#ffffff;
     padding:15px;
     border-bottom:4px solid #5DBBB8;
     text-align:center;
@@ -825,18 +824,10 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     /* ---------------- FOOTER ---------------- */
     
     .footer{
-    background:linear-gradient(to right,#f9fafb,#f3f4f6);
+    background:#f9fafb;
     padding:15px;
     border-top:1px solid #e5e7eb;
     text-align:center;
-    }
-    
-    .footer-links{
-    display:flex;
-    justify-content:center;
-    text-align:center;
-    gap:16px;
-    padding-top:5px;
     }
     
     .footer-links a{
@@ -845,35 +836,31 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     font-size:13px;
     }
     
-    .footer-separator{
-    color:#d1d5db;
-    }
-    
     /* ---------------- RESPONSIVE ---------------- */
     
     @media (max-width:600px){
-
-.container{
-border-radius:0;
-}
-
-.content{
-padding:15px;
-}
-
-.metrics-table td{
-width:50%;
-display:inline-block;
-box-sizing:border-box;
-padding:5px 3px;
-vertical-align:top;
-}
-
-.layer{
-padding:15px;
-}
-
-}
+    
+    .container{
+    border-radius:0;
+    }
+    
+    .content{
+    padding:15px;
+    }
+    
+    .metrics-table td{
+    width:50%;
+    display:inline-block;
+    box-sizing:border-box;
+    padding:5px 3px;
+    vertical-align:top;
+    }
+    
+    .layer{
+    padding:15px;
+    }
+    
+    }
     
     /* ---------------- DARK MODE ---------------- */
     
@@ -886,7 +873,6 @@ padding:15px;
     
     .container{
     background:#0b0b0b;
-    box-shadow:none;
     }
     
     .header{
@@ -897,8 +883,6 @@ padding:15px;
     p{
     color:#d1d5db;
     }
-    
-    /* LAYERS */
     
     .layer{
     background:#0f0f0f;
@@ -924,26 +908,12 @@ padding:15px;
     color:#f9fafb;
     }
     
-    /* HIGHLIGHT */
-    
-    // .highlight{
-    // background:#052e16;
-    // border-color:#22c55e;
-    // }
     .highlight{
-background:transparent;
-border-color:#22c55e;
-}
-    
-    /* REVIEW */
-    
-    .review{
-   
+    background:transparent;
+    border-color:#22c55e;
     }
     
-    /* FOOTER */
-    
-    .footer{    
+    .footer{
     background:#0b0b0b;
     border-top:1px solid #222;
     }
@@ -974,13 +944,13 @@ border-color:#22c55e;
     <b>{{StoreName}}</b>
     for <b>{{PrevDate}}</b>.
     </p>
-
+    
     <!-- LAYER 1 -->
     
     <div class="layer teal">
     
     <div class="layer-header">
-   UNIT ECONOMICS 
+    UNIT ECONOMICS
     </div>
     
     <table class="metrics-table" cellpadding="0" cellspacing="0">
@@ -1073,7 +1043,7 @@ border-color:#22c55e;
     
     <!-- LAYER 3 -->
     
-    <div class="layer indigo" >
+    <div class="layer indigo">
     
     <div class="layer-header">
     CAMPAIGN PERFORMANCE
@@ -1117,7 +1087,7 @@ border-color:#22c55e;
     
     </table>
     </div>
-     
+    
     <!-- POSITIVE -->
     
     <div class="highlight">
@@ -1132,10 +1102,9 @@ border-color:#22c55e;
     
     </div>
     
-    
     <!-- REVIEW -->
     
-    <div class="review" style="padding:15px;border-radius:12px;margin-top:10px;">
+    <div style="padding:15px;border-radius:12px;margin-top:10px;">
     
     <ul>
     <li><b>⚠️ REVIEW REQUIRED</b></li>
@@ -1145,12 +1114,9 @@ border-color:#22c55e;
     {{RequiresReviews}}
     </div>
     
-     <!-- ANALYSIS -->
-    
-   
-
     </div>
-     <ul style="margin-top:20px;">
+    
+    <ul style="margin-top:20px;">
     <li><b style="font-size:18px;">iSight's Analysis</b></li>
     </ul>
     
@@ -1166,12 +1132,16 @@ border-color:#22c55e;
     <p style="margin-bottom:8px;">© 2026 Netsights.ai. All rights reserved</p>
     
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
-    <tr><td align="center" style="text-align:center;">
+    <tr>
+    <td align="center">
     <a target="_blank" href="https://netsights.ai/support/" style="color:#5DBBB8; text-decoration:none;">Support</a>
-    <span style="color:#d1d5db;">|</span>
+    <span style="color:#d1d5db;"> | </span>
     <a target="_blank" href="https://netsights.ai/contact-us/" style="color:#5DBBB8; text-decoration:none;">Contact Us</a>
-    </td></tr>
+    </td>
+    </tr>
     </table>
+    
+    </div>
     
     </div>
     
@@ -1179,7 +1149,7 @@ border-color:#22c55e;
     </html>
     `,
     text: '{{content}}'
-  },
+    },
 
   ns_temp_OTP: {
     subject: '{{StoreName}} OTP Verification',
