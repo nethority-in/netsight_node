@@ -452,6 +452,7 @@ padding-left:0;
         .footer-links {
             display: flex;
             justify-content: center;
+            text-align: center;
             gap: 16px;
             padding-top: 8px;
         }
@@ -621,12 +622,14 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
         <div class="footer">
             <div class="footer-info">
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
-                <div class="footer-links">
-                    <a target="_blank" href="https://netsights.ai/support/">Support</a>
-                    <span class="footer-separator">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
-                </div>
-            </div>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
+                <tr><td align="center" style="text-align: center;">
+                    <a target="_blank" href="https://netsights.ai/support/" style="color: #5DBBB8; text-decoration: none;">Support</a>
+                    <span style="color: #d1d5db;">|</span>
+                    <a target="_blank" href="https://netsights.ai/contact-us/" style="color: #5DBBB8; text-decoration: none;">Contact Us</a>
+                </td></tr>
+                </table>
+        </div>
         </div>
     </div>
 </body>
@@ -789,6 +792,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     .footer-links{
     display:flex;
     justify-content:center;
+    text-align:center;
     gap:16px;
     padding-top:5px;
     }
@@ -1024,7 +1028,7 @@ padding:15px;
     
     <!-- LAYER 3 -->
     
-    <div class="layer indigo">
+    <div class="layer indigo" >
     
     <div class="layer-header">
     CAMPAIGN PERFORMANCE
@@ -1116,13 +1120,13 @@ padding:15px;
     
     <p style="margin-bottom:8px;">© 2026 Netsights.ai. All rights reserved</p>
     
-    <div class="footer-links">
-    <a target="_blank" href="https://netsights.ai/support/">Support</a>
-    <span class="footer-separator">|</span>
-    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
-    </div>
-    
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+    <tr><td align="center" style="text-align:center;">
+    <a target="_blank" href="https://netsights.ai/support/" style="color:#5DBBB8; text-decoration:none;">Support</a>
+    <span style="color:#d1d5db;">|</span>
+    <a target="_blank" href="https://netsights.ai/contact-us/" style="color:#5DBBB8; text-decoration:none;">Contact Us</a>
+    </td></tr>
+    </table>
     
     </div>
     
@@ -1324,6 +1328,7 @@ padding-left:0;
         .footer-links {
             display: flex;
             justify-content: center;
+            text-align: center;
             gap: 16px;
             padding-top: 8px;
         }
@@ -1395,11 +1400,13 @@ padding-left:0;
         <div class="footer">
             <div class="footer-info">
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
-                <div class="footer-links">
-                    <a target="_blank" href="https://netsights.ai/support/">Support</a>
-                    <span class="footer-separator">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/">Contact Us</a>
-                </div>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
+                <tr><td align="center" style="text-align: center;">
+                    <a target="_blank" href="https://netsights.ai/support/" style="color: #5DBBB8; text-decoration: none;">Support</a>
+                    <span style="color: #d1d5db;">|</span>
+                    <a target="_blank" href="https://netsights.ai/contact-us/" style="color: #5DBBB8; text-decoration: none;">Contact Us</a>
+                </td></tr>
+                </table>
             </div>
         </div>
     </div>
