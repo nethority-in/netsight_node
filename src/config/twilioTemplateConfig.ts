@@ -29,7 +29,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'weeklyreport':"HX5cc19404b60ec57af5b865e2449e7e31",
   'copy_weeklyreport':"HX20598758fa7247a30f2161db7ff43a84",
   'netsight_dailyreport_7day':"HXee48a4e4ba57b4a15c9e445f08d64322",
-  '6amcxosummary1':"HXb5cec0d34449468a20c16b0a05e3dd3f",
+  // '6amcxosummary1':"HXb5cec0d34449468a20c16b0a05e3dd3f",
+  '6amcxosummary1':"HX43f900aa486be9a9bc632734b1b333b2",
   // 'netsight_dailyreport_7day_bestsell':"HX82487e826116ddd742e563a9c28"
   'netsight_dailyreport_7day_bestsell':"HXe70face30e556b6d380bdc2a8f0d9abd",
   '6amcxosummary':"HX1099c41bb1638c1e8f2aec47ff3675f5"
