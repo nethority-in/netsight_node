@@ -471,51 +471,94 @@ padding-left:0;
             color: #d1d5db;
         }
 
-        @media (prefers-color-scheme: dark) {
+       @media (prefers-color-scheme: dark){
 
-    body {
-        background-color: #0b0b0b !important;
-        color: #e5e7eb !important;
-    }
+body{
+background:#0b0b0b;
+color:#f3f4f6;
+}
 
-    .email-container {
-        background-color: #111111 !important;
-        box-shadow: none !important;
-    }
+.container{
+background:#0b0b0b;
+box-shadow:none;
+}
 
-    .header {
-        background: #111111 !important;
-        border-bottom: 4px solid #2dd4bf !important;
-    }
+.header{
+background:#0b0b0b;
+border-bottom:4px solid #2dd4bf;
+}
 
-    .content {
-        background-color: #111111 !important;
-    }
+p{
+color:#d1d5db;
+}
 
-    .content p,
-    .highlight-box li,
-    .footer-info {
-        color: #d1d5db !important;
-    }
+/* HEADINGS */
 
-    .highlight-box h1,
-    .highlight-box h2,
-    .highlight-box h3 {
-        color: #f3f4f6 !important;
-    }
+h1,
+h2,
+.layer-header,
+.review b,
+.highlight b{
+color:#f9fafb;
+}
 
-    .highlight-box li span:first-child {
-        color: #2dd4bf !important;
-    }
+/* LAYERS */
 
-    .footer {
-        background: #111111 !important;
-        border-top: 1px solid #2a2a2a !important;
-    }
+.layer{
+background:#0f0f0f;
+}
 
-    .footer-links a {
-        color: #5eead4 !important;
-    }
+.teal{
+border-color:#2dd4bf;
+}
+
+.pink{
+border-color:#ec4899;
+}
+
+.indigo{
+border-color:#6366f1;
+}
+
+/* METRICS */
+
+.metric-label{
+color:#d1d5db;
+}
+
+.metric-value{
+color:#f9fafb;
+}
+
+/* LIST TEXT */
+
+li{
+color:#e5e7eb;
+}
+
+/* HIGHLIGHT (PERFORMANCE HIGHLIGHTS) */
+
+.highlight{
+background:transparent;
+border-color:#22c55e;
+}
+
+/* REVIEW SECTION */
+
+.review{
+background:#0f0f0f;
+}
+
+/* FOOTER */
+
+.footer{    
+background:#0b0b0b;
+border-top:1px solid #222;
+}
+
+.footer-links a{
+color:#5eead4;
+}
 
 }
 
@@ -763,7 +806,6 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     .highlight{
     border-left:4px solid #6ee7b7;
-    background:#ecfdf5;
     padding:15px;
     border-radius:12px;
     margin-top:10px;
@@ -884,10 +926,14 @@ padding:15px;
     
     /* HIGHLIGHT */
     
+    // .highlight{
+    // background:#052e16;
+    // border-color:#22c55e;
+    // }
     .highlight{
-    background:#052e16;
-    border-color:#22c55e;
-    }
+background:transparent;
+border-color:#22c55e;
+}
     
     /* REVIEW */
     

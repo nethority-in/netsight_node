@@ -632,12 +632,13 @@ static async sendTemplatePreview(
     const newCustomers = getVar('NewCustomers');
     const repeatCustomers = getVar('RepeatCustomers');
     const topProduct = getVar('TopProduct');
+    const highlights = getVar('Highlights') || getVar('highlights');
     const risk = getVar('Risk');
     const actions = getVar('Actions');
     const reportUrl = getVar('Url');
 
     const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
-    const isCxoSummaryV1 = templateName === '6amcxosummary1';
+    const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
 
     const htmlPreview = isBestsellTemplate
       ? `<html lang="en">
@@ -847,6 +848,7 @@ static async sendTemplatePreview(
     <p class="metric-line">New Customers: ${escapeHtml(newCustomers)}</p>
     <p class="metric-line">Repeat Customers: ${escapeHtml(repeatCustomers)}</p>
     <p class="metric-line">Top Product: ${escapeHtml(topProduct)}</p>
+    ${templateName === '6amcxosummary11032026' ? `<p class="metric-line">Highlights: ${escapeHtml(highlights)}</p>` : ""} 
     <p class="metric-line">Risk Alert: ${escapeHtml(risk)}</p>
     <p class="metric-line">Actions: ${escapeHtml(actions)}</p>
     <p class="metric-line">
