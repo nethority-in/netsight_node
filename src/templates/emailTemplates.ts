@@ -892,13 +892,12 @@ padding:15px;
     /* REVIEW */
     
     .review{
-    background:#2a0b0b;
-    border-left:4px solid #ef4444;
+   
     }
     
     /* FOOTER */
     
-    .footer{
+    .footer{    
     background:#0b0b0b;
     border-top:1px solid #222;
     }
@@ -1090,13 +1089,13 @@ padding:15px;
     
     <!-- REVIEW -->
     
-    <div class="review" style="background:#fef2f2;padding:22px;border-radius:12px;margin-top:20px;border-left:4px solid #f87171; #f87171;">
+    <div class="review" style="padding:15px;border-radius:12px;margin-top:10px;">
     
     <ul>
     <li><b>⚠️ REVIEW REQUIRED</b></li>
     </ul>
     
-    <div style="margin:0 0 24px 0;padding-left:20px;white-space:pre-line;">
+    <div style="margin:0 0 16px 0;padding-left:10px;white-space:pre-line;">
     {{RequiresReviews}}
     </div>
     
