@@ -128,6 +128,8 @@ static async previewTemplate(req: Request, res: Response): Promise<void> {
   try {
     const { templateName, parameters, templateVariables } = req.body;
 
+    
+
     if (templateName == null || String(templateName).trim() === "") {
       ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
       return;
@@ -165,6 +167,34 @@ static async previewTemplateHtml(req: Request, res: Response): Promise<void> {
       const { parameters, templateVariables } = req.body ?? {};
       params = parameters != null ? { ...parameters } : templateVariables != null ? { ...templateVariables } : {};
     }
+
+    Object.keys(params).forEach(key => {
+      if (params[key] === '' || params[key] === null || params[key] === undefined) {
+        params[key] = 'N/A';
+      } else if (typeof params[key] === 'string') {
+        if (key === 'LTVCACRatio') {
+          params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
+        }
+        else if (key === 'GrossRevenue') {
+          params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+        }
+        else if (key === 'MetaAdsSpend') {
+          params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+        }
+        else if (key === 'GoogleAdsSpend') {
+          params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+        }
+        else if (key === 'AOV') {
+          params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+        }
+        else if (key === 'BlendedROAS') {
+          params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
+        }
+        else {
+          params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+        }
+      }
+    });
 
     const result = await EmailService.previewTemplate(templateName, params);
 

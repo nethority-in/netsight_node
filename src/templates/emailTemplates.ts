@@ -684,7 +684,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   ns_temp_Notification_temp2: {
     subject: '{{StoreName}} Daily Performance Summary',
     html: `
-    <!DOCTYPE html>
+      <!DOCTYPE html>
     <html lang="en">
     <head>
     <meta charset="UTF-8">
@@ -693,7 +693,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     <style>
     
-    /* ---------------- BASE ---------------- */
+   
     
     body{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
@@ -711,7 +711,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     overflow:hidden;
     }
     
-    /* ---------------- HEADER ---------------- */
+ 
     
     .header{
     background:#ffffff;
@@ -724,10 +724,10 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     height:46px;
     }
     
-    /* ---------------- CONTENT ---------------- */
+   
     
     .content{
-    padding:15px;
+    padding:10px;
     }
     
     h1{
@@ -744,7 +744,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     line-height:1.6;
     }
     
-    /* ---------------- LAYER CARD ---------------- */
+  
     
     .layer{
     border-radius:14px;
@@ -760,7 +760,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     letter-spacing:0.2px;
     }
     
-    /* ---------------- METRIC GRID ---------------- */
+ 
     
     .metrics-table{
     width:100%;
@@ -773,18 +773,18 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     }
     
     .metric-label{
-    font-size:12px;
+    font-size:11px;
     color:#6b7280;
     margin-bottom:2px;
     }
     
     .metric-value{
-    font-size:15px;
+    font-size:13px;
     font-weight:600;
     color:#111827;
     }
     
-    /* ---------------- COLORS LIGHT MODE ---------------- */
+  
     
     .teal{
     background:#ecfeff;
@@ -801,10 +801,19 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     border-color:#c7d2fe;
     }
     
-    /* ---------------- ANALYSIS ---------------- */
+   
     
     .highlight{
+    background:#f0fdf4;
     border-left:4px solid #6ee7b7;
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
+    }
+    
+    .review{
+    background:#fff1f2;
+    border-left:4px solid #fca5a5;
     padding:15px;
     border-radius:12px;
     margin-top:10px;
@@ -821,7 +830,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     color:#444;
     }
     
-    /* ---------------- FOOTER ---------------- */
+
     
     .footer{
     background:#f9fafb;
@@ -836,7 +845,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     font-size:13px;
     }
     
-    /* ---------------- RESPONSIVE ---------------- */
+ 
     
     @media (max-width:600px){
     
@@ -845,24 +854,34 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     }
     
     .content{
-    padding:15px;
+    padding:3px;
     }
     
     .metrics-table td{
-    width:50%;
     display:inline-block;
     box-sizing:border-box;
-    padding:5px 3px;
+    /* padding:2px 1px; */
+    padding-left: 5px;
+
     vertical-align:top;
     }
     
     .layer{
-    padding:15px;
+    padding:7px;
+    }
+
+    .mobile-view{
+        padding-left: 10px;
+    padding-right: 10px;
+    }
+
+    .layer-header{
+        padding-left: 5px;
     }
     
     }
     
-    /* ---------------- DARK MODE ---------------- */
+
     
     @media (prefers-color-scheme: dark){
     
@@ -913,6 +932,11 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     border-color:#22c55e;
     }
     
+    .review{
+    background:transparent;
+    border-color:#ef4444;
+    }
+    
     .footer{
     background:#0b0b0b;
     border-top:1px solid #222;
@@ -937,15 +961,15 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     <div class="content">
     
-    <h1>Good day,</h1>
+    <h1 style="padding-left:16px; padding-right: 11px;" class="mobile-view">Good day,</h1>
     
-    <p>
+    <p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
     This is a performance summary for
     <b>{{StoreName}}</b>
     for <b>{{PrevDate}}</b>.
     </p>
     
-    <!-- LAYER 1 -->
+ 
     
     <div class="layer teal">
     
@@ -956,22 +980,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <table class="metrics-table" cellpadding="0" cellspacing="0">
     
     <tr>
-    <td>
-    <div class="metric-label">AOV</div>
-    <div class="metric-value">{{AOV}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Customer LTV</div>
-    <div class="metric-value">{{LTV}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">LTV:CAC Ratio</div>
-    <div class="metric-value">{{LTVCACRatio}}</div>
-    </td>
-    </tr>
-    
+
     <tr>
     <td>
     <div class="metric-label">Gross Revenue</div>
@@ -984,8 +993,24 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </td>
     
     <td>
-    <div class="metric-label">Refund Rate</div>
-    <div class="metric-value">{{RefundRate}}</div>
+    <div class="metric-label">Orders</div>
+    <div class="metric-value">{{Orders}}</div>
+    </td>
+    </tr>
+
+    <td>
+    <div class="metric-label">AOV</div>
+    <div class="metric-value">{{AOV}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">LTV</div>
+    <div class="metric-value">{{LTV}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">LTV CAC</div>
+    <div class="metric-value">{{LTVCACRatio}}</div>
     </td>
     </tr>
     
@@ -993,7 +1018,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </div>
     
     
-    <!-- LAYER 2 -->
+
     
     <div class="layer pink">
     
@@ -1015,33 +1040,32 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </td>
     
     <td>
-    <div class="metric-label">Total Discount Rate</div>
+    <div class="metric-label">Discount Rate</div>
     <div class="metric-value">{{TotalDiscountRate}}</div>
     </td>
     </tr>
     
     <tr>
     <td>
-    <div class="metric-label">Orders per Day</div>
-    <div class="metric-value">{{OrdersPerDay}}</div>
+    <div class="metric-label">Order Fulfilment Rate</div>
+    <div class="metric-value">{{OrderFulfillmentRate}}</div>
     </td>
     
     <td>
-    <div class="metric-label">Top Customer LTV</div>
-    <div class="metric-value">{{TopCustomerLTV}}</div>
+    <div class="metric-label">GA4 Sessions</div>
+    <div class="metric-value">{{GA4Sessions}}</div>
     </td>
     
     <td>
-    <div class="metric-label">Active Customer Base</div>
-    <div class="metric-value">{{ActiveCustomerBase}}</div>
+    <div class="metric-label">GA4 Users</div>
+    <div class="metric-value">{{GA4Users}}</div>
     </td>
     </tr>
     
     </table>
     </div>
     
-    
-    <!-- LAYER 3 -->
+
     
     <div class="layer indigo">
     
@@ -1088,40 +1112,29 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </table>
     </div>
     
-    <!-- POSITIVE -->
+
     
     <div class="highlight">
     
-    <ul>
-    <li><b>🚀 PERFORMANCE HIGHLIGHTS</b></li>
+    <ul style="list-style: none; padding: 0px;">
+    <li ><b>PERFORMANCE HIGHLIGHTS</b></li>
     </ul>
     
-    <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
+    <div >
     {{PositiveChanges}}
     </div>
     
     </div>
     
-    <!-- REVIEW -->
+
+    <div class="review">
     
-    <div style="padding:15px;border-radius:12px;margin-top:10px;">
-    
-    <ul>
-    <li><b>⚠️ REVIEW REQUIRED</b></li>
+    <ul style="list-style: none; padding: 0px;" >
+    <li><b>REVIEW REQUIRED</b></li>
     </ul>
     
-    <div style="margin:0 0 16px 0;padding-left:10px;white-space:pre-line;">
+    <div>
     {{RequiresReviews}}
-    </div>
-    
-    </div>
-    
-    <ul style="margin-top:20px;">
-    <li><b style="font-size:18px;">iSight's Analysis</b></li>
-    </ul>
-    
-    <div style="margin:0 0 16px 0;padding-left:20px;white-space:pre-line;">
-    {{iSightsAnalysis}}
     </div>
     
     </div>
