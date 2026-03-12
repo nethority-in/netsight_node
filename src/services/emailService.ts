@@ -4,7 +4,6 @@ import { ErrorHandler } from '../utils/errorHandler.js';
 import { retryWithBackoff } from '../utils/retry.js';
 import { appendEmailLog } from '../utils/logApiResponse.js';
 import { EMAIL_LOGO_BASE64, LOGO_CID } from "../logo/emailLogo.js";
-import { Parameter } from 'twilio/lib/twiml/VoiceResponse.js';
 
 dotenv.config();
 
