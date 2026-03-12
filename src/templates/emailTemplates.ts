@@ -1120,7 +1120,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <li ><b>PERFORMANCE HIGHLIGHTS</b></li>
     </ul>
     
-    <div >
+    <div style="white-space: pre-line !important;">
     {{PositiveChanges}}
     </div>
     
@@ -1133,7 +1133,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <li><b>REVIEW REQUIRED</b></li>
     </ul>
     
-    <div>
+    <div style="white-space: pre-line !important;">
     {{RequiresReviews}}
     </div>
     
