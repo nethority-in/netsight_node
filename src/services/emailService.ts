@@ -4,6 +4,7 @@ import { ErrorHandler } from '../utils/errorHandler.js';
 import { retryWithBackoff } from '../utils/retry.js';
 import { appendEmailLog } from '../utils/logApiResponse.js';
 import { EMAIL_LOGO_BASE64, LOGO_CID } from "../logo/emailLogo.js";
+import { Parameter } from 'twilio/lib/twiml/VoiceResponse.js';
 
 dotenv.config();
 
@@ -479,6 +480,7 @@ export class EmailService {
         appendEmailLog(logPayload, serviceResponse);
       } catch (e) {
         console.error("appendEmailLog failed:", e);
+        appendEmailLog({e, endpoint: 'send', env: envLabel(), to: toArray, subject, from: MAIL_FROM_ADDRESS, fromName: MAIL_FROM_NAME, cc: ccList.length > 0 ? ccList : undefined, bcc: bccList.length > 0 ? bccList : undefined, hasHtml: true, hasText: Boolean(textContent), attachmentCount: mailjetAttachments?.length ?? 0, ...(logContext?.parameters != null && { parameters: logContext.parameters }) }, { message: 'Unknown error' });
       }
 
       console.log(

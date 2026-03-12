@@ -274,6 +274,14 @@ static async previewTemplateHtml(req: Request, res: Response): Promise<void> {
       }
   
       const params: Record<string, any> = parameters != null ? { ...parameters } : {};
+
+      Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+          params[key] = 'N/A';
+        } else if (typeof params[key] === 'string') {
+          params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+        }
+      });
   
       const { TemplateBuilder } = await import("../services/templateBuilder.js");
       const { getTemplateConfig } = await import("../config/templateConfigs.js");

@@ -66,7 +66,7 @@ export class WhatsAppService {
   }
   // Accepts E.164 (+44...), with country code (447700...), or national format with default country (e.g. 9876543210 + DEFAULT_PHONE_COUNTRY=IN).
   // Returns E.164 with '+' for Twilio API; rejects invalid or non-mobile/fixed-line-or-mobile numbers.
-   
+
   static normalizePhoneForWhatsApp(phone: string): { ok: true; e164: string } | { ok: false; message: string } {
     const trimmed = phone.trim();
     if (!trimmed) {
@@ -104,14 +104,14 @@ export class WhatsAppService {
 
 
 
-  
-// use
-static async sendTemplate(
-  to: string,
-  templateName: string,
-  _languageCode: string = 'en_US',
-  components?:
-    | Array<{
+
+  // use
+  static async sendTemplate(
+    to: string,
+    templateName: string,
+    _languageCode: string = 'en_US',
+    components?:
+      | Array<{
         type: string;
         parameters?: Array<{
           type: string;
@@ -122,250 +122,216 @@ static async sendTemplate(
         sub_type?: string;
         index?: number;
       }>
-    | {
+      | {
         bodyNamed?: Record<string, unknown>;
         headerNamed?: Record<string, unknown>;
         body?: Record<string, unknown>;
         header?: Record<string, unknown>;
       },
-  fromCredentials?: { phoneNumberId: string; accessToken: string }
-): Promise<WhatsAppServiceResponse> {
-  let cleanedPhone = '';
-  let fromNumber = '';
-  let twilioTemplateId: string | null | undefined;
-  let contentVariables: Record<string, string> = {};
-  try {
-    const phoneResult = this.normalizePhoneForWhatsApp(to);
-    if (!phoneResult.ok) {
-      return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
-    }
-    cleanedPhone = phoneResult.e164;
+    fromCredentials?: { phoneNumberId: string; accessToken: string }
+  ): Promise<WhatsAppServiceResponse> {
+    let cleanedPhone = '';
+    let fromNumber = '';
+    let twilioTemplateId: string | null | undefined;
+    let contentVariables: Record<string, string> = {};
+    try {
+      const phoneResult = this.normalizePhoneForWhatsApp(to);
+      if (!phoneResult.ok) {
+        return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
+      }
+      cleanedPhone = phoneResult.e164;
 
-    if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
-      return ErrorHandler.toServiceError(
-        'Template name is required and must be a non-empty string.',
-        400
-      ) as WhatsAppServiceResponse;
-    }
-
-    const apiConfig = this.validateTwilioConfig();
-    if (!apiConfig.valid) {
-      return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
-    }
-
-    twilioTemplateId = getTwilioTemplateId(templateName);
-    if (!twilioTemplateId) {
-      return ErrorHandler.toServiceError(
-        `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
-        400
-      ) as WhatsAppServiceResponse;
-    }
-
-    fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
-
-    // ----------------------------
-    // Build contentVariables (dynamic)
-    // ----------------------------
-    contentVariables = {};
-
-    function sanitizeContentVariable(value: unknown): string | null {
-      if (value === null || value === undefined) return null;
-
-      // Preserve line breaks (WhatsApp supports newlines in text)
-      const s = String(value)
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n')
-        .replace(/\t/g, ' ')
-        .replace(/[ ]{5,}/g, '    ') // max 4 consecutive spaces
-        .trim();
-
-      return s === '' ? null : s;
-    }
-
-    function setVar(key: string, value: unknown) {
-      const v = sanitizeContentVariable(value);
-      if (v != null) contentVariables[key] = v;
-    }
-
-    // Normalize incoming keys (Store_Name -> StoreName etc.)
-    function normalizeKey(k: string): string {
-      const key = String(k ?? '').trim();
-      const lower = key.toLowerCase();
-
-      // ---- Highly-used mappings (fixes your exact issue) ----
-      if (lower === 'store_name' || lower === 'store name') return 'StoreName';
-      if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
-
-      if (
-        lower === 'revenue_percent_change' ||
-        lower === 'revenue % change' ||
-        lower === 'revenue%change'
-      )
-        return 'RevChgPct';
-
-      if (
-        lower === 'orders_percent_change' ||
-        lower === 'orders % change' ||
-        lower === 'orders%change'
-      )
-        return 'OrdChgPct';
-
-      // Templates sometimes use "MetaSummary"/"GoogleSummary" instead of Fb_ROAS/GoogleAds_ROAS
-      if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
-      if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
-
-      // ---- General snake_case -> CamelCase fallback ----
-      // Example: meta_summary -> MetaSummary
-      if (key.includes('_')) {
-        const parts = key.split('_').filter(Boolean);
-        if (parts.length === 0) return key;
-        const camel =
-          parts[0].charAt(0).toUpperCase() + parts[0].slice(1) +
-          parts
-            .slice(1)
-            .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
-            .join('');
-        return camel;
+      if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
+        return ErrorHandler.toServiceError(
+          'Template name is required and must be a non-empty string.',
+          400
+        ) as WhatsAppServiceResponse;
       }
 
-      return key;
-    }
-
-    // Apply named object variables (recommended)
-    function applyNamed(obj: any) {
-      if (!obj || typeof obj !== 'object') return;
-
-      for (const [k, v] of Object.entries(obj)) {
-        // 1) Always send the original key (in case it already matches the template)
-        setVar(k, v);
-
-        // 2) Also send the normalized key (fixes Store_Name -> StoreName, Fb_ROAS -> MetaSummary, etc.)
-        const nk = normalizeKey(k);
-        if (nk && nk !== k) setVar(nk, v);
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
       }
-    }
 
-    // ----------------------------
-    // 1) ARRAY format
-    // ----------------------------
-    if (Array.isArray(components) && components.length > 0) {
-      const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
-      const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+      twilioTemplateId = getTwilioTemplateId(templateName);
+      if (!twilioTemplateId) {
+        return ErrorHandler.toServiceError(
+          `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
+          400
+        ) as WhatsAppServiceResponse;
+      }
 
-      const applyParams = (params: any[] | undefined, startIndex: number) => {
-        if (!params?.length) return startIndex;
+      fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
-        params.forEach((param, idx) => {
-          const t = String(param.type ?? '').toLowerCase();
-          if (t !== 'text') return;
+      // ----------------------------
+      // Build contentVariables (dynamic)
+      // ----------------------------
+      contentVariables = {};
 
-          const rawKey = String(param.parameter_name ?? '').trim();
 
-          if (rawKey) {
-            // send as named + normalized
-            setVar(rawKey, param.text ?? '');
-            const nk = normalizeKey(rawKey);
-            if (nk !== rawKey) setVar(nk, param.text ?? '');
-          } else {
-            // numeric fallback for {{1}}, {{2}} templates
-            setVar(String(startIndex + idx), param.text ?? '');
-          }
-        });
+      function sanitizeContentVariable(value: unknown): string | null {
+        if (value === null || value === undefined) return null;
 
-        return startIndex + params.length;
+        // Preserve line breaks (WhatsApp supports newlines in text)
+        const s = String(value)
+          .replace(/\d+\.\d{3,}/g, (match) => parseFloat(match).toFixed(2))
+          .replace(/\\n/g, '. ')
+          .replace(/\n/g, '. ')
+          .replace(/\r\n/g, '. ')
+          .replace(/&/g, 'and')
+          .replace(/\r/g, '. ')
+          .replace(/\t/g, ' ')
+          .replace(/[ ]{5,}/g, '    ')
+          .trim();
+        return s === '' ? 'N/A' : s;
+      }
+
+      function setVar(key: string, value: unknown) {
+        const v = sanitizeContentVariable(value);
+        if (v != null) contentVariables[key] = v;
+      }
+
+      // Normalize incoming keys (Store_Name -> StoreName etc.)
+      function normalizeKey(k: string): string {
+        const key = String(k ?? '').trim();
+        const lower = key.toLowerCase();
+
+        // ---- Highly-used mappings (fixes your exact issue) ----
+        if (lower === 'store_name' || lower === 'store name') return 'StoreName';
+        if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
+
+        if (
+          lower === 'revenue_percent_change' ||
+          lower === 'revenue % change' ||
+          lower === 'revenue%change'
+        )
+          return 'RevChgPct';
+
+        if (
+          lower === 'orders_percent_change' ||
+          lower === 'orders % change' ||
+          lower === 'orders%change'
+        )
+          return 'OrdChgPct';
+
+        // Templates sometimes use "MetaSummary"/"GoogleSummary" instead of Fb_ROAS/GoogleAds_ROAS
+        if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
+        if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
+
+        // ---- General snake_case -> CamelCase fallback ----
+        // Example: meta_summary -> MetaSummary
+        if (key.includes('_')) {
+          const parts = key.split('_').filter(Boolean);
+          if (parts.length === 0) return key;
+          const camel =
+            parts[0].charAt(0).toUpperCase() + parts[0].slice(1) +
+            parts
+              .slice(1)
+              .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
+              .join('');
+          return camel;
+        }
+
+        return key;
+      }
+
+      // Apply named object variables (recommended)
+      function applyNamed(obj: any) {
+        if (!obj || typeof obj !== 'object') return;
+
+        for (const [k, v] of Object.entries(obj)) {
+          // 1) Always send the original key (in case it already matches the template)
+          setVar(k, v);
+
+          // 2) Also send the normalized key (fixes Store_Name -> StoreName, Fb_ROAS -> MetaSummary, etc.)
+          const nk = normalizeKey(k);
+          if (nk && nk !== k) setVar(nk, v);
+        }
+      }
+
+
+      // ----------------------------
+      // 1) ARRAY format
+      // ----------------------------
+      if (Array.isArray(components) && components.length > 0) {
+        const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
+        const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+
+        const applyParams = (params: any[] | undefined, startIndex: number) => {
+          if (!params?.length) return startIndex;
+
+          params.forEach((param, idx) => {
+            const t = String(param.type ?? '').toLowerCase();
+            if (t !== 'text') return;
+
+            const rawKey = String(param.parameter_name ?? '').trim();
+
+            if (rawKey) {
+              // send as named + normalized
+              setVar(rawKey, param.text ?? '');
+              const nk = normalizeKey(rawKey);
+              if (nk !== rawKey) setVar(nk, param.text ?? '');
+            } else {
+              // numeric fallback for {{1}}, {{2}} templates
+              setVar(String(startIndex + idx), param.text ?? '');
+            }
+          });
+
+          return startIndex + params.length;
+        };
+
+        let nextIndex = 1;
+        nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
+        applyParams(headerComponent?.parameters, nextIndex);
+      }
+
+      // ----------------------------
+      // 2) OBJECT format (Postman/Laravel)
+      // ----------------------------
+      else if (components && typeof components === 'object') {
+        const c: any = components;
+        const bodyNamed = c.bodyNamed ?? c.body;
+        const headerNamed = c.headerNamed ?? c.header;
+
+        applyNamed(bodyNamed);
+        applyNamed(headerNamed);
+
+        // OPTIONAL:
+        // If your template uses numeric placeholders {{1}}, {{2}} but you send bodyNamed,
+        // you can auto-number based on insertion order. Uncomment if needed:
+        //
+        // if (bodyNamed && typeof bodyNamed === 'object') {
+        //   Object.values(bodyNamed).forEach((val, i) => setVar(String(i + 1), val));
+        // }
+      }
+      // console.log(variable);
+      // process.exit();
+
+      // ----------------------------
+      // Build Twilio payload
+      // ----------------------------
+      const messagePayload: any = {
+        from: `whatsapp:${fromNumber}`,
+        to: `whatsapp:${cleanedPhone}`,
+        contentSid: twilioTemplateId
       };
 
-      let nextIndex = 1;
-      nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
-      applyParams(headerComponent?.parameters, nextIndex);
-    }
-
-    // ----------------------------
-    // 2) OBJECT format (Postman/Laravel)
-    // ----------------------------
-    else if (components && typeof components === 'object') {
-      const c: any = components;
-      const bodyNamed = c.bodyNamed ?? c.body;
-      const headerNamed = c.headerNamed ?? c.header;
-
-      applyNamed(bodyNamed);
-      applyNamed(headerNamed);
-
-      // OPTIONAL:
-      // If your template uses numeric placeholders {{1}}, {{2}} but you send bodyNamed,
-      // you can auto-number based on insertion order. Uncomment if needed:
-      //
-      // if (bodyNamed && typeof bodyNamed === 'object') {
-      //   Object.values(bodyNamed).forEach((val, i) => setVar(String(i + 1), val));
-      // }
-    }
-// console.log(variable);
-// process.exit();
-
-    // ----------------------------
-    // Build Twilio payload
-    // ----------------------------
-    const messagePayload: any = {
-      from: `whatsapp:${fromNumber}`,
-      to: `whatsapp:${cleanedPhone}`,
-      contentSid: twilioTemplateId
-    };
-
-    if (Object.keys(contentVariables).length > 0) {
-      messagePayload.contentVariables = JSON.stringify(contentVariables);
-    }
-
-    console.log('📤 Twilio send payload (debug):', {
-      to: cleanedPhone,
-      from: fromNumber,
-      templateName,
-      contentSid: twilioTemplateId,
-      contentVariables
-    });
-
-    const client = getTwilioClient();
-    const message = await client.messages.create(messagePayload);
-
-    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
-    const logRequest = {
-      endpoint: 'send-message',
-      env: envLabel,
-      to: cleanedPhone,
-      from: fromNumber,
-      templateName,
-      contentSid: twilioTemplateId,
-      contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined
-    };
-    const logResponse = {
-      sid: message.sid,
-      status: message.status,
-      to: message.to || cleanedPhone,
-      from: message.from || fromNumber
-    };
-    try {
-      appendWhatsAppLog(logRequest, logResponse);
-    } catch (e) {
-      console.error('appendWhatsAppLog failed:', e);
-    }
-
-    console.log(`[${envLabel}] WhatsApp send-message: to=${cleanedPhone}, template=${templateName}, sid=${message.sid}`);
-
-    return {
-      ok: true,
-      meta: {
-        sid: message.sid,
-        status: message.status,
-        to: message.to || cleanedPhone,
-        from: message.from || fromNumber,
-        dateCreated: message.dateCreated,
-        dateUpdated: message.dateUpdated
+      if (Object.keys(contentVariables).length > 0) {
+        messagePayload.contentVariables = JSON.stringify(contentVariables);
       }
-    };
-  } catch (error) {
-    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
-    console.error(`[${envLabel}] WhatsApp send-message failed:`, error instanceof Error ? error.message : error);
-    const errResponse = this.handleError(error);
-    try {
+
+      console.log('📤 Twilio send payload (debug):', {
+        to: cleanedPhone,
+        from: fromNumber,
+        templateName,
+        contentSid: twilioTemplateId,
+        contentVariables
+      });
+
+      const client = getTwilioClient();
+      const message = await client.messages.create(messagePayload);
+
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
       const logRequest = {
         endpoint: 'send-message',
         env: envLabel,
@@ -373,19 +339,59 @@ static async sendTemplate(
         from: fromNumber,
         templateName,
         contentSid: twilioTemplateId,
-        contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined,
-        error: true
+        contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined
       };
-      const logResponse = errResponse?.error
-        ? { message: errResponse.error.message, status: errResponse.error.status, code: errResponse.error.code }
-        : { message: 'Unknown error' };
-      appendWhatsAppLog(logRequest, logResponse);
-    } catch (e) {
-      console.error('appendWhatsAppLog failed:', e);
+      const logResponse = {
+        sid: message.sid,
+        status: message.status,
+        to: message.to || cleanedPhone,
+        from: message.from || fromNumber
+      };
+      try {
+        appendWhatsAppLog(logRequest, logResponse);
+      } catch (e) {
+        console.error('appendWhatsAppLog failed:', e);
+      }
+
+      console.log(`[${envLabel}] WhatsApp send-message: to=${cleanedPhone}, template=${templateName}, sid=${message.sid}`);
+
+      return {
+        ok: true,
+        meta: {
+          sid: message.sid,
+          status: message.status,
+          to: message.to || cleanedPhone,
+          from: message.from || fromNumber,
+          dateCreated: message.dateCreated,
+          dateUpdated: message.dateUpdated
+        }
+      };
+    } catch (error) {
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      console.error(`[${envLabel}] WhatsApp send-message failed:`, error instanceof Error ? error.message : error);
+      const errResponse = this.handleError(error);
+      try {
+        const logRequest = {
+          endpoint: 'send-message',
+          env: envLabel,
+          to: cleanedPhone,
+          from: fromNumber,
+          templateName,
+          contentSid: twilioTemplateId,
+          contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined,
+          error: true
+        };
+        const logResponse = errResponse?.error
+          ? { message: errResponse.error.message, status: errResponse.error.status, code: errResponse.error.code }
+          : { message: 'Unknown error' };
+        appendWhatsAppLog(logRequest, logResponse);
+      } catch (e) {
+        console.error('appendWhatsAppLog failed:');
+        appendWhatsAppLog({ e, endpoint: 'send-message', env: envLabel, to: cleanedPhone, from: fromNumber, templateName, contentSid: twilioTemplateId, contentVariables: Object.keys(contentVariables).length > 0 ? contentVariables : undefined, error: true }, { message: 'Unknown error' });
+      }
+      return errResponse;
     }
-    return errResponse;
   }
-}
 
 
 
@@ -393,13 +399,13 @@ static async sendTemplate(
 
 
 
-// http://localhost:3002/api/whatsapp/send-message?renderHtml=1
-static async sendTemplatePreview(
-  to: string,
-  templateName: string,
-  _languageCode: string = 'en_US',
-  components?:
-    | Array<{
+  // http://localhost:3002/api/whatsapp/send-message?renderHtml=1
+  static async sendTemplatePreview(
+    to: string,
+    templateName: string,
+    _languageCode: string = 'en_US',
+    components?:
+      | Array<{
         type: string;
         parameters?: Array<{
           type: string;
@@ -410,238 +416,243 @@ static async sendTemplatePreview(
         sub_type?: string;
         index?: number;
       }>
-    | {
+      | {
         bodyNamed?: Record<string, unknown>;
         headerNamed?: Record<string, unknown>;
         body?: Record<string, unknown>;
         header?: Record<string, unknown>;
       },
-  fromCredentials?: { phoneNumberId: string; accessToken: string }
-): Promise<WhatsAppServiceResponse> {
-  try {
-    const phoneResult = this.normalizePhoneForWhatsApp(to);
-    if (!phoneResult.ok) {
-      return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
-    }
-    const cleanedPhone = phoneResult.e164;
+    fromCredentials?: { phoneNumberId: string; accessToken: string }
+  ): Promise<WhatsAppServiceResponse> {
+    try {
+      const phoneResult = this.normalizePhoneForWhatsApp(to);
+      if (!phoneResult.ok) {
+        return ErrorHandler.toServiceError(phoneResult.message, 400) as WhatsAppServiceResponse;
+      }
+      const cleanedPhone = phoneResult.e164;
 
-    if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
-      return ErrorHandler.toServiceError(
-        'Template name is required and must be a non-empty string.',
-        400
-      ) as WhatsAppServiceResponse;
-    }
-
-    const apiConfig = this.validateTwilioConfig();
-    if (!apiConfig.valid) {
-      return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
-    }
-
-    const twilioTemplateId = getTwilioTemplateId(templateName);
-    if (!twilioTemplateId) {
-      return ErrorHandler.toServiceError(
-        `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
-        400
-      ) as WhatsAppServiceResponse;
-    }
-
-    const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
-
-    // ----------------------------
-    // Build contentVariables (dynamic)
-    // ----------------------------
-    const contentVariables: Record<string, string> = {};
-
-    function sanitizeContentVariable(value: unknown): string | null {
-      if (value === null || value === undefined) return null;
-
-      const s = String(value)
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n')
-        .replace(/\t/g, ' ')
-        .replace(/[ ]{5,}/g, '    ') // max 4 consecutive spaces
-        .trim();
-
-      return s === '' ? null : s;
-    }
-
-    function setVar(key: string, value: unknown) {
-      const v = sanitizeContentVariable(value);
-      if (v != null) contentVariables[key] = v;
-    }
-
-    // Normalize incoming keys (Store_Name -> StoreName etc.)
-    function normalizeKey(k: string): string {
-      const key = String(k ?? '').trim();
-      const lower = key.toLowerCase();
-
-      // ---- Highly-used mappings ----
-      if (lower === 'store_name' || lower === 'store name') return 'StoreName';
-      if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
-
-      if (
-        lower === 'revenue_percent_change' ||
-        lower === 'revenue % change' ||
-        lower === 'revenue%change'
-      )
-        return 'RevChgPct';
-
-      if (
-        lower === 'orders_percent_change' ||
-        lower === 'orders % change' ||
-        lower === 'orders%change'
-      )
-        return 'OrdChgPct';
-
-      if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
-      if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
-
-      // ---- snake_case -> CamelCase fallback ----
-      if (key.includes('_')) {
-        const parts = key.split('_').filter(Boolean);
-        if (parts.length === 0) return key;
-        const camel =
-          parts[0].charAt(0).toUpperCase() +
-          parts[0].slice(1) +
-          parts
-            .slice(1)
-            .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
-            .join('');
-        return camel;
+      if (!templateName || typeof templateName !== 'string' || !templateName.trim()) {
+        return ErrorHandler.toServiceError(
+          'Template name is required and must be a non-empty string.',
+          400
+        ) as WhatsAppServiceResponse;
       }
 
-      return key;
-    }
-
-    function applyNamed(obj: any) {
-      if (!obj || typeof obj !== 'object') return;
-
-      for (const [k, v] of Object.entries(obj)) {
-        setVar(k, v);
-        const nk = normalizeKey(k);
-        if (nk && nk !== k) setVar(nk, v);
+      const apiConfig = this.validateTwilioConfig();
+      if (!apiConfig.valid) {
+        return ErrorHandler.toServiceError(apiConfig.message!, 500) as WhatsAppServiceResponse;
       }
-    }
 
-    // ----------------------------
-    // 1) ARRAY format
-    // ----------------------------
-    if (Array.isArray(components) && components.length > 0) {
-      const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
-      const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+      const twilioTemplateId = getTwilioTemplateId(templateName);
+      if (!twilioTemplateId) {
+        return ErrorHandler.toServiceError(
+          `Template "${templateName}" not found in Twilio template mappings. Please check twilioTemplateConfig.ts`,
+          400
+        ) as WhatsAppServiceResponse;
+      }
 
-      const applyParams = (params: any[] | undefined, startIndex: number) => {
-        if (!params?.length) return startIndex;
+      const fromNumber = fromCredentials?.phoneNumberId || TWILIO_WHATSAPP_FROM;
 
-        params.forEach((param, idx) => {
-          const t = String(param.type ?? '').toLowerCase();
-          if (t !== 'text') return;
+      // ----------------------------
+      // Build contentVariables (dynamic)
+      // ----------------------------
+      const contentVariables: Record<string, string> = {};
 
-          const rawKey = String(param.parameter_name ?? '').trim();
+      function sanitizeContentVariable(value: unknown): string | null {
+        if (value === null || value === undefined) return null;
 
-          if (rawKey) {
-            setVar(rawKey, param.text ?? '');
-            const nk = normalizeKey(rawKey);
-            if (nk !== rawKey) setVar(nk, param.text ?? '');
-          } else {
-            setVar(String(startIndex + idx), param.text ?? '');
-          }
-        });
+        // Preserve line breaks (WhatsApp supports newlines in text)
+        const s = String(value)
+          .replace(/\d+\.\d{3,}/g, (match) => parseFloat(match).toFixed(2))
+          .replace(/\\n/g, '. ')
+          .replace(/\n/g, '. ')
+          .replace(/\r\n/g, '. ')
+          .replace(/&/g, 'and')
+          .replace(/\r/g, '. ')
+          .replace(/\t/g, ' ')
+          .replace(/[ ]{5,}/g, '    ')
+          .trim();
+        return s === '' ? 'N/A' : s;
+      }
+      // replace(/↑/g, '(up)').replace(/↓/g, '(down)')
 
-        return startIndex + params.length;
+      function setVar(key: string, value: unknown) {
+        const v = sanitizeContentVariable(value);
+        if (v != null) contentVariables[key] = v;
+      }
+
+      // Normalize incoming keys (Store_Name -> StoreName etc.)
+      function normalizeKey(k: string): string {
+        const key = String(k ?? '').trim();
+        const lower = key.toLowerCase();
+
+        // ---- Highly-used mappings ----
+        if (lower === 'store_name' || lower === 'store name') return 'StoreName';
+        if (lower === 'previous_date' || lower === 'previous date') return 'PrevDate';
+
+        if (
+          lower === 'revenue_percent_change' ||
+          lower === 'revenue % change' ||
+          lower === 'revenue%change'
+        )
+          return 'RevChgPct';
+
+        if (
+          lower === 'orders_percent_change' ||
+          lower === 'orders % change' ||
+          lower === 'orders%change'
+        )
+          return 'OrdChgPct';
+
+        if (lower === 'fb_roas' || lower === 'fbroas') return 'MetaSummary';
+        if (lower === 'googleads_roas' || lower === 'googleadsroas') return 'GoogleSummary';
+
+        // ---- snake_case -> CamelCase fallback ----
+        if (key.includes('_')) {
+          const parts = key.split('_').filter(Boolean);
+          if (parts.length === 0) return key;
+          const camel =
+            parts[0].charAt(0).toUpperCase() +
+            parts[0].slice(1) +
+            parts
+              .slice(1)
+              .map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : ''))
+              .join('');
+          return camel;
+        }
+
+        return key;
+      }
+
+      function applyNamed(obj: any) {
+        if (!obj || typeof obj !== 'object') return;
+
+        for (const [k, v] of Object.entries(obj)) {
+          setVar(k, v);
+          const nk = normalizeKey(k);
+          if (nk && nk !== k) setVar(nk, v);
+        }
+      }
+
+      // ----------------------------
+      // 1) ARRAY format
+      // ----------------------------
+      if (Array.isArray(components) && components.length > 0) {
+        const bodyComponent = components.find(c => (c.type ?? '').toLowerCase() === 'body');
+        const headerComponent = components.find(c => (c.type ?? '').toLowerCase() === 'header');
+
+        const applyParams = (params: any[] | undefined, startIndex: number) => {
+          if (!params?.length) return startIndex;
+
+          params.forEach((param, idx) => {
+            const t = String(param.type ?? '').toLowerCase();
+            if (t !== 'text') return;
+
+            const rawKey = String(param.parameter_name ?? '').trim();
+
+            if (rawKey) {
+              setVar(rawKey, param.text ?? '');
+              const nk = normalizeKey(rawKey);
+              if (nk !== rawKey) setVar(nk, param.text ?? '');
+            } else {
+              setVar(String(startIndex + idx), param.text ?? '');
+            }
+          });
+
+          return startIndex + params.length;
+        };
+
+        let nextIndex = 1;
+        nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
+        applyParams(headerComponent?.parameters, nextIndex);
+      }
+
+      // ----------------------------
+      // 2) OBJECT format (Postman/Laravel)
+      // ----------------------------
+      else if (components && typeof components === 'object') {
+        const c: any = components;
+        const bodyNamed = c.bodyNamed ?? c.body;
+        const headerNamed = c.headerNamed ?? c.header;
+
+        applyNamed(bodyNamed);
+        applyNamed(headerNamed);
+      }
+
+      // ----------------------------
+      // Build Twilio payload (what we would send)
+      // ----------------------------
+      const messagePayload: any = {
+        from: `whatsapp:${fromNumber}`,
+        to: `whatsapp:${cleanedPhone}`,
+        contentSid: twilioTemplateId
       };
 
-      let nextIndex = 1;
-      nextIndex = applyParams(bodyComponent?.parameters, nextIndex);
-      applyParams(headerComponent?.parameters, nextIndex);
-    }
+      if (Object.keys(contentVariables).length > 0) {
+        messagePayload.contentVariables = JSON.stringify(contentVariables);
+      }
 
-    // ----------------------------
-    // 2) OBJECT format (Postman/Laravel)
-    // ----------------------------
-    else if (components && typeof components === 'object') {
-      const c: any = components;
-      const bodyNamed = c.bodyNamed ?? c.body;
-      const headerNamed = c.headerNamed ?? c.header;
+      // ----------------------------
+      // HTML preview (WhatsApp-like layout for Postman)
+      // ----------------------------
+      const getVar = (key: string): string =>
+        contentVariables[key] ?? contentVariables[normalizeKey(key)] ?? '';
 
-      applyNamed(bodyNamed);
-      applyNamed(headerNamed);
-    }
+      const renderBulletList = (text: string): string => {
+        if (!text || !String(text).trim()) return '';
+        const items = String(text)
+          .split(/\n+/)
+          .map(line => line.replace(/^[\s•\-*]+\s*/, '').trim())
+          .filter(Boolean);
+        if (items.length === 0) return `<p>${escapeHtml(text)}</p>`;
+        return `<ul class="bullet-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+      };
 
-    // ----------------------------
-    // Build Twilio payload (what we would send)
-    // ----------------------------
-    const messagePayload: any = {
-      from: `whatsapp:${fromNumber}`,
-      to: `whatsapp:${cleanedPhone}`,
-      contentSid: twilioTemplateId
-    };
+      function escapeHtml(s: string): string {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
 
-    if (Object.keys(contentVariables).length > 0) {
-      messagePayload.contentVariables = JSON.stringify(contentVariables);
-    }
+      const storeName = getVar('StoreName');
+      const prevDate = getVar('PrevDate');
+      const revenue = getVar('Revenue');
+      const orders = getVar('Orders');
+      const aov = getVar('AOV');
+      const revChgPct = getVar('RevChgPct');
+      const ordChgPct = getVar('OrdChgPct');
+      const metaSummary = getVar('MetaSummary');
+      const metaCac = getVar('MetaCAC');
+      const googleSummary = getVar('GoogleSummary');
+      const googleCac = getVar('GoogleCAC');
+      const day = getVar('𝗱𝗮𝘆');
+      const positiveChanges = getVar('PositiveChanges');
+      const requiresReviews = getVar('RequiresReviews');
+      const bestseller1 = getVar('best_seller1');
+      const bestseller2 = getVar('best_seller2');
+      const bestseller3 = getVar('best_seller3');
 
-    // ----------------------------
-    // HTML preview (WhatsApp-like layout for Postman)
-    // ----------------------------
-    const getVar = (key: string): string =>
-      contentVariables[key] ?? contentVariables[normalizeKey(key)] ?? '';
+      // Fields for CXO 6am summary (6amcxosummary1)
+      const dateOnly = getVar('Date');
+      const spend = getVar('Spend');
+      const roas = getVar('ROAS');
+      const traffic = getVar('Traffic');
+      const conversion = getVar('Conversion');
+      const newCustomers = getVar('NewCustomers');
+      const repeatCustomers = getVar('RepeatCustomers');
+      const topProduct = getVar('TopProduct');
+      const highlights = getVar('Highlights') || getVar('highlights');
+      const risk = getVar('Risk');
+      const actions = getVar('Actions');
+      const reportUrl = getVar('Url');
 
-    const renderBulletList = (text: string): string => {
-      if (!text || !String(text).trim()) return '';
-      const items = String(text)
-        .split(/\n+/)
-        .map(line => line.replace(/^[\s•\-*]+\s*/, '').trim())
-        .filter(Boolean);
-      if (items.length === 0) return `<p>${escapeHtml(text)}</p>`;
-      return `<ul class="bullet-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
-    };
+      const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
+      const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
 
-    function escapeHtml(s: string): string {
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    const storeName = getVar('StoreName');
-    const prevDate = getVar('PrevDate');
-    const revenue = getVar('Revenue');
-    const orders = getVar('Orders');
-    const aov = getVar('AOV');
-    const revChgPct = getVar('RevChgPct');
-    const ordChgPct = getVar('OrdChgPct');
-    const metaSummary = getVar('MetaSummary');
-    const metaCac = getVar('MetaCAC');
-    const googleSummary = getVar('GoogleSummary');
-    const googleCac = getVar('GoogleCAC');
-    const day = getVar('𝗱𝗮𝘆');
-    const positiveChanges = getVar('PositiveChanges');
-    const requiresReviews = getVar('RequiresReviews');
-    const bestseller1 = getVar('best_seller1');
-    const bestseller2 = getVar('best_seller2');
-    const bestseller3 = getVar('best_seller3');
-
-    // Fields for CXO 6am summary (6amcxosummary1)
-    const dateOnly = getVar('Date');
-    const spend = getVar('Spend');
-    const roas = getVar('ROAS');
-    const traffic = getVar('Traffic');
-    const conversion = getVar('Conversion');
-    const newCustomers = getVar('NewCustomers');
-    const repeatCustomers = getVar('RepeatCustomers');
-    const topProduct = getVar('TopProduct');
-    const highlights = getVar('Highlights') || getVar('highlights');
-    const risk = getVar('Risk');
-    const actions = getVar('Actions');
-    const reportUrl = getVar('Url');
-
-    const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
-    const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
-
-    const htmlPreview = isBestsellTemplate
-      ? `<html lang="en">
+      const htmlPreview = isBestsellTemplate
+        ? `<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -767,8 +778,8 @@ static async sendTemplatePreview(
   </div>
 </body>
 </html>`
-      : isCxoSummaryV1
-      ? `<html lang="en">
+        : isCxoSummaryV1
+          ? `<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -852,11 +863,10 @@ static async sendTemplatePreview(
     <p class="metric-line">Risk Alert: ${escapeHtml(risk)}</p>
     <p class="metric-line">Actions: ${escapeHtml(actions)}</p>
     <p class="metric-line">
-      Report Link: ${
-        reportUrl
-          ? `<a href="${escapeHtml(reportUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reportUrl)}</a>`
-          : ''
-      }
+      Report Link: ${reportUrl
+            ? `<a href="${escapeHtml(reportUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reportUrl)}</a>`
+            : ''
+          }
     </p>
 
     <div class="footer-note">
@@ -866,7 +876,7 @@ static async sendTemplatePreview(
   </div>
 </body>
 </html>`
-      : `<html lang="en">
+          : `<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -987,70 +997,70 @@ static async sendTemplatePreview(
 </body>
 </html>`;
 
-    // ----------------------------
-    // TESTING: do NOT send, just log + return preview in JSON
-    // ----------------------------
-    const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
+      // ----------------------------
+      // TESTING: do NOT send, just log + return preview in JSON
+      // ----------------------------
+      const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
 
-    const logRequest = {
-      env: envLabel,
-      templateName,
-      to: cleanedPhone,
-      from: fromNumber,
-      contentSid: twilioTemplateId,
-      contentVariables
-      // payload: messagePayload, // enable if you want
-    };
-    const logResponse = { message: 'Message NOT sent' };
-
-    try {
-      appendWhatsAppLog(logRequest, logResponse);
-    } catch (e) {
-      console.error('appendWhatsAppLog failed:', e);
-    }
-
-    console.log(`🧪 [${envLabel}] WHATSAPP TESTING — message NOT sent, returning preview`);
-    console.log('contentVariables:', contentVariables);
-
-    return {
-      ok: true,
-      meta: {
-        dryRun: true,
+      const logRequest = {
+        env: envLabel,
         templateName,
         to: cleanedPhone,
         from: fromNumber,
         contentSid: twilioTemplateId,
-        contentVariables,
-        htmlPreview
+        contentVariables
+        // payload: messagePayload, // enable if you want
+      };
+      const logResponse = { message: 'Message NOT sent' };
+
+      try {
+        appendWhatsAppLog(logRequest, logResponse);
+      } catch (e) {
+        console.error('appendWhatsAppLog failed:', e);
       }
-    } as unknown as WhatsAppServiceResponse;
 
-    // ----------------------------
-    // PRODUCTION: Uncomment below when ready to send real messages
-    // ----------------------------
-    // const client = getTwilioClient();
-    // const message = await client.messages.create(messagePayload);
-    // return {
-    //   ok: true,
-    //   meta: {
-    //     sid: message.sid,
-    //     status: message.status,
-    //     to: message.to || cleanedPhone,
-    //     from: message.from || fromNumber,
-    //     dateCreated: message.dateCreated,
-    //     dateUpdated: message.dateUpdated
-    //   }
-    // };
-  } catch (error: any) {
-    console.error('sendTemplate error:', error?.message);
-    console.error(error?.stack);
-    return this.handleError(error);
+      console.log(`🧪 [${envLabel}] WHATSAPP TESTING — message NOT sent, returning preview`);
+      console.log('contentVariables:', contentVariables);
+
+      return {
+        ok: true,
+        meta: {
+          dryRun: true,
+          templateName,
+          to: cleanedPhone,
+          from: fromNumber,
+          contentSid: twilioTemplateId,
+          contentVariables,
+          htmlPreview
+        }
+      } as unknown as WhatsAppServiceResponse;
+
+      // ----------------------------
+      // PRODUCTION: Uncomment below when ready to send real messages
+      // ----------------------------
+      // const client = getTwilioClient();
+      // const message = await client.messages.create(messagePayload);
+      // return {
+      //   ok: true,
+      //   meta: {
+      //     sid: message.sid,
+      //     status: message.status,
+      //     to: message.to || cleanedPhone,
+      //     from: message.from || fromNumber,
+      //     dateCreated: message.dateCreated,
+      //     dateUpdated: message.dateUpdated
+      //   }
+      // };
+    } catch (error: any) {
+      console.error('sendTemplate error:', error?.message);
+      console.error(error?.stack);
+      return this.handleError(error);
+    }
   }
-}
 
 
-    // Send text message via Twilio WhatsApp API
-  
+  // Send text message via Twilio WhatsApp API
+
   static async sendText(
     to: string,
     text: string,
@@ -1161,8 +1171,8 @@ static async sendTemplatePreview(
     }
   }
 
-    // Handle Twilio API errors
-  
+  // Handle Twilio API errors
+
   private static handleError(error: unknown): WhatsAppServiceResponse {
     // Handle Twilio-specific errors
     if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
@@ -1178,7 +1188,7 @@ static async sendTemplatePreview(
 
       // Provide helpful messages for common Twilio errors
       let errorMessage = twilioError.message || 'Unknown error from Twilio API';
-      
+
       if (errorCode === 21211) {
         errorMessage = 'Invalid "To" phone number. Please provide a valid WhatsApp-enabled phone number in E.164 format (e.g., +919876543210).';
       } else if (errorCode === 21212) {
@@ -1208,7 +1218,7 @@ static async sendTemplatePreview(
         if (code === 'ECONNRESET' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
           const msg = code === 'ECONNRESET' ? 'Connection reset. Please retry.'
             : code === 'ETIMEDOUT' ? 'Request timed out. Please retry.'
-            : 'Could not resolve host. Check network.';
+              : 'Could not resolve host. Check network.';
           console.error('❌ Network error:', msg);
           return ErrorHandler.toServiceError(msg, 503) as WhatsAppServiceResponse;
         }
@@ -1231,7 +1241,7 @@ static async sendTemplatePreview(
       const client = getTwilioClient();
       // Fetch incoming phone numbers from Twilio
       const incomingNumbers = await client.incomingPhoneNumbers.list();
-      
+
       // Filter for WhatsApp-enabled numbers and format response
       // Note: Twilio capabilities may vary, so we'll include all numbers and let user configure WhatsApp in Twilio Console
       const whatsappNumbers = incomingNumbers
