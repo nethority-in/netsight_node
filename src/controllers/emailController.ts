@@ -297,6 +297,17 @@ export class EmailController {
   // }
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
+      // ✅ Sabse pehle raw line breaks fix karo
+      try {
+        const rawStr = JSON.stringify(req.body)
+          .replace(/\r\n/g, '\\n')
+          .replace(/\r/g, '\\n')
+          .replace(/\n/g, '\\n');
+        req.body = JSON.parse(rawStr);
+      } catch (e) {
+        console.error('req.body sanitize failed:', e);
+      }
+
       const { to, templateName, parameters, subject, cc, bcc, attachments } = req.body;
 
       const toVal =
@@ -316,11 +327,42 @@ export class EmailController {
 
       const params: Record<string, any> = parameters != null ? { ...parameters } : {};
 
+      const rawBody = JSON.stringify({ parameters: params })
+        .replace(/\r\n/g, '\\n')
+        .replace(/\r/g, '\\n')
+        .replace(/\n/g, '\\n');
+      const sanitizedParams = JSON.parse(rawBody).parameters;
+      Object.assign(params, sanitizedParams);
+
       Object.keys(params).forEach(key => {
         if (params[key] === '' || params[key] === null || params[key] === undefined) {
           params[key] = 'N/A';
         } else if (typeof params[key] === 'string') {
-          params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+          if (key === 'LTVCACRatio') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
+          } else if (key === 'GrossRevenue') {
+            params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+          } else if (key === 'MetaAdsSpend') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+          } else if (key === 'GoogleAdsSpend') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+          } else if (key === 'AOV') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+          } else if (key === 'BlendedROAS') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
+          } else if (key === 'GA4Sessions' || key === 'GA4Users') {
+            params[key] = params[key].replace(/(?<!\$)\b\d+\b/g, (match: string) => {
+              return parseInt(match).toLocaleString('en-IN');
+            });
+          } else if (key === 'PositiveChanges' || key === 'RequiresReviews') {
+            params[key] = params[key]
+              .replace(/\\n/g, '<br/>')
+              .replace(/\r\n/g, '<br/>')
+              .replace(/\r/g, '<br/>')
+              .replace(/\n/g, '<br/>');
+          } else {
+            params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
+          }
         }
       });
 
@@ -355,7 +397,7 @@ export class EmailController {
         cc,
         bcc,
         attachments,
-        { endpoint: "send-dynamic", parameters: params } // ✅ this triggers logo only for this flow
+        { endpoint: "send-dynamic", parameters: params }
       );
 
       ErrorHandler.sendServiceResult(res, result);
