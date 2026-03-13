@@ -473,8 +473,12 @@ padding-left:0;
 
        .logo-dark{display:none !important;}
        @media (prefers-color-scheme: dark){
-.header .logo-light{display:none !important;}
-.header .logo-dark{display:block !important;}
+.header{
+background:#ffffff !important;
+border-bottom:4px solid #5DBBB8;
+}
+.header .logo-light{display:block !important;}
+.header .logo-dark{display:none !important;}
 body{
 background:#0b0b0b;
 color:#f3f4f6;
@@ -483,11 +487,6 @@ color:#f3f4f6;
 .container{
 background:#0b0b0b;
 box-shadow:none;
-}
-
-.header{
-background:#0b0b0b;
-border-bottom:4px solid #2dd4bf;
 }
 
 p{
@@ -593,7 +592,7 @@ color:#5eead4;
         <!-- Header -->
        <div class="header">
           <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
-          <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;display:none;">
+          <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;">
        </div>
 
         <!-- Content -->
@@ -670,9 +669,9 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
                 <tr><td align="center" style="text-align: center;">
-                    <a target="_blank" href="https://netsights.ai/support/" style="color: #5DBBB8; text-decoration: none;">Support</a>
+                    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration: none;">Support</a>
                     <span style="color: #d1d5db;">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/" style="color: #5DBBB8; text-decoration: none;">Contact Us</a>
+                    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration: none;">Contact Us</a>
                 </td></tr>
                 </table>
         </div>
@@ -765,7 +764,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     }
     
     .metric-label{
-    font-size:11px;
+    font-size:13px;
     color:#6b7280;
     margin-bottom:2px;
     }
@@ -812,12 +811,12 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     }
     
     ul{
-    margin:5px 0 0 0;
-    padding-left:18px;
+    margin:3px 0 0 0;
+    padding-left:15px;
     }
     
     li{
-    margin-bottom:5px;
+    margin-bottom:3px;
     font-size:14px;
     color:#444;
     }
@@ -870,6 +869,12 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     .layer-header{
         padding-left: 5px;
     }
+
+    .metric-label{
+    font-size:11px;
+    color:#6b7280;
+    margin-bottom:2px;
+    }
     
     }
     
@@ -877,8 +882,12 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     .logo-dark{display:none !important;}
     @media (prefers-color-scheme: dark){
-    .header .logo-light{display:none !important;}
-    .header .logo-dark{display:block !important;}
+    .header{
+    background:#ffffff !important;
+    border-bottom:4px solid #5DBBB8;
+    }
+    .header .logo-light{display:block !important;}
+    .header .logo-dark{display:none !important;}
     body{
     background:#0b0b0b;
     color:#f3f4f6;
@@ -888,10 +897,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     background:#0b0b0b;
     }
     
-    .header{
-    background:#0b0b0b;
-    border-bottom:4px solid #2dd4bf;
-    }
+    
     
     p{
     color:#d1d5db;
@@ -951,7 +957,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     <div class="header">
     <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
-    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;display:none;">
+    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
     </div>
     
     <div class="content">
@@ -1115,7 +1121,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <li ><b>PERFORMANCE HIGHLIGHTS</b></li>
     </ul>
     
-    <div style="white-space: pre-line !important;">
+    <div style="white-space: pre-line !important; font-size: 14px;">
     {{PositiveChanges}}
     </div>
     
@@ -1128,7 +1134,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <li><b>REVIEW REQUIRED</b></li>
     </ul>
     
-    <div style="white-space: pre-line !important;">
+    <div style="white-space: pre-line !important; font-size: 14px;">
     {{RequiresReviews}}
     </div>
     
@@ -1142,9 +1148,9 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
     <tr>
     <td align="center">
-    <a target="_blank" href="https://netsights.ai/support/" style="color:#5DBBB8; text-decoration:none;">Support</a>
+    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
     <span style="color:#d1d5db;"> | </span>
-    <a target="_blank" href="https://netsights.ai/contact-us/" style="color:#5DBBB8; text-decoration:none;">Contact Us</a>
+    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
     </td>
     </tr>
     </table>
@@ -1372,8 +1378,12 @@ padding-left:0;
 
         .logo-dark { display: none !important; }
         @media (prefers-color-scheme: dark) {
-            .header .logo-light { display: none !important; }
-            .header .logo-dark { display: block !important; }
+            .header {
+                background: #ffffff !important;
+                border-bottom: 4px solid #5DBBB8;
+            }
+            .header .logo-light { display: block !important; }
+            .header .logo-dark { display: none !important; }
         }
 
         @media (max-width: 600px) {
@@ -1407,7 +1417,7 @@ padding-left:0;
         <!-- Header -->
         <div class="header">
             <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
-            <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;display:none;">
+            <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;">
         </div>
 
         <!-- Content -->
@@ -1432,9 +1442,9 @@ padding-left:0;
                 <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
                 <tr><td align="center" style="text-align: center;">
-                    <a target="_blank" href="https://netsights.ai/support/" style="color: #5DBBB8; text-decoration: none;">Support</a>
+                    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration: none;">Support</a>
                     <span style="color: #d1d5db;">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/" style="color: #5DBBB8; text-decoration: none;">Contact Us</a>
+                    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration: none;">Contact Us</a>
                 </td></tr>
                 </table>
             </div>
