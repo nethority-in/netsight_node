@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { retryWithBackoff } from '../utils/retry.js';
 import { appendEmailLog } from '../utils/logApiResponse.js';
-import { EMAIL_LOGO_BASE64, LOGO_CID } from "../logo/emailLogo.js";
 
 dotenv.config();
 
@@ -425,20 +424,6 @@ export class EmailService {
         ...(textContent && { TextPart: textContent }),
       };
 
-      // ✅ OPTIONAL inline logo (only for your dynamic flow/template)
-      // Condition is based on your existing controller logContext:
-      // { endpoint: 'send-dynamic', parameters: params }
-      if (logContext?.endpoint === "send-dynamic") {
-        messagePayload.InlinedAttachments = [
-          {
-            Filename: "netsights-logo.png",
-            ContentType: "image/png",
-            Base64Content: EMAIL_LOGO_BASE64, // ✅ only base64 string
-            ContentID: LOGO_CID,              // ✅ "netsights-logo"
-          },
-        ];
-      }
-
       if (mailjetAttachments && mailjetAttachments.length > 0) {
         messagePayload.Attachments = mailjetAttachments;
       }
@@ -552,14 +537,7 @@ export class EmailService {
           });
         }
       }
-  
-      // ✅ Preview me cid ko base64 data-uri se replace
-      // NOTE: EMAIL_LOGO_BASE64 should be base64 only (no "data:image/png;base64,")
-      if (typeof EMAIL_LOGO_BASE64 === "string" && EMAIL_LOGO_BASE64.trim().length > 0) {
-        const logoDataUri = `data:image/png;base64,${EMAIL_LOGO_BASE64.trim()}`;
-        htmlContent = htmlContent.replace(/cid:netsights-logo/g, logoDataUri);
-      }
-  
+
       return {
         ok: true,
         meta: {

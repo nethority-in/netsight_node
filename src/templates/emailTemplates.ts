@@ -471,8 +471,10 @@ padding-left:0;
             color: #d1d5db;
         }
 
+       .logo-dark{display:none !important;}
        @media (prefers-color-scheme: dark){
-
+.header .logo-light{display:none !important;}
+.header .logo-dark{display:block !important;}
 body{
 background:#0b0b0b;
 color:#f3f4f6;
@@ -590,7 +592,8 @@ color:#5eead4;
     <div class="email-container">
         <!-- Header -->
        <div class="header">
-          <img src="cid:netsights-logo" alt="Netsights Logo">
+          <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
+          <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;display:none;">
        </div>
 
         <!-- Content -->
@@ -692,14 +695,9 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <title>Email Template</title>
     
     <style>
-    
-   
-    
     body{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
-    background:#f9fafb;
     margin:0;
-    padding:20px;
     color:#111827;
     }
     
@@ -722,12 +720,6 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     .header img{
     height:46px;
-    }
-    
-   
-    
-    .content{
-    padding:10px;
     }
     
     h1{
@@ -883,8 +875,10 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
 
     
+    .logo-dark{display:none !important;}
     @media (prefers-color-scheme: dark){
-    
+    .header .logo-light{display:none !important;}
+    .header .logo-dark{display:block !important;}
     body{
     background:#0b0b0b;
     color:#f3f4f6;
@@ -956,7 +950,8 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <div class="container">
     
     <div class="header">
-    <img src="cid:netsights-logo" alt="Netsights Logo">
+    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
+    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;display:none;">
     </div>
     
     <div class="content">
@@ -1162,7 +1157,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </html>
     `,
     text: '{{content}}'
-    },
+  },
 
   ns_temp_OTP: {
     subject: '{{StoreName}} OTP Verification',
@@ -1375,6 +1370,12 @@ padding-left:0;
             color: #d1d5db;
         }
 
+        .logo-dark { display: none !important; }
+        @media (prefers-color-scheme: dark) {
+            .header .logo-light { display: none !important; }
+            .header .logo-dark { display: block !important; }
+        }
+
         @media (max-width: 600px) {
             .email-container {
                 border-radius: 0;
@@ -1405,7 +1406,8 @@ padding-left:0;
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="cid:netsights-logo" alt="Netsights Logo">
+            <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
+            <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;display:none;">
         </div>
 
         <!-- Content -->
