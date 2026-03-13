@@ -96,14 +96,13 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GA4Sessions',
       'GA4Users',
   
-      'MetaAdsSpend',
+      'BlendedSpend',
+      'MetaSpend',
       'MetaROAS',
-      'MetaSpendGrowth',
-      'GoogleAdsSpend',
-      'GoogleROAS',
       'BlendedROAS',
+      'Googleadsspend',
+      'GoogleROAS',
   
-      'iSightsAnalysis',
       'PositiveChanges',
       'RequiresReviews'
     ],
@@ -128,14 +127,13 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GA4Sessions',
       'GA4Users',
   
-      'MetaAdsSpend',
+      'BlendedSpend',
+      'MetaSpend',
       'MetaROAS',
-      'MetaSpendGrowth',
-      'GoogleAdsSpend',
-      'GoogleROAS',
       'BlendedROAS',
-  
-      'iSightsAnalysis',
+      'Googleadsspend',
+      'GoogleROAS',
+
       'PositiveChanges',
       'RequiresReviews'
     ]

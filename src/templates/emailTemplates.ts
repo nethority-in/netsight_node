@@ -1010,7 +1010,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </td>
     
     <td>
-    <div class="metric-label">LTV CAC</div>
+    <div class="metric-label">LTV : CAC</div>
     <div class="metric-value">{{LTVCACRatio}}</div>
     </td>
     </tr>
@@ -1075,38 +1075,37 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </div>
     
     <table class="metrics-table">
-    
     <tr>
     <td>
-    <div class="metric-label">Meta Ads Spend</div>
-    <div class="metric-value">{{MetaAdsSpend}}</div>
+    <div class="metric-label">Blended Spend</div>
+    <div class="metric-value">{{BlendedSpend}}</div>
+    </td>
+    
+    <td>
+    <div class="metric-label">Meta Spend</div>
+    <div class="metric-value">{{MetaSpend}}</div>
     </td>
     
     <td>
     <div class="metric-label">Meta ROAS</div>
     <div class="metric-value">{{MetaROAS}}</div>
     </td>
-    
-    <td>
-    <div class="metric-label">Meta Spend Growth</div>
-    <div class="metric-value">{{MetaSpendGrowth}}</div>
-    </td>
     </tr>
     
     <tr>
     <td>
+    <div class="metric-label">Blended ROAS</div>
+    <div class="metric-value">{{BlendedROAS}}</div>
+    </td>
+    
+    <td>
     <div class="metric-label">Google Ads Spend</div>
-    <div class="metric-value">{{GoogleAdsSpend}}</div>
+    <div class="metric-value">{{Googleadsspend}}</div>
     </td>
     
     <td>
     <div class="metric-label">Google ROAS</div>
     <div class="metric-value">{{GoogleROAS}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Blended ROAS</div>
-    <div class="metric-value">{{BlendedROAS}}</div>
     </td>
     </tr>
     
