@@ -196,7 +196,10 @@ export class EmailController {
             });
           }
           else if (key === 'PositiveChanges' || key === 'RequiresReviews') {
-            params[key] = params[key].replace(/\\n/g, '\n').replace(/\n/g, '<br/>');
+            params[key] = params[key]
+              .replace(/\r\n/g, '\n')  // Windows line breaks
+              .replace(/\r/g, '\n')    // Old Mac line breaks  
+              .replace(/\n/g, '\\n');  // Real newline → \n string (valid JSON ke liye)
           }
           else {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
