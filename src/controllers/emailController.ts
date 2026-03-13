@@ -302,7 +302,7 @@ export class EmailController {
         const rawStr = JSON.stringify(req.body)
           .replace(/\r\n/g, '\\n')
           .replace(/\r/g, '\\n')
-          .replace(/\n/g, '\\n');
+          .replace(/\n/g, '\\n');  
         req.body = JSON.parse(rawStr);
       } catch (e) {
         console.error('req.body sanitize failed:', e);
@@ -327,12 +327,7 @@ export class EmailController {
 
       const params: Record<string, any> = parameters != null ? { ...parameters } : {};
 
-      const rawBody = JSON.stringify({ parameters: params })
-        .replace(/\r\n/g, '\\n')
-        .replace(/\r/g, '\\n')
-        .replace(/\n/g, '\\n');
-      const sanitizedParams = JSON.parse(rawBody).parameters;
-      Object.assign(params, sanitizedParams);
+      Object.assign(params);
 
       Object.keys(params).forEach(key => {
         if (params[key] === '' || params[key] === null || params[key] === undefined) {
@@ -342,7 +337,7 @@ export class EmailController {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
           } else if (key === 'GrossRevenue') {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
-          } else if (key === 'MetaAdsSpend') {
+          } else if (key === 'MetaSpend') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
           } else if (key === 'GoogleAdsSpend') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));

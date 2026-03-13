@@ -691,6 +691,8 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
     <title>Email Template</title>
     
     <style>
@@ -880,14 +882,15 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
 
     
+    .logo-light{display:inline-block !important;}
     .logo-dark{display:none !important;}
     @media (prefers-color-scheme: dark){
     .header{
-    background:#ffffff !important;
+    background:#0b0b0b !important;
     border-bottom:4px solid #5DBBB8;
     }
-    .header .logo-light{display:block !important;}
-    .header .logo-dark{display:none !important;}
+    .header .logo-light{display:none !important;}
+    .header .logo-dark{display:inline-block !important;}
     body{
     background:#0b0b0b;
     color:#f3f4f6;
