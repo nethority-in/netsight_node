@@ -195,6 +195,9 @@ export class EmailController {
               return parseInt(match).toLocaleString('en-IN');
             });
           }
+          else if (key === 'PositiveChanges' || key === 'RequiresReviews') {
+            params[key] = params[key].replace(/\\n/g, '\n').replace(/\n/g, '<br/>');
+          }
           else {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
           }
