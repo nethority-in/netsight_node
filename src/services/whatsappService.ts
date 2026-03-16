@@ -655,13 +655,13 @@ export class WhatsAppService {
       const metaSpend = getVar('MetaSpend');
       const metaRoas = getVar('MetaROAS');
       const googleSpend = getVar('GoogleSpend');
-      const googleRoad = getVar('GoogleROAD');
+      const googleRoas = getVar('GoogleROAS');
       const ga4Traffic = getVar('GA4Traffic');
       const repeat = getVar('Repeat');
 
       const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
       const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
-      const isCxoSummaryV2 = templateName === 'copy6amcxosummary16032026' || templateName === '6amcxosummary16032026';
+      const isCxoSummaryV2 = templateName === '1copy6amcxosummary16032026' || templateName === '6amcxosummary16032026';
 
       const htmlPreview = isBestsellTemplate
         ? `<html lang="en">
@@ -970,7 +970,7 @@ export class WhatsAppService {
     <p class="metric-line">Meta ROAS: ${escapeHtml(metaRoas)}</p>
 
     <p class="metric-line">Google Spend: ${escapeHtml(googleSpend)}</p>
-    <p class="metric-line">Google ROAD: ${escapeHtml(googleRoad)}</p>
+    <p class="metric-line">Google ROAS: ${escapeHtml(googleRoas)}</p>
 
     <p class="metric-line">GA4 Traffic: ${escapeHtml(ga4Traffic)}</p>
     <p class="metric-line">Conversion Rate: ${escapeHtml(conversion)}</p>
