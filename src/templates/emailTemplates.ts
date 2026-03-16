@@ -591,10 +591,9 @@ color:#5eead4;
     <div class="email-container">
         <!-- Header -->
        <div class="header">
-          <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
-          <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;">
-       </div>
-
+    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
+    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
+    </div>
         <!-- Content -->
         <div class="content">
             <p>Good day,</p>
@@ -665,17 +664,37 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
 
         <!-- Footer -->
         <div class="footer">
-            <div class="footer-info">
-                <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
-                <tr><td align="center" style="text-align: center;">
-                    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration: none;">Support</a>
-                    <span style="color: #d1d5db;">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration: none;">Contact Us</a>
-                </td></tr>
-                </table>
-        </div>
-        </div>
+
+   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0; margin-bottom:8px; margin-top:0px;">
+    <tr>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/shopifylight.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/shopify-dark.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/Klaviyolight.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/Klaviyo-dark.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+    </tr>
+  </table>
+
+  <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+    <tr>
+      <td align="center">
+        <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+        <span style="color:#d1d5db;"> | </span>
+        <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+      </td>
+    </tr>
+  </table>
+
+</div>
     </div>
 </body>
 </html>
@@ -686,6 +705,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   ns_temp_Notification_temp2: {
     subject: '{{StoreName}} Daily Performance Summary',
     html: `
+      
       <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -948,6 +968,14 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     .footer-links a{
     color:#5eead4;
     }
+
+    .footer .logo-light{
+    display:none !important;
+    }
+
+    .footer .logo-dark{
+    display:inline-block !important;
+    }
     
     }
     
@@ -1143,21 +1171,38 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </div>
     
     
-    <div class="footer">
-    
-    <p style="margin-bottom:8px;">© 2026 Netsights.ai. All rights reserved</p>
-    
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+   <div class="footer">
+
+   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
-    <td align="center">
-    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
-    <span style="color:#d1d5db;"> | </span>
-    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
-    </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/shopifylight.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/shopify-dark.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/Klaviyolight.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/Klaviyo-dark.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
     </tr>
-    </table>
-    
-    </div>
+  </table>
+
+  <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+    <tr>
+      <td align="center">
+        <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+        <span style="color:#d1d5db;"> | </span>
+        <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+      </td>
+    </tr>
+  </table>
+
+</div>
     
     </div>
     
@@ -1418,9 +1463,9 @@ padding-left:0;
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:48px;object-fit:contain;">
-            <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:48px;object-fit:contain;">
-        </div>
+    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
+    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
+    </div>
 
         <!-- Content -->
         <div style="background-color: #f9fafb;" class="content">
@@ -1440,17 +1485,37 @@ padding-left:0;
 
         <!-- Footer -->
         <div class="footer">
-            <div class="footer-info">
-                <p style="margin-bottom: 8px;">© 2026 Netsights.ai. All rights reserved</p>
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 8px;">
-                <tr><td align="center" style="text-align: center;">
-                    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration: none;">Support</a>
-                    <span style="color: #d1d5db;">|</span>
-                    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration: none;">Contact Us</a>
-                </td></tr>
-                </table>
-            </div>
-        </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+    <tr>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/shopifylight.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/shopify-dark.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/Klaviyolight.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/Klaviyo-dark.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
+        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+    </tr>
+  </table>
+
+  <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+    <tr>
+      <td align="center">
+        <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+        <span style="color:#d1d5db;"> | </span>
+        <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+      </td>
+    </tr>
+  </table>
+
+</div>
     </div>
 </body>
 </html>
@@ -1476,3 +1541,5 @@ export default {
   getAvailableTemplates,
   registerTemplate
 };
+
+

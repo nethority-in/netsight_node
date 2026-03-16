@@ -34,7 +34,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   '6amcxosummary11032026':"HXc4def48a4f3634141447094664c979e3",
   // 'netsight_dailyreport_7day_bestsell':"HX82487e826116ddd742e563a9c28"
   'netsight_dailyreport_7day_bestsell':"HXe70face30e556b6d380bdc2a8f0d9abd",
-  '6amcxosummary':"HX1099c41bb1638c1e8f2aec47ff3675f5"
+  '6amcxosummary':"HX1099c41bb1638c1e8f2aec47ff3675f5",
+  '6amcxosummary16032026':"HX6b44b0fd9660c34d9dff5c4f5b1fea63"
 
 };
 

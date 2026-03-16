@@ -648,8 +648,20 @@ export class WhatsAppService {
       const actions = getVar('Actions');
       const reportUrl = getVar('Url');
 
+      // Fields for CXO 6am summary (6amcxosummary16032026 variant)
+      const grossSale = getVar('GrossSale');
+      const totalSpend = getVar('TotalSpend');
+      const blendedRoas = getVar('BlendedROAS');
+      const metaSpend = getVar('MetaSpend');
+      const metaRoas = getVar('MetaROAS');
+      const googleSpend = getVar('GoogleSpend');
+      const googleRoad = getVar('GoogleROAD');
+      const ga4Traffic = getVar('GA4Traffic');
+      const repeat = getVar('Repeat');
+
       const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
       const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
+      const isCxoSummaryV2 = templateName === '6amcxosummary16032026';
 
       const htmlPreview = isBestsellTemplate
         ? `<html lang="en">
@@ -874,9 +886,118 @@ export class WhatsAppService {
       <p>This message contains factual account data for reference purposes only.</p>
     </div>
   </div>
+      </body>
+      </html>`
+          : isCxoSummaryV2
+            ? `<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store Performance Update</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 24px;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .message-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    p { margin: 0 0 10px 0; }
+    p:last-child { margin-bottom: 0; }
+
+    .title {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      margin-bottom: 14px;
+    }
+
+    .metric-line {
+      margin-bottom: 6px;
+      white-space: pre-wrap;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .signature {
+      margin-top: 8px;
+      font-weight: 700;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="message-card">
+    <p class="title">Here is your daily store performance</p>
+    <p class="subtitle">Summary - ${escapeHtml(dateOnly || '')}</p>
+
+    <p class="metric-line">Gross Sale: ${escapeHtml(grossSale)}</p>
+    <p class="metric-line">Orders: ${escapeHtml(orders)}</p>
+    <p class="metric-line">AOV: ${escapeHtml(aov)}</p>
+
+    <p class="metric-line">Total Spend: ${escapeHtml(totalSpend)}</p>
+    <p class="metric-line">Blended ROAS: ${escapeHtml(blendedRoas)}</p>
+
+    <p class="metric-line">Meta Spend: ${escapeHtml(metaSpend)}</p>
+    <p class="metric-line">Meta ROAS: ${escapeHtml(metaRoas)}</p>
+
+    <p class="metric-line">Google Spend: ${escapeHtml(googleSpend)}</p>
+    <p class="metric-line">Google ROAD: ${escapeHtml(googleRoad)}</p>
+
+    <p class="metric-line">GA4 Traffic: ${escapeHtml(ga4Traffic)}</p>
+    <p class="metric-line">Conversion Rate: ${escapeHtml(conversion)}</p>
+
+    <p class="metric-line">New Customers: ${escapeHtml(newCustomers)}</p>
+    <p class="metric-line">Repeat Customers: ${escapeHtml(repeat)}</p>
+
+    <p class="metric-line">Top Product(s): ${escapeHtml(topProduct)}</p>
+
+    <p class="metric-line">Highlights: ${escapeHtml(highlights)}</p>
+    <p class="metric-line">Risk: ${escapeHtml(risk)}</p>
+    <p class="metric-line">Actions: ${escapeHtml(actions)}</p>
+    <p class="metric-line">
+      Report Link: ${reportUrl
+        ? `<a href="${escapeHtml(reportUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reportUrl)}</a>`
+        : ''
+      }
+    </p>
+
+    <div class="footer-note">
+      <p class="signature">Netsights Team</p>
+      <p>This message contains factual account data for reference purposes only.</p>
+    </div>
+  </div>
 </body>
 </html>`
-          : `<html lang="en">
+            : `<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
