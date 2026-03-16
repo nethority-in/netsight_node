@@ -705,7 +705,6 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   ns_temp_Notification_temp2: {
     subject: '{{StoreName}} Daily Performance Summary',
     html: `
-      
       <!DOCTYPE html>
     <html lang="en">
     <head>
