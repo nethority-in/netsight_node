@@ -661,7 +661,10 @@ export class WhatsAppService {
 
       const isBestsellTemplate = templateName === 'netsight_dailyreport_7day_bestsell';
       const isCxoSummaryV1 = templateName === '6amcxosummary1' || templateName === '6amcxosummary11032026';
-      const isCxoSummaryV2 = templateName === '1copy6amcxosummary16032026' || templateName === '6amcxosummary16032026';
+      const isCxoSummaryV2 =
+        templateName === '1copy6amcxosummary16032026' ||
+        templateName === '6amcxosummary16032026' ||
+        templateName === 'dailysummarybutton';
 
       const htmlPreview = isBestsellTemplate
         ? `<html lang="en">

@@ -36,7 +36,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'netsight_dailyreport_7day_bestsell':"HXe70face30e556b6d380bdc2a8f0d9abd",
   '6amcxosummary':"HX1099c41bb1638c1e8f2aec47ff3675f5",
   '6amcxosummary16032026':"HX6b44b0fd9660c34d9dff5c4f5b1fea63",
-  '1copy6amcxosummary16032026':"HX17e78dd0871a92464b0658bd6ce88d42"
+  '1copy6amcxosummary16032026':"HX17e78dd0871a92464b0658bd6ce88d42",
+  'dailysummarybutton':"HXf82c046e1613965e524303f5fda7068e"
 
 };
 
