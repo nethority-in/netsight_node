@@ -682,6 +682,21 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </tr>
   </table>
 
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+    <tr>
+      <td align="center" style="padding:0 6px; vertical-align:middle;">
+        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          View Daily Report
+        </a>
+      </td>
+      <td align="center" style="padding:0 6px; vertical-align:middle;">
+        <a target="_blank" href="https://isight.netsights.ai/intelligence" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          ASK AI
+        </a>
+      </td>
+    </tr>
+  </table>
+
   <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
@@ -1129,7 +1144,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </td>
     
     <td>
-    <div class="metric-label">Google Ads</div>
+    <div class="metric-label">Google Spend</div>
     <div class="metric-value">{{Googleadsspend}}</div>
     </td>
     
@@ -1172,6 +1187,20 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
    <div class="footer">
 
+   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+    <tr>
+      <td align="center" style="padding:0; vertical-align:middle;">
+        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          View Daily Report
+        </a>
+        <span style="display:inline-block; width:2px;"></span>
+        <a target="_blank" href="https://isight.netsights.ai/intelligence" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          Ask AI
+        </a>
+      </td>
+    </tr>
+  </table>
+
    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
       <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
@@ -1189,6 +1218,8 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </tr>
   </table>
 
+   
+
   <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
@@ -1200,6 +1231,8 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
       </td>
     </tr>
   </table>
+
+  
 
 </div>
     
@@ -1498,6 +1531,21 @@ padding-left:0;
       <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
         <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
         <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+    <tr>
+      <td align="center" style="padding:0 6px; vertical-align:middle;">
+        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          View Daily Report
+        </a>
+      </td>
+      <td align="center" style="padding:0 6px; vertical-align:middle;">
+        <a target="_blank" href="https://isight.netsights.ai/intelligence" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          ASK AI
+        </a>
       </td>
     </tr>
   </table>

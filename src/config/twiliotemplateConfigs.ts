@@ -104,7 +104,8 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GoogleROAS',
   
       'PositiveChanges',
-      'RequiresReviews'
+      'RequiresReviews',
+      'url'
     ],
   
     optionalFields: [],
@@ -135,7 +136,8 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GoogleROAS',
 
       'PositiveChanges',
-      'RequiresReviews'
+      'RequiresReviews',
+      'url'
     ]
   },
 

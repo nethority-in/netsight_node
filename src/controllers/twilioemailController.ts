@@ -143,6 +143,13 @@ export class EmailController {
       const params: Record<string, any> =
         parameters != null ? { ...parameters } : templateVariables != null ? { ...templateVariables } : {};
 
+      // Compatibility: handle common payload aliases / key typos for this template
+      // (template expects camel/case-specific keys like `Googleadsspend`, but clients may send `GoogleAdsSpend`).
+      if (String(templateName).trim() === 'ns_temp_Notification_temp2') {
+        if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
+        if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
+      }
+
       const result = await EmailService.previewTemplate(String(templateName).trim(), params);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
@@ -211,6 +218,13 @@ export class EmailController {
           }
         }
       });
+
+      // Compatibility: handle common payload aliases / key typos for this template
+      // (template expects `Googleadsspend`, but clients may send `GoogleAdsSpend`).
+      if (templateName === 'ns_temp_Notification_temp2') {
+        if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
+        if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
+      }
 
       const result = await EmailService.previewTemplate(templateName, params);
 
