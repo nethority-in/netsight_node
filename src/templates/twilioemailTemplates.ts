@@ -685,7 +685,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
       <td align="center" style="padding:0 6px; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
           View Daily Report
         </a>
       </td>
@@ -1190,7 +1190,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
       <td align="center" style="padding:0; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
           View Daily Report
         </a>
         <span style="display:inline-block; width:2px;"></span>
@@ -1538,7 +1538,7 @@ padding-left:0;
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
       <td align="center" style="padding:0 6px; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
           View Daily Report
         </a>
       </td>
