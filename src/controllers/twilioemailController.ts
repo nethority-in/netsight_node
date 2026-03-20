@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { EmailService } from '../services/emailService.js';
+import { EmailService } from '../services/twilioemailService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 
 export class EmailController {
@@ -226,7 +226,7 @@ export class EmailController {
   // GET /api/email/templates
   static async getTemplates(_req: Request, res: Response): Promise<void> {
     try {
-      const { getAvailableTemplates } = await import('../templates/emailTemplates.js');
+      const { getAvailableTemplates } = await import('../templates/twilioemailTemplates.js');
       const templates = getAvailableTemplates();
       ErrorHandler.sendSuccess(res, {
         data: { templates, count: templates.length }
@@ -361,9 +361,9 @@ export class EmailController {
         }
       });
 
-      const { TemplateBuilder } = await import("../services/templateBuilder.js");
-      const { getTemplateConfig } = await import("../config/templateConfigs.js");
-      const { getEmailTemplate } = await import("../templates/emailTemplates.js");
+      const { TemplateBuilder } = await import("../services/twiliotemplateBuilder.js");
+      const { getTemplateConfig } = await import("../config/twiliotemplateConfigs.js");
+      const { getEmailTemplate } = await import("../templates/twilioemailTemplates.js");
 
       const config = getTemplateConfig(templateName);
       if (config) {

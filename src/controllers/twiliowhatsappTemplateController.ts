@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { TwilioTemplateService, CreateTemplateParams } from '../services/twilioTemplateService.js';
-import { getWhatsAppTemplate, getAllWhatsAppTemplates, registerWhatsAppTemplate, WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
+import { getWhatsAppTemplate, getAllWhatsAppTemplates, registerWhatsAppTemplate, WhatsAppTemplateDefinition } from '../templates/twiliowhatsappTemplates.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendMetaApiLog, appendCreateCustomTemplateLog} from '../utils/logApiResponse.js';
 

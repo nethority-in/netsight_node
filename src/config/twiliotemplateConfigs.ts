@@ -1,4 +1,4 @@
-import { TemplateConfig } from '../services/templateBuilder.js';
+import { TemplateConfig } from '../services/twiliotemplateBuilder.js';
 
 export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
   daily_kpi_snapshot: {

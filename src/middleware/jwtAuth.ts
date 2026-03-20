@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { verifyToken } from '../services/authService.js';
-import { findUserByApiKey } from '../services/userService.js';
+import { verifyToken } from '../services/twilioauthService.js';
+import { findUserByApiKey } from '../services/twiliouserService.js';
 
 dotenv.config();
 

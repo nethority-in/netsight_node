@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import dotenv from 'dotenv';
-import { WhatsAppTemplateDefinition } from '../templates/whatsappTemplates.js';
+import { WhatsAppTemplateDefinition } from '../templates/twiliowhatsappTemplates.js';
 
 // Ensure dotenv is loaded
 dotenv.config();

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { WhatsAppService } from '../services/whatsappService.js';
+import { WhatsAppService } from '../services/twiliowhatsappService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendFromNumbersLog } from '../utils/logApiResponse.js';
 
@@ -463,8 +463,8 @@ export class WhatsAppController {
 
       // Legacy: parameters object + TemplateBuilder (uses template config / fieldOrder)
       const params = parameters || {};
-      const { TemplateBuilder } = await import('../services/templateBuilder.js');
-      const { getTemplateConfig } = await import('../config/templateConfigs.js');
+      const { TemplateBuilder } = await import('../services/twiliotemplateBuilder.js');
+      const { getTemplateConfig } = await import('../config/twiliotemplateConfigs.js');
 
       const config = getTemplateConfig(templateName);
       if (config) {

@@ -500,9 +500,9 @@ export class EmailService {
     parameters: Record<string, any> = {}
   ): Promise<EmailServiceResponse> {
     try {
-      const { getEmailTemplate } = await import("../templates/emailTemplates.js");
-      const { getTemplateConfig } = await import("../config/templateConfigs.js");
-      const { TemplateBuilder } = await import("./templateBuilder.js");
+      const { getEmailTemplate } = await import("../templates/twilioemailTemplates.js");
+      const { getTemplateConfig } = await import("../config/twiliotemplateConfigs.js");
+      const { TemplateBuilder } = await import("./twiliotemplateBuilder.js");
   
       const template = getEmailTemplate(templateName);
       if (!template) {
@@ -568,7 +568,7 @@ export class EmailService {
         return ErrorHandler.toServiceError('Mailjet credentials not configured. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in .env', 500) as EmailServiceResponse;
       }
 
-      const { getEmailTemplate } = await import('../templates/emailTemplates.js');
+      const { getEmailTemplate } = await import('../templates/twilioemailTemplates.js');
       const template = getEmailTemplate(templateName);
 
       if (!template) {

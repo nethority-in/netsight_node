@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import { prisma, isDatabaseConnected } from "../config/prisma.js";
-import whatsappRoutes from "./whatsappRoutes.js";
-import emailRoutes from "./emailRoutes.js";
+import whatsappRoutes from "./twiliowhatsappRoutes.js";
+import emailRoutes from "./twilioemailRoutes.js";
 // import { authenticateJWTOrApiSecret } from "../middleware/jwtAuth.js";
 import { ErrorHandler } from "../utils/errorHandler.js";
 import {

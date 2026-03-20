@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { register as doRegister, login as doLogin } from '../services/authService.js';
+import { register as doRegister, login as doLogin } from '../services/twilioauthService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 
 export async function register(req: Request, res: Response): Promise<void> {

@@ -6,7 +6,7 @@ import {
   updateUserApiKey,
   generateApiKey,
   StoredUser,
-} from "./userService.js";
+} from "./twiliouserService.js";
 import { appendAuthLog } from "../utils/logApiResponse.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
