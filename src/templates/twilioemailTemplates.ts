@@ -1078,7 +1078,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     
     <tr>
     <td>
-    <div class="metric-label">Order Fulfilment Rate</div>
+    <div class="metric-label">Fulfilment Rate</div>
     <div class="metric-value">{{OrderFulfillmentRate}}</div>
     </td>
     
@@ -1129,7 +1129,7 @@ Compared to the previous day, revenue increased by {{RevChgPct}} and order volum
     </td>
     
     <td>
-    <div class="metric-label">Google Ads Spend</div>
+    <div class="metric-label">Google Ads</div>
     <div class="metric-value">{{Googleadsspend}}</div>
     </td>
     

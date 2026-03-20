@@ -6,10 +6,14 @@ import { connectPrisma, disconnectPrisma } from './config/prisma.js';
 // Import models to ensure they're loaded (NotificationLog, NotificationSetting, Widget)
 import './models/index.js';
 import apiRoutes from './routes/api.js';
+import twilioEmailRoutes from './routes/twilioemailRoutes.js';
+import twilioWhatsAppRoutes from './routes/twiliowhatsappRoutes.js';
 import whatsappWebhookRoutes from './routes/twiliowhatsappWebhookRoutes.js';
 import twilioWebhookRoutes from './routes/twilioWebhookRoutes.js';
 import twilioSandboxRoutes from './routes/twilioSandboxRoutes.js';
-import authRoutes from './routes/twilioauthRoutes.js';
+import { callback as facebookCallback } from './controllers/facebookController.js';
+import authRoutes from './routes/authRoutes.js';
+import twilioAuthRoutes from './routes/twilioauthRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -64,9 +68,19 @@ process.on('SIGTERM', async () => {
 // Routes (webhooks are public - no auth; Meta/Twilio call them)
 app.use('/webhook/whatsapp-twilio', whatsappWebhookRoutes);
 app.use('/webhook/twilio', twilioWebhookRoutes);
-app.use('/auth-twilio', authRoutes);
+app.use('/auth-twilio', twilioAuthRoutes);
 app.use('/sandbox-twilio', twilioSandboxRoutes);
 app.use('/api-twilio', apiRoutes);
+
+app.use('/webhook/whatsapp', whatsappWebhookRoutes);
+// Facebook OAuth callback is public (browser redirect from Facebook)
+app.use('/auth', authRoutes);
+app.get('/api/facebook/callback', facebookCallback);
+app.use('/api', apiRoutes);
+
+// Twilio-only API routes (mounted separately because the base router `apiRoutes` does not include them)
+app.use('/api-twilio/email', twilioEmailRoutes);
+app.use('/api-twilio/whatsapp', twilioWhatsAppRoutes);
 
 // Health check (before 404)
 app.get('/health', (_req: Request, res: Response) => {

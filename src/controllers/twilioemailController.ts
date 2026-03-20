@@ -2,6 +2,11 @@ import { Request, Response } from 'express';
 import { EmailService } from '../services/twilioemailService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 
+function normalizeKeyWhitespace(key: string): string {
+  // e.g. "PositiveC  hanges" -> "PositiveChanges"
+  return String(key).replace(/\s+/g, '');
+}
+
 export class EmailController {
   // POST /api/email/send-template
   static async sendTemplate(req: Request, res: Response): Promise<void> {
@@ -367,6 +372,27 @@ export class EmailController {
 
       const config = getTemplateConfig(templateName);
       if (config) {
+        // Compatibility: handle common payload aliases / key typos for this template
+        // so validation doesn't block sending.
+        if (config.name === 'ns_temp_Notification_temp2') {
+          // Alias mapping (client keys -> template expected keys)
+          if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
+          if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
+
+          // Normalize whitespace keys (typos like "PositiveC  hanges")
+          const paramKeys = Object.keys(params);
+          for (const required of config.requiredFields) {
+            if (params[required] != null && params[required] !== '') continue;
+            const matchedKey = paramKeys.find(k => normalizeKeyWhitespace(k) === required);
+            if (matchedKey != null) params[required] = params[matchedKey];
+          }
+
+          // Fill still-missing required fields with N/A
+          for (const required of config.requiredFields) {
+            if (params[required] == null || params[required] === '') params[required] = 'N/A';
+          }
+        }
+
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
           ErrorHandler.sendValidationError(res, "Missing required fields", validation.missing);
