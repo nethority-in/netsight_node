@@ -12,6 +12,7 @@ import whatsappWebhookRoutes from './routes/twiliowhatsappWebhookRoutes.js';
 import twilioWebhookRoutes from './routes/twilioWebhookRoutes.js';
 import twilioSandboxRoutes from './routes/twilioSandboxRoutes.js';
 import { callback as facebookCallback } from './controllers/facebookController.js';
+import facebookIsightRoutes from './routes/facebookIsightRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import twilioAuthRoutes from './routes/twilioauthRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -76,6 +77,7 @@ app.use('/webhook/whatsapp', whatsappWebhookRoutes);
 // Facebook OAuth callback is public (browser redirect from Facebook)
 app.use('/auth', authRoutes);
 app.get('/api/facebook/callback', facebookCallback);
+app.use('/api/facebook-isight', facebookIsightRoutes);
 app.use('/api', apiRoutes);
 
 // Twilio-only API routes (mounted separately because the base router `apiRoutes` does not include them)
