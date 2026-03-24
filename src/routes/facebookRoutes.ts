@@ -6,6 +6,6 @@ const router = Router();
 
 //  Initiate Facebook OAuth – returns { oauth_url }. Requires Authorization: Bearer <CUSTOM_TOKEN>. 
 // router.get('/connect', authenticateToken, facebookController.connect);
-router.get('/connect', facebookController.connect);
+router.get('/callback', facebookController.connect);
 
 export default router;

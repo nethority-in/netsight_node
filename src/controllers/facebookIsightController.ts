@@ -4,7 +4,7 @@ import axios from 'axios';
 const STATIC_META_GRAPH_VERSION = 'v22.0';
 const STATIC_FACEBOOK_APP_ID = '2222959544777210';
 const STATIC_FACEBOOK_APP_SECRET = '51494072f4efc485ede8319e5419a383';
-const STATIC_FACEBOOK_REDIRECT_URI = 'https://bridge.netsights.ai/api/facebook-isight/connect';
+const STATIC_FACEBOOK_REDIRECT_URI = 'https://bridge.netsights.ai/api/facebook-isight/callback';
 
 function buildIsightOAuthUrl(state: string): string {
   const params = new URLSearchParams({
