@@ -7,6 +7,13 @@ function normalizeKeyWhitespace(key: string): string {
   return String(key).replace(/\s+/g, '');
 }
 
+function replacePlaceholders(template: string, variables: Record<string, any>): string {
+  return template.replace(/\{\{(\s*[\w.]+\s*)\}\}/g, (_match, key) => {
+    const trimmed = key.trim();
+    return trimmed in variables ? String(variables[trimmed] ?? '') : _match;
+  });
+}
+
 export class EmailController {
   // POST /api/email/send-template
   static async sendTemplate(req: Request, res: Response): Promise<void> {
@@ -440,6 +447,57 @@ export class EmailController {
       const envLabel = process.env.NODE_ENV === "production" ? "SERVER" : "LOCAL";
       console.error(`[${envLabel}] Email send-dynamic failed:`, error instanceof Error ? error.message : error);
       ErrorHandler.sendErrorResponse(res, error, "Error in sendDynamic", 500);
+    }
+  }
+
+  // POST /api-twilio/email/send-user-template
+  // Accepts a raw HTML template with {{variable}} placeholders + variable values, then sends the email.
+  // No pre-defined template required — user supplies the full template and data.
+  static async sendUserTemplate(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, subject, templateHtml, variables, cc, bcc, attachments } = req.body;
+
+      const toVal =
+        to != null
+          ? (Array.isArray(to) ? to : [to])
+              .map((e: unknown) => (e != null ? String(e).trim() : ''))
+              .filter(Boolean)
+          : [];
+
+      if (toVal.length === 0) {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient email) is required');
+        return;
+      }
+
+      if (subject == null || typeof subject !== 'string' || subject.trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "subject" is required');
+        return;
+      }
+
+      if (templateHtml == null || typeof templateHtml !== 'string' || templateHtml.trim() === '') {
+        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateHtml" (HTML string) is required');
+        return;
+      }
+
+      const vars: Record<string, any> = variables != null && typeof variables === 'object' ? { ...variables } : {};
+
+      const renderedHtml = replacePlaceholders(templateHtml, vars);
+      const renderedSubject = replacePlaceholders(subject, vars);
+
+      const result = await EmailService.sendEmail(
+        toVal.length === 1 ? toVal[0] : toVal,
+        renderedSubject,
+        renderedHtml,
+        undefined,
+        cc,
+        bcc,
+        attachments,
+        { endpoint: 'send-user-template', parameters: vars }
+      );
+
+      ErrorHandler.sendServiceResult(res, result);
+    } catch (error) {
+      ErrorHandler.sendErrorResponse(res, error, 'Error in sendUserTemplate', 500);
     }
   }
 }

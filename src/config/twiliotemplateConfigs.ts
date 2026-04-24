@@ -50,7 +50,9 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GoogleSummary',
       'GoogleCAC',
       'PositiveChanges',
-      'RequiresReviews'
+      'RequiresReviews',
+      'url',
+      'ScaleUrl'
     ],
     optionalFields: [],
     fieldOrder: [
@@ -72,7 +74,9 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'GoogleSummary',
       'GoogleCAC',
       'PositiveChanges',
-      'RequiresReviews'
+      'RequiresReviews',
+      'url',
+      'ScaleUrl'
     ]
   },
 
@@ -105,7 +109,8 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
   
       'PositiveChanges',
       'RequiresReviews',
-      'url'
+      'url',
+      'ScaleUrl'
     ],
   
     optionalFields: [],
@@ -137,7 +142,8 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
 
       'PositiveChanges',
       'RequiresReviews',
-      'url'
+      'url',
+      'ScaleUrl'
     ]
   },
 

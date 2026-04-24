@@ -25,7 +25,7 @@ function cleanup(): void {
 setInterval(cleanup, CLEAN_INTERVAL_MS);
 
 export interface RateLimitOptions {
-  // Max requests per window (default 20 for send endpoints) 
+  // Max requests per window (default 60 for send endpoints) 
   maxRequests?: number;
   // Window in ms (default 60_000) 
   windowMs?: number;
@@ -35,7 +35,7 @@ export interface RateLimitOptions {
 // Uses in-memory store keyed by IP or authenticated user ID.
 
 export function createRateLimiter(options: RateLimitOptions = {}) {
-  const { maxRequests = 20, windowMs = WINDOW_MS } = options;
+  const { maxRequests = 60, windowMs = WINDOW_MS } = options;
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const key = getKey(req);
@@ -64,6 +64,6 @@ export function createRateLimiter(options: RateLimitOptions = {}) {
 }
 
 // Pre-configured limiter for notification send routes (email/WhatsApp) 
-export const notificationRateLimiter = createRateLimiter({ maxRequests: 20, windowMs: 60_000 });
+export const notificationRateLimiter = createRateLimiter({ maxRequests: 60, windowMs: 60_000 });
 
 

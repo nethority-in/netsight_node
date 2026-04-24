@@ -38,8 +38,8 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   '6amcxosummary16032026':"HX6b44b0fd9660c34d9dff5c4f5b1fea63",
   '1copy6amcxosummary16032026':"HX17e78dd0871a92464b0658bd6ce88d42",
   'dailysummarybutton':"HXf82c046e1613965e524303f5fda7068e",
-  'daily_store_performance_update_v3':"HXcbeb93e547c743ad86b3017d3ad0d8aa"
-
+  'daily_store_performance_update_v3':"HXcbeb93e547c743ad86b3017d3ad0d8aa",
+  'dailysummarybutton_v11':"HX7b6ed2f024036ecee86cdb6f951fd504"
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {

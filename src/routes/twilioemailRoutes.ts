@@ -18,6 +18,7 @@ router.post('/send-template-twilio', EmailController.sendTemplate);
 router.post('/send-email-twilio', EmailController.sendEmail);
 router.post('/send-daily-kpi-snapshot-twilio', EmailController.sendDailyKpiSnapshot);
 router.post('/send-dynamic-twilio', EmailController.sendDynamic);  // use 
+router.post('/send-user-template', EmailController.sendUserTemplate); // user supplies template + variables → send
 router.get('/templates-twilio', EmailController.getTemplates);
 
 export default router;

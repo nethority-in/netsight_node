@@ -10,7 +10,7 @@ function buildIsightOAuthUrl(state: string): string {
   const params = new URLSearchParams({
     client_id: STATIC_FACEBOOK_APP_ID,
     redirect_uri: STATIC_FACEBOOK_REDIRECT_URI,
-    scope: 'business_management',
+    scope: 'business_management, whatsapp_business_management,',
     response_type: 'code',
     state,
   });

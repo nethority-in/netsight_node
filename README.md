@@ -487,3 +487,5 @@ https://api.netsights.ai/api/debug/email-payload?shop=celebrity-drapes.myshopify
 if want to check specific date
 https://api.netsights.ai/api/debug/email-payload?shop=celebrity-drapes.myshopify.com&date_from=2026-02-20&date_to=2026-02-20
 
+ngrok if json change hit this cmd
+// copy src\data\qa_data.json dist\data\qa_data.json 

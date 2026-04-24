@@ -30,13 +30,14 @@ const templates: Record<string, EmailTemplate> = {
       </body>
       </html>
     `,
-    text: '{{message}}'
+    text: "{{message}}",
   },
 
   // Daily KPI Snapshot template
   //api/email/send-daily-kpi-snapshot
   daily_kpi_snapshot: {
-    subject: 'Daily KPI Snapshot - {{storeName || "My Store"}} - {{date || "2024-01-15"}}',
+    subject:
+      'Daily KPI Snapshot - {{storeName || "My Store"}} - {{date || "2024-01-15"}}',
     html: `
       <!DOCTYPE html>
       <html>
@@ -129,13 +130,14 @@ const templates: Record<string, EmailTemplate> = {
         </div>
       </body>
       </html>
-    `
+    `,
   },
 
-  // Daily Store Performance Summary 
+  // Daily Store Performance Summary
   // POST /api/email/send-dynamic with templateName
   daily_store_performance_summary: {
-    subject: '📊 Daily Performance Update – {{storeName || "Store"}} – {{date || ""}}',
+    subject:
+      '📊 Daily Performance Update – {{storeName || "Store"}} – {{date || ""}}',
     html: `
       <!DOCTYPE html>
       <html>
@@ -215,14 +217,14 @@ const templates: Record<string, EmailTemplate> = {
         </div>
       </body>
       </html>
-    `
+    `,
   },
 
   // Business Performance Summary – daily store report (image-style design)
   // POST /api/email/send-dynamic with templateName: 'business_performance_summary'
   // Parameters: StoreName, PrevDate, Revenue, Orders, AOV, RevChgPct, OrdChgPct, MetaSummary, MetaCAC, GoogleSummary, GoogleCAC, day, PositiveChanges, RequiresReviews
   business_performance_summary: {
-    subject: 'Daily business performance summary – {{PrevDate}}',
+    subject: "Daily business performance summary – {{PrevDate}}",
     html: `
       <!DOCTYPE html>
       <html>
@@ -264,11 +266,11 @@ const templates: Record<string, EmailTemplate> = {
       </body>
       </html>
     `,
-    text: `Good day,\n\nThis is an automated performance summary for {{StoreName}}'s business performance for {{PrevDate}}.\n\nBusiness Overview\nTotal revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}. Compared to the previous day, revenue {{RevChgPct}} and order volume {{OrdChgPct}}.\n\nChannel Performance\n{{MetaSummary}}\n{{MetaCAC}}\n{{GoogleSummary}}\n{{GoogleCAC}}\n\nPrevious {{day}} comparison\nPerformance Highlights\n{{PositiveChanges}}\n\nReview Required\n{{RequiresReviews}}\n\nThis message contains automatically generated factual account data for reference purposes only.\n\nRegards,\nNetsights.ai`
+    text: `Good day,\n\nThis is an automated performance summary for {{StoreName}}'s business performance for {{PrevDate}}.\n\nBusiness Overview\nTotal revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}. Compared to the previous day, revenue {{RevChgPct}} and order volume {{OrdChgPct}}.\n\nChannel Performance\n{{MetaSummary}}\n{{MetaCAC}}\n{{GoogleSummary}}\n{{GoogleCAC}}\n\nPrevious {{day}} comparison\nPerformance Highlights\n{{PositiveChanges}}\n\nReview Required\n{{RequiresReviews}}\n\nThis message contains automatically generated factual account data for reference purposes only.\n\nRegards,\nNetsights.ai`,
   },
 
   ns_temp_Notification_temp1: {
-    subject: '{{StoreName}} Daily Performance Summary',
+    subject: "{{StoreName}} Daily Performance Summary",
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -279,92 +281,69 @@ const templates: Record<string, EmailTemplate> = {
     <meta name="supported-color-schemes" content="light dark">
     <title>Netsights Email Template</title>
     <style>
-        :root {
-            --ns-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            --ns-font-size: 16px;
-            --ns-font-weight: 400;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: var(--ns-font-family);
-            font-size: var(--ns-font-size);
-            font-weight: var(--ns-font-weight);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            margin: 0;
             background-color: #f9fafb;
+            color: #111827;
             padding: 20px;
-        }
-
-        /* Force consistent font across typical text elements */
-        h1, h2, h3, h4, h5, h6,
-        p, span, a, li, ul, ol, div, td, th, small, strong, b, em {
-            font-family: inherit;
-            font-size: inherit;
-            font-weight: inherit;
         }
 
         .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: white;
+            background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
         .header {
-    background: linear-gradient(to right, #ffffff, #f9fafb);
-    padding: 15px;
-    border-bottom: 4px solid #5DBBB8;
-    text-align: center;
-}
+            background: #ffffff;
+            padding: 15px;
+            border-bottom: 4px solid #5DBBB8;
+            text-align: center;
+        }
 
         .header img {
-            height: 48px;
+            height: 46px;
             object-fit: contain;
         }
 
         .content {
-            padding: 15px;
-            background-color: white;
+            padding: 15px 16px;
+            background-color: #ffffff;
+        }
+
+        .content h1 {
+            font-size: 16px;
+            color: #111827;
+            margin: 16px 0 8px 0;
         }
 
         .content h2 {
+            font-size: 14px;
             color: #111827;
-            margin-bottom: 8px;
-        }
-
-        .accent-line {
-            width: 64px;
-            height: 4px;
-            background-color: #5DBBB8;
-            border-radius: 2px;
-            margin-bottom: 24px;
+            margin: 12px 0 6px 0;
         }
 
         .content p {
             color: #374151;
+            font-size: 14px;
             line-height: 1.625;
-            margin-bottom: 16px;
-        }
-
-        .highlight-box h3 {
-            color: #111827;
             margin-bottom: 12px;
         }
 
         .highlight-box ul {
-list-style: none;
-padding-left:0;
-}
+            list-style: none;
+            padding-left: 0;
+            margin: 0 0 8px 0;
+        }
 
         .highlight-box li {
             color: #374151;
-            margin-bottom: 8px;
+            font-size: 14px;
+            margin-bottom: 6px;
             display: flex;
             align-items: flex-start;
             line-height: 1.5;
@@ -373,112 +352,457 @@ padding-left:0;
         .highlight-box li span:first-child {
             color: #5DBBB8;
             margin-right: 8px;
-            margin-top: 4px;
-            font-weight: inherit;
-        }
-
-        .cta-button {
-            display: inline-block;
-            background-color: #5DBBB8;
-            color: white;
-            font-weight: inherit;
-            padding: 12px 32px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin: 32px 0;
-        }
-
-        .cta-button:hover {
-            background-color: #4da9a6;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-top: 2px;
         }
 
         .footer {
-            background: linear-gradient(to right, #f9fafb, #f3f4f6);
-            padding: 24px 32px;
+            background: #f9fafb;
+            padding: 15px;
             border-top: 1px solid #e5e7eb;
-        }
-
-        .footer-contact {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 16px;
-            color: #4b5563;
-        }
-
-        .footer-contact-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .footer-contact-item svg {
-            width: 16px;
-            height: 16px;
-            color: #5DBBB8;
-            flex-shrink: 0;
-        }
-
-        .footer-info {
             text-align: center;
+        }
+
+        .footer p {
+            font-size: 13px;
             color: #6b7280;
-            line-height: 1.6;
-        }
-
-        .footer-location {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
             margin-bottom: 8px;
-        }
-
-        .footer-location svg {
-            width: 12px;
-            height: 12px;
-            color: #5DBBB8;
-        }
-
-        .footer-divider {
-            border-top: 1px solid #d1d5db;
-            margin: 12px 0;
-            padding-top: 8px;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
             text-align: center;
-            gap: 16px;
-            padding-top: 8px;
         }
 
         .footer-links a {
             color: #5DBBB8;
             text-decoration: none;
-            transition: color 0.2s;
+            font-size: 13px;
         }
 
-        .footer-links a:hover {
-            color: #4da9a6;
+        /* ── LOGO SWITCHING ── */
+        .logo-light { display: inline-block !important; }
+        .logo-dark  { display: none    !important; }
+
+        /* ══════════════════════════════════════
+           DARK MODE
+        ══════════════════════════════════════ */
+        @media (prefers-color-scheme: dark) {
+
+            body {
+                background: #0b0b0b;
+                color: #f3f4f6;
+            }
+
+            /* container */
+            .email-container {
+                background: #0b0b0b;
+                box-shadow: none;
+            }
+
+            /* header */
+            .header {
+                background: #0b0b0b !important;
+                border-bottom: 4px solid #5DBBB8;
+            }
+
+            /* logo swap */
+            .header .logo-light { display: none   !important; }
+            .header .logo-dark  { display: inline-block !important; }
+
+            /* content bg */
+            .content {
+                background-color: #0b0b0b;
+            }
+
+            /* headings */
+            h1, h2, h3, h4, h5, h6 {
+                color: #f9fafb;
+            }
+
+            /* body text */
+            p {
+                color: #d1d5db;
+            }
+
+            /* list items */
+            .highlight-box li {
+                color: #e5e7eb;
+            }
+
+            /* footer */
+            .footer {
+                background: #0b0b0b;
+                border-top: 1px solid #222;
+            }
+
+            .footer p {
+                color: #9ca3af;
+            }
+
+            .footer-links a {
+                color: #5eead4;
+            }
+
+            /* footer partner icons swap */
+            .footer .logo-light { display: none          !important; }
+            .footer .logo-dark  { display: inline-block  !important; }
         }
 
-        .footer-separator {
-            color: #d1d5db;
+        /* ── MOBILE ── */
+        @media (max-width: 600px) {
+            .email-container {
+                border-radius: 0;
+            }
+            .content {
+                padding: 16px 12px;
+            }
+            .header {
+                padding: 15px;
+            }
+            .footer {
+                padding: 12px;
+            }
         }
+    </style>
+</head>
+<body>
+    <div class="email-container">
 
-       .logo-dark{display:none !important;}
-       @media (prefers-color-scheme: dark){
+        <!-- Header -->
+        <div class="header">
+            <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
+            <img src="https://app.netsights.ai/images/logo/netsight-white.svg"  alt="Netsights Logo" class="logo-dark"  style="height:46px;">
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <p style="color:#E5E7EB;">Good day,</p>
+            <p style="color:#E5E7EB;">Please find below a summary of <b>{{StoreName}}</b>'s business performance for <b>{{PrevDate}}</b>.</p>
+
+            <div class="highlight-box">
+
+                <h1>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h1>
+                <ul>
+                    <li>
+                        <span>•</span>
+                        <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
+Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}}.</span>
+                    </li>
+                </ul>
+
+                <h2>Top 3 bestsellers</h2>
+                <ul>
+                    <li><span>•</span> <span>{{Bestseller1}}</span></li>
+                    <li><span>•</span> <span>{{Bestseller2}}</span></li>
+                    <li><span>•</span> <span>{{Bestseller3}}</span></li>
+                </ul>
+
+                <h1>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h1>
+                <ul>
+                    <li><span>•</span> <span>{{MetaSummary}}</span></li>
+                    <li><span>•</span> <span>{{MetaCAC}}</span></li>
+                    <li><span>•</span> <span>{{GoogleSummary}}</span></li>
+                    <li><span>•</span> <span>{{GoogleCAC}}</span></li>
+                </ul>
+
+                <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{day}} 𝗱𝗮𝘆'𝘀 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
+                <ul>
+                    <li><span>•</span> <span style="font-weight:bold;">Positive changes</span></li>
+                </ul>
+                <div style="margin:0 0 16px 0; padding-left:20px; white-space:pre-line; font-size:14px; color:#E5E7EB;">{{PositiveChanges}}</div>
+
+                <ul>
+                    <li><span>•</span> <span style="font-weight:bold;">Requires a review</span></li>
+                </ul>
+                <div style="margin:0 0 24px 0; padding-left:20px; white-space:pre-line; font-size:14px; color:#E5E7EB;">{{RequiresReviews}}</div>
+
+            </div>
+
+            <p style="margin-top:24px; color:#E5E7EB;">
+                Regards,<br>
+                <span style="color:#E5E7EB;">Netsights.ai</span>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+
+            <!-- CTA buttons -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0; padding:0;">
+                <tr>
+                    <td align="center" style="padding:6px 0 0 0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                            <tr>
+                                <td align="center" style="padding-right:6px;">
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
+                                                <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+                                                    View Daily Report
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td align="center" style="padding-left:6px;">
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
+                                                <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+                                                    Visit Scaleboard
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Copyright -->
+            <p style="margin-bottom:8px; text-align:center; color:#E5E7EB;">© 2026 Netsights.ai. All rights reserved</p>
+
+            <!-- Links -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+                <tr>
+                    <td align="center">
+                        <a target="_blank" href="https://netsights.ai/support/"    class="footer-links" style="text-decoration:none; color:#0043fc;">Support</a>
+                        <span style="color:#d1d5db;"> | </span>
+                        <a target="_blank" href="https://netsights.ai/contact-us/" class="footer-links" style="text-decoration:none; color:#0043fc;">Contact Us</a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</body>
+</html>
+    `,
+    text: "{{content}}",
+  },
+
+  ns_temp_Notification_temp2: {
+    subject: "{{StoreName}} Daily Performance Summary",
+    html: `
+     <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Email Template</title>
+
+<style>
+body{
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
+margin:0;
+color:#111827;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+background:#ffffff;
+border-radius:10px;
+overflow:hidden;
+}
+
+
+
 .header{
-background:#ffffff !important;
+background:#ffffff;
+padding:15px;
+border-bottom:4px solid #5DBBB8;
+text-align:center;
+}
+
+.header img{
+height:46px;
+}
+
+h1{
+font-size:20px;
+}
+
+h2{
+font-size:18px;
+}
+
+p{
+font-size:14px;
+color:#374151;
+line-height:1.6;
+}
+
+
+
+.layer{
+border-radius:14px;
+padding:15px;
+margin-top:10px;
+border-left:4px solid;
+}
+
+.layer-header{
+font-weight:600;
+margin-bottom:10px;
+font-size:14px;
+letter-spacing:0.2px;
+}
+
+
+
+.metrics-table{
+width:100%;
+}
+
+.metrics-table td{
+width:33%;
+padding:6px 3px;
+vertical-align:top;
+}
+
+.metric-label{
+font-size:13px;
+color:#6b7280;
+margin-bottom:2px;
+}
+
+.metric-value{
+font-size:13px;
+font-weight:600;
+color:#111827;
+}
+
+
+
+.teal{
+background:#ecfeff;
+border-color:#5eead4;
+}
+
+.pink{
+background:#fdf2f8;
+border-color:#f9a8d4;
+}
+
+.indigo{
+background:#eef2ff;
+border-color:#c7d2fe;
+}
+
+
+
+.highlight{
+background:#f0fdf4;
+border-left:4px solid #6ee7b7;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+}
+
+.review{
+background:#fff1f2;
+border-left:4px solid #fca5a5;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+}
+
+ul{
+margin:3px 0 0 0;
+padding-left:15px;
+}
+
+li{
+margin-bottom:3px;
+font-size:14px;
+color:#444;
+}
+
+
+
+.footer{
+background:#f9fafb;
+padding:15px;
+border-top:1px solid #e5e7eb;
+text-align:center;
+}
+
+.footer-links a{
+color:#5DBBB8;
+text-decoration:none;
+font-size:13px;
+}
+
+
+
+@media (max-width:600px){
+
+.container{
+border-radius:0;
+}
+
+.content{
+padding:3px;
+}
+
+.metrics-table td{
+display:inline-block;
+box-sizing:border-box;
+/* padding:2px 1px; */
+padding-left: 5px;
+
+vertical-align:top;
+}
+
+.layer{
+padding:7px;
+}
+
+.highlight,
+.review{
+padding:7px;
+}
+
+.mobile-view{
+    padding-left: 10px;
+padding-right: 10px;
+}
+
+.layer-header{
+    padding-left: 5px;
+}
+
+.metric-label{
+font-size:11px;
+color:#6b7280;
+margin-bottom:2px;
+}
+
+.footer-btn-cell{
+width:50% !important;
+}
+
+.footer-btn-link{
+display:block !important;
+font-size:14px !important;
+line-height:18px !important;
+padding:9px 8px !important;
+}
+
+}
+
+
+
+.logo-light{display:inline-block !important;}
+.logo-dark{display:none !important;}
+@media (prefers-color-scheme: dark){
+.header{
+background:#0b0b0b !important;
 border-bottom:4px solid #5DBBB8;
 }
-.header .logo-light{display:block !important;}
-.header .logo-dark{display:none !important;}
+.header .logo-light{display:none !important;}
+.header .logo-dark{display:inline-block !important;}
 body{
 background:#0b0b0b;
 color:#f3f4f6;
@@ -486,24 +810,13 @@ color:#f3f4f6;
 
 .container{
 background:#0b0b0b;
-box-shadow:none;
 }
+
+
 
 p{
 color:#d1d5db;
 }
-
-/* HEADINGS */
-
-h1,
-h2,
-.layer-header,
-.review b,
-.highlight b{
-color:#f9fafb;
-}
-
-/* LAYERS */
 
 .layer{
 background:#0f0f0f;
@@ -521,38 +834,25 @@ border-color:#ec4899;
 border-color:#6366f1;
 }
 
-/* METRICS */
-
 .metric-label{
-color:#d1d5db;
+color:#9ca3af;
 }
 
 .metric-value{
 color:#f9fafb;
 }
 
-/* LIST TEXT */
-
-li{
-color:#e5e7eb;
-}
-
-/* HIGHLIGHT (PERFORMANCE HIGHLIGHTS) */
-
 .highlight{
 background:transparent;
 border-color:#22c55e;
 }
 
-/* REVIEW SECTION */
-
 .review{
-background:#0f0f0f;
+background:transparent;
+border-color:#ef4444;
 }
 
-/* FOOTER */
-
-.footer{    
+.footer{
 background:#0b0b0b;
 border-top:1px solid #222;
 }
@@ -561,691 +861,268 @@ border-top:1px solid #222;
 color:#5eead4;
 }
 
+.footer .logo-light{
+display:none !important;
 }
 
-        @media (max-width: 600px) {
-            .email-container {
-                border-radius: 0;
-            }
+.footer .logo-dark{
+display:inline-block !important;
+}
 
-            .content {
-                padding: 24px 20px;
-            }
+}
 
-            .header {
-                padding: 20px 20px;
-            }
-
-            .footer {
-                padding: 20px 20px;
-            }
-
-            .footer-contact {
-                gap: 16px;
-            }
-        }
-      
-    </style>
+</style>
 </head>
+
 <body>
-    <div class="email-container">
-        <!-- Header -->
-       <div class="header">
-    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
-    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
-    </div>
-        <!-- Content -->
-        <div class="content">
-            <p>Good day,</p>
 
-            <p>Please find below a summary of {{StoreName}}’s business performance for {{PrevDate}} .</p>
+<div class="container">
 
-            <div class="highlight-box">
-                <h1>𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄</h1>
-                <ul>
-                    <li>
-                        <span>•</span>
-                        <span>Total revenue of {{Revenue}} was generated from {{Orders}} orders, resulting in an Average Order Value (AOV) of {{AOV}}.
-Compared to the previous day, revenue increased by {{RevChgPct}} and order volume increased by {{OrdChgPct}} .</span>
-                    </li>
-                </ul>
+<div class="header">
+<img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
+<img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
+</div>
 
-                <!-- IGNORE block for variable matching (but keep it; these are extra vars) -->
-                <h2>Top 3 bestsellers</h2>
-                <ul>
-                    <li>
-                        <span>•</span> <span>{{Bestseller1}}</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>{{Bestseller2}}</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>{{Bestseller3}}</span>
-                    </li>
-                </ul>
+<div class="content">
 
-                <h1>𝗠𝗮𝗿𝗸𝗲𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗚𝗿𝗼𝘄𝘁𝗵 𝗘𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝗰𝘆</h1>
-                <ul>
-                    <li>
-                        <span>•</span> <span>{{MetaSummary}}</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>{{MetaCAC}}</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>{{GoogleSummary}}</span>
-                    </li>
-                    <li>
-                        <span>•</span> <span>{{GoogleCAC}}</span>
-                    </li>
-                </ul>
+<h1 style="padding-left:16px; padding-right: 11px;" class="mobile-view">Good day,</h1>
 
-                <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{day}} day's 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
-                <ul>
-                    <li>
-                        <span>•</span> <span style="font-weight: bold;">Positive changes</span>
-                    </li>
-                </ul>
-                <div style="margin: 0 0 16px 0; padding-left: 20px; white-space: pre-line;">{{PositiveChanges}}</div>
+<p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
+This is a performance summary for
+<b>{{StoreName}}</b> - <b>{{PrevDate}}</b>.
+</p>
 
-                <ul>
-                    <li>
-                        <span>•</span> <span style="font-weight: bold;">Requires a review</span>
-                    </li>
-                </ul>
-                <div style="margin: 0 0 24px 0; padding-left: 20px; white-space: pre-line;">{{RequiresReviews}}</div>
-            </div>
 
-            <p style="margin-top: 32px;">
-                Regards,<br>
-                <span style="font-weight: inherit; color: #111827;">Netsights.ai</span>
-            </p>
-        </div>
 
-        <!-- Footer -->
-        <div class="footer">
+<div class="layer teal">
 
-   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0; margin-bottom:8px; margin-top:0px;">
-    <tr>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/shopifylight.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/shopify-dark.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/Klaviyolight.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/Klaviyo-dark.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-    </tr>
-  </table>
+<div class="layer-header">
+UNIT ECONOMICS
+</div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
-    <tr>
-      <td align="center" style="padding:0 6px; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          View Daily Report
-        </a>
-      </td>
-      <td style="width:24px; min-width:24px; max-width:24px;">&nbsp;</td>
-      <td align="center" style="padding:0 6px; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/intelligence" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          ASK AI
-        </a>
-      </td>
-    </tr>
-  </table>
+<table class="metrics-table" cellpadding="0" cellspacing="0">
 
-  <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+<tr>
 
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
-    <tr>
-      <td align="center">
-        <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
-        <span style="color:#d1d5db;"> | </span>
-        <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
-      </td>
-    </tr>
-  </table>
+<tr>
+<td>
+<div class="metric-label">Gross Revenue</div>
+<div class="metric-value">{{GrossRevenue}}</div>
+</td>
+
+<td>
+<div class="metric-label">Net Sales</div>
+<div class="metric-value">{{NetSales}}</div>
+</td>
+
+<td>
+<div class="metric-label">Orders</div>
+<div class="metric-value">{{Orders}}</div>
+</td>
+</tr>
+
+<td>
+<div class="metric-label">AOV</div>
+<div class="metric-value">{{AOV}}</div>
+</td>
+
+<td>
+<div class="metric-label">LTV</div>
+<div class="metric-value">{{LTV}}</div>
+</td>
+
+<td>
+<div class="metric-label">LTV : CAC</div>
+<div class="metric-value">{{LTVCACRatio}}</div>
+</td>
+</tr>
+
+</table>
+</div>
+
+
+
+
+<div class="layer pink">
+
+<div class="layer-header">
+OPERATIONAL METRICS
+</div>
+
+<table class="metrics-table">
+
+<tr>
+<td>
+<div class="metric-label">New vs Repeat</div>
+<div class="metric-value">{{NewVsRepeat}}</div>
+</td>
+
+<td>
+<div class="metric-label">Order Frequency</div>
+<div class="metric-value">{{OrderFrequency}}</div>
+</td>
+
+<td>
+<div class="metric-label">Discount Rate</div>
+<div class="metric-value">{{TotalDiscountRate}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<div class="metric-label">Fulfilment Rate</div>
+<div class="metric-value">{{OrderFulfillmentRate}}</div>
+</td>
+
+<td>
+<div class="metric-label">GA4 Sessions</div>
+<div class="metric-value">{{GA4Sessions}}</div>
+</td>
+
+<td>
+<div class="metric-label">GA4 Users</div>
+<div class="metric-value">{{GA4Users}}</div>
+</td>
+</tr>
+
+</table>
+</div>
+
+
+
+<div class="layer indigo">
+
+<div class="layer-header">
+CAMPAIGN PERFORMANCE
+</div>
+
+<table class="metrics-table">
+<tr>
+<td>
+<div class="metric-label">Blended Spend</div>
+<div class="metric-value">{{BlendedSpend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta Spend</div>
+<div class="metric-value">{{MetaSpend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta ROAS</div>
+<div class="metric-value">{{MetaROAS}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<div class="metric-label">Blended ROAS</div>
+<div class="metric-value">{{BlendedROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google Spend</div>
+<div class="metric-value">{{Googleadsspend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google ROAS</div>
+<div class="metric-value">{{GoogleROAS}}</div>
+</td>
+</tr>
+
+</table>
+</div>
+
+
+
+<div class="highlight">
+
+<div class="layer-header" style="margin-bottom:6px; padding-left:0;">
+PERFORMANCE HIGHLIGHTS
+</div>
+
+<div style="white-space: pre-line !important; font-size: 14px;">
+{{PositiveChanges}}
+</div>
 
 </div>
-    </div>
+
+
+<div class="review">
+
+<div class="layer-header" style="margin-bottom:6px; padding-left:0;">
+REVIEW REQUIRED
+</div>
+
+<div style="white-space: pre-line !important; font-size: 14px;">
+{{RequiresReviews}}
+</div>
+
+</div>
+
+
+<div class="footer">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+<tr>
+  <td align="center" style="padding:6px 0 0 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+      <tr>
+        <td align="center" class="footer-btn-cell" style="padding-right:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
+          <a target="_blank" href="https://isight.netsights.ai/{{url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+            View Daily Report
+          </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td align="center" class="footer-btn-cell" style="padding-left:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
+          <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+            Visit Scaleboard
+          </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+
+<p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+<tr>
+  <td align="center">
+    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+    <span style="color:#d1d5db;"> | </span>
+    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+  </td>
+</tr>
+</table>
+
+
+
+</div>
+
+</div>
+
 </body>
 </html>
     `,
-    text: '{{content}}'
-  },
-
-  ns_temp_Notification_temp2: {
-    subject: '{{StoreName}} Daily Performance Summary',
-    html: `
-      <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <meta name="supported-color-schemes" content="light dark">
-    <title>Email Template</title>
-    
-    <style>
-    body{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
-    margin:0;
-    color:#111827;
-    }
-    
-    .container{
-    max-width:600px;
-    margin:auto;
-    background:#ffffff;
-    border-radius:10px;
-    overflow:hidden;
-    }
-    
- 
-    
-    .header{
-    background:#ffffff;
-    padding:15px;
-    border-bottom:4px solid #5DBBB8;
-    text-align:center;
-    }
-    
-    .header img{
-    height:46px;
-    }
-    
-    h1{
-    font-size:20px;
-    }
-    
-    h2{
-    font-size:18px;
-    }
-    
-    p{
-    font-size:14px;
-    color:#374151;
-    line-height:1.6;
-    }
-    
-  
-    
-    .layer{
-    border-radius:14px;
-    padding:15px;
-    margin-top:10px;
-    border-left:4px solid;
-    }
-    
-    .layer-header{
-    font-weight:600;
-    margin-bottom:10px;
-    font-size:14px;
-    letter-spacing:0.2px;
-    }
-    
- 
-    
-    .metrics-table{
-    width:100%;
-    }
-    
-    .metrics-table td{
-    width:33%;
-    padding:6px 3px;
-    vertical-align:top;
-    }
-    
-    .metric-label{
-    font-size:13px;
-    color:#6b7280;
-    margin-bottom:2px;
-    }
-    
-    .metric-value{
-    font-size:13px;
-    font-weight:600;
-    color:#111827;
-    }
-    
-  
-    
-    .teal{
-    background:#ecfeff;
-    border-color:#5eead4;
-    }
-    
-    .pink{
-    background:#fdf2f8;
-    border-color:#f9a8d4;
-    }
-    
-    .indigo{
-    background:#eef2ff;
-    border-color:#c7d2fe;
-    }
-    
-   
-    
-    .highlight{
-    background:#f0fdf4;
-    border-left:4px solid #6ee7b7;
-    padding:15px;
-    border-radius:12px;
-    margin-top:10px;
-    }
-    
-    .review{
-    background:#fff1f2;
-    border-left:4px solid #fca5a5;
-    padding:15px;
-    border-radius:12px;
-    margin-top:10px;
-    }
-    
-    ul{
-    margin:3px 0 0 0;
-    padding-left:15px;
-    }
-    
-    li{
-    margin-bottom:3px;
-    font-size:14px;
-    color:#444;
-    }
-    
-
-    
-    .footer{
-    background:#f9fafb;
-    padding:15px;
-    border-top:1px solid #e5e7eb;
-    text-align:center;
-    }
-    
-    .footer-links a{
-    color:#5DBBB8;
-    text-decoration:none;
-    font-size:13px;
-    }
-    
- 
-    
-    @media (max-width:600px){
-    
-    .container{
-    border-radius:0;
-    }
-    
-    .content{
-    padding:3px;
-    }
-    
-    .metrics-table td{
-    display:inline-block;
-    box-sizing:border-box;
-    /* padding:2px 1px; */
-    padding-left: 5px;
-
-    vertical-align:top;
-    }
-    
-    .layer{
-    padding:7px;
-    }
-
-    .mobile-view{
-        padding-left: 10px;
-    padding-right: 10px;
-    }
-
-    .layer-header{
-        padding-left: 5px;
-    }
-
-    .metric-label{
-    font-size:11px;
-    color:#6b7280;
-    margin-bottom:2px;
-    }
-    
-    }
-    
-
-    
-    .logo-light{display:inline-block !important;}
-    .logo-dark{display:none !important;}
-    @media (prefers-color-scheme: dark){
-    .header{
-    background:#0b0b0b !important;
-    border-bottom:4px solid #5DBBB8;
-    }
-    .header .logo-light{display:none !important;}
-    .header .logo-dark{display:inline-block !important;}
-    body{
-    background:#0b0b0b;
-    color:#f3f4f6;
-    }
-    
-    .container{
-    background:#0b0b0b;
-    }
-    
-    
-    
-    p{
-    color:#d1d5db;
-    }
-    
-    .layer{
-    background:#0f0f0f;
-    }
-    
-    .teal{
-    border-color:#2dd4bf;
-    }
-    
-    .pink{
-    border-color:#ec4899;
-    }
-    
-    .indigo{
-    border-color:#6366f1;
-    }
-    
-    .metric-label{
-    color:#9ca3af;
-    }
-    
-    .metric-value{
-    color:#f9fafb;
-    }
-    
-    .highlight{
-    background:transparent;
-    border-color:#22c55e;
-    }
-    
-    .review{
-    background:transparent;
-    border-color:#ef4444;
-    }
-    
-    .footer{
-    background:#0b0b0b;
-    border-top:1px solid #222;
-    }
-    
-    .footer-links a{
-    color:#5eead4;
-    }
-
-    .footer .logo-light{
-    display:none !important;
-    }
-
-    .footer .logo-dark{
-    display:inline-block !important;
-    }
-    
-    }
-    
-    </style>
-    </head>
-    
-    <body>
-    
-    <div class="container">
-    
-    <div class="header">
-    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
-    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
-    </div>
-    
-    <div class="content">
-    
-    <h1 style="padding-left:16px; padding-right: 11px;" class="mobile-view">Good day,</h1>
-    
-    <p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
-    This is a performance summary for
-    <b>{{StoreName}}</b>
-    for <b>{{PrevDate}}</b>.
-    </p>
-    
- 
-    
-    <div class="layer teal">
-    
-    <div class="layer-header">
-    UNIT ECONOMICS
-    </div>
-    
-    <table class="metrics-table" cellpadding="0" cellspacing="0">
-    
-    <tr>
-
-    <tr>
-    <td>
-    <div class="metric-label">Gross Revenue</div>
-    <div class="metric-value">{{GrossRevenue}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Net Sales</div>
-    <div class="metric-value">{{NetSales}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Orders</div>
-    <div class="metric-value">{{Orders}}</div>
-    </td>
-    </tr>
-
-    <td>
-    <div class="metric-label">AOV</div>
-    <div class="metric-value">{{AOV}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">LTV</div>
-    <div class="metric-value">{{LTV}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">LTV : CAC</div>
-    <div class="metric-value">{{LTVCACRatio}}</div>
-    </td>
-    </tr>
-    
-    </table>
-    </div>
-    
-    
-
-    
-    <div class="layer pink">
-    
-    <div class="layer-header">
-    OPERATIONAL METRICS
-    </div>
-    
-    <table class="metrics-table">
-    
-    <tr>
-    <td>
-    <div class="metric-label">New vs Repeat</div>
-    <div class="metric-value">{{NewVsRepeat}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Order Frequency</div>
-    <div class="metric-value">{{OrderFrequency}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Discount Rate</div>
-    <div class="metric-value">{{TotalDiscountRate}}</div>
-    </td>
-    </tr>
-    
-    <tr>
-    <td>
-    <div class="metric-label">Fulfilment Rate</div>
-    <div class="metric-value">{{OrderFulfillmentRate}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">GA4 Sessions</div>
-    <div class="metric-value">{{GA4Sessions}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">GA4 Users</div>
-    <div class="metric-value">{{GA4Users}}</div>
-    </td>
-    </tr>
-    
-    </table>
-    </div>
-    
-
-    
-    <div class="layer indigo">
-    
-    <div class="layer-header">
-    CAMPAIGN PERFORMANCE
-    </div>
-    
-    <table class="metrics-table">
-    <tr>
-    <td>
-    <div class="metric-label">Blended Spend</div>
-    <div class="metric-value">{{BlendedSpend}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Meta Spend</div>
-    <div class="metric-value">{{MetaSpend}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Meta ROAS</div>
-    <div class="metric-value">{{MetaROAS}}</div>
-    </td>
-    </tr>
-    
-    <tr>
-    <td>
-    <div class="metric-label">Blended ROAS</div>
-    <div class="metric-value">{{BlendedROAS}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Google Spend</div>
-    <div class="metric-value">{{Googleadsspend}}</div>
-    </td>
-    
-    <td>
-    <div class="metric-label">Google ROAS</div>
-    <div class="metric-value">{{GoogleROAS}}</div>
-    </td>
-    </tr>
-    
-    </table>
-    </div>
-    
-
-    
-    <div class="highlight">
-    
-    <ul style="list-style: none; padding: 0px;">
-    <li ><b>PERFORMANCE HIGHLIGHTS</b></li>
-    </ul>
-    
-    <div style="white-space: pre-line !important; font-size: 14px;">
-    {{PositiveChanges}}
-    </div>
-    
-    </div>
-    
-
-    <div class="review">
-    
-    <ul style="list-style: none; padding: 0px;" >
-    <li><b>REVIEW REQUIRED</b></li>
-    </ul>
-    
-    <div style="white-space: pre-line !important; font-size: 14px;">
-    {{RequiresReviews}}
-    </div>
-    
-    </div>
-    
-    
-   <div class="footer">
-
-   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
-    <tr>
-      <td align="center" style="padding:0; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; margin-right:15px; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1); padding-top:8px; margin-top:4px;">
-          View Daily Report
-        </a>
-        <a target="_blank" href="https://isight.netsights.ai/intelligence" style="display:inline-block; padding:6px 16px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1); padding-top:8px; margin-top:4px;">
-          Ask AI
-        </a>
-      </td>
-    </tr>
-  </table>
-
-   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
-    <tr>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/shopifylight.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/shopify-dark.svg" alt="Shopify" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/Klaviyolight.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/Klaviyo-dark.svg" alt="Klavio" style="width:70px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-      <td width="33.33%" align="center" style="padding-top:8px; padding-bottom:0; margin:0; vertical-align:middle;">
-        <a href="#"><img class="logo-light" src="https://app.netsights.ai/images/email-icon/bitspeed-light.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-        <a href="#"><img class="logo-dark" src="https://app.netsights.ai/images/email-icon/bitspeed-dark.svg" alt="bite" style="width:90px;height:38px;display:inline-block;vertical-align:middle;margin:0;padding:0;" /></a>
-      </td>
-    </tr>
-  </table>
-
-   
-
-  <p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
-
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
-    <tr>
-      <td align="center">
-        <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
-        <span style="color:#d1d5db;"> | </span>
-        <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
-      </td>
-    </tr>
-  </table>
-
-  
-
-</div>
-    
-    </div>
-    
-    </body>
-    </html>
-    `,
-    text: '{{content}}'
+    text: "{{content}}",
   },
 
   ns_temp_OTP: {
-    subject: '{{StoreName}} OTP Verification',
+    subject: "{{StoreName}} OTP Verification",
     html: `
      <!DOCTYPE html>
 <html lang="en">
@@ -1567,8 +1444,8 @@ padding-left:0;
 </body>
 </html>
     `,
-    text: '{{content}}'
-  }
+    text: "{{content}}",
+  },
 };
 
 export function getEmailTemplate(templateName: string): EmailTemplate | null {
@@ -1586,7 +1463,5 @@ export function registerTemplate(name: string, template: EmailTemplate): void {
 export default {
   getEmailTemplate,
   getAvailableTemplates,
-  registerTemplate
+  registerTemplate,
 };
-
-

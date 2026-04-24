@@ -1,177 +1,462 @@
-import { Request, Response } from 'express';
-import { WhatsAppService } from '../services/whatsappService.js';
-import { ErrorHandler } from '../utils/errorHandler.js';
-import { appendWhatsAppLog, appendFromNumbersLog } from '../utils/logApiResponse.js';
+import { Request, Response } from "express";
+import { WhatsAppService } from "../services/whatsappService.js";
+import { ErrorHandler } from "../utils/errorHandler.js";
+import {
+  appendWhatsAppLog,
+  appendFromNumbersLog,
+} from "../utils/logApiResponse.js";
 
 export class WhatsAppController {
-      // POST /api/whatsapp/send-message
-  static async sendTemplate(req: Request, res: Response): Promise<void> { 
+  // POST /api/whatsapp/send-text — plain text (merchant / order info). For Meta app review: whatsapp_business_messaging test #1.
+  static async sendTextMessage(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, languageCode, components, fromNumberId } = req.body;
-      if (to == null || to === '') {
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
+      const { to, text, fromNumberId } = req.body;
+      if (to == null || String(to).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" (recipient phone number) is required',
+        );
         return;
       }
-      const toStr = String(to).trim();
-      if (toStr.length === 0) {
-        ErrorHandler.sendValidationError(res, 'Recipient "to" cannot be empty or whitespace only.');
+      if (text == null || String(text).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "text" is required',
+        );
         return;
       }
-      if (templateName == null || String(templateName).trim() === '') {
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
-        return;
-      }
-      // Use default language code if not provided
-      const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
-      
-      // Support both old format (parameters array) and new format (components object with body or bodyNamed)
-      let templateComponents: Array<{
-        type: string;
-        parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
-        sub_type?: string;
-        index?: number;
-      }> | undefined = undefined;
-
-      // New dynamic format: components object with header, body (positional or named), buttons
-      if (components) {
-        templateComponents = [];
-        
-        // Header component
-        if (components.header && Array.isArray(components.header)) {
-          templateComponents.push({
-            type: 'header',
-            parameters: components.header.map((param: string | { type: string; text?: string; payload?: string }) => 
-              typeof param === 'string' ? { type: 'text', text: param } : param
-            )
-          });
-        }
-        
-        // Body: named parameters (object) or positional (array)
-        if (components.bodyNamed && typeof components.bodyNamed === 'object' && !Array.isArray(components.bodyNamed)) {
-          templateComponents.push({
-            type: 'body',
-            parameters: Object.entries(components.bodyNamed).map(([parameter_name, value]) => ({
-              type: 'text',
-              parameter_name,
-              text: String(value ?? '')
-            }))
-          });
-        } else if (components.body && Array.isArray(components.body)) {
-          templateComponents.push({
-            type: 'body',
-            parameters: components.body.map((param: string | { type: string; text?: string }) => 
-              typeof param === 'string' ? { type: 'text', text: param } : param
-            )
-          });
-        }
-        
-        // Button components
-        if (components.buttons && Array.isArray(components.buttons) && templateComponents) {
-          const componentsArray = templateComponents; // Store reference for TypeScript
-          components.buttons.forEach((button: { type: string; text?: string; payload?: string; index?: number }, idx: number) => {
-            if (button.type === 'quick_reply' || button.type === 'url') {
-              componentsArray.push({
-                type: 'button',
-                sub_type: button.type,
-                index: button.index !== undefined ? button.index : idx,
-                parameters: button.payload ? [{ type: 'payload', payload: button.payload }] : 
-                           button.text ? [{ type: 'text', text: button.text }] : []
-              });
-            }
-          });
-        }
-      } 
-      // Legacy format: simple parameters array (for backward compatibility)
-      else if (req.body.parameters && Array.isArray(req.body.parameters)) {
-        templateComponents = [{
-          type: 'body',
-          parameters: req.body.parameters.map((param: string) => ({
-            type: 'text',
-            text: param
-          }))
-        }];
-      }
-
       const fromCredentials = resolveFromNumber(fromNumberId);
-      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents || undefined, fromCredentials);
+      const result = await WhatsAppService.sendText(
+        String(to).trim(),
+        String(text),
+        fromCredentials,
+      );
       appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       appendWhatsAppLog(req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in sendTemplate', 500);
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendTextMessage", 500);
+    }
+  }
+
+  // POST /api/whatsapp/send-reaction — use message id (wamid) from a prior send response. Meta test #2.
+  static async sendReaction(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, messageId, emoji, fromNumberId } = req.body;
+      if (to == null || String(to).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" is required',
+        );
+        return;
+      }
+      if (messageId == null || String(messageId).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "messageId" (WhatsApp wamid) is required',
+        );
+        return;
+      }
+      const reactionEmoji =
+        emoji != null && String(emoji).trim() !== ""
+          ? String(emoji).trim()
+          : "👍";
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendReaction(
+        String(to).trim(),
+        String(messageId).trim(),
+        reactionEmoji,
+        fromCredentials,
+      );
+      appendWhatsAppLog(req.body, result);
+      ErrorHandler.sendServiceResult(res, result);
+    } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendReaction", 500);
+    }
+  }
+
+  // POST /api/whatsapp/send-image — public HTTPS link or uploaded media id. Meta test #3.
+  static async sendImage(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, link, id, caption, fromNumberId } = req.body;
+      if (to == null || String(to).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" is required',
+        );
+        return;
+      }
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendImage(
+        String(to).trim(),
+        {
+          link: link != null ? String(link) : undefined,
+          id: id != null ? String(id) : undefined,
+          caption: caption != null ? String(caption) : undefined,
+        },
+        fromCredentials,
+      );
+      appendWhatsAppLog(req.body, result);
+      ErrorHandler.sendServiceResult(res, result);
+    } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendImage", 500);
+    }
+  }
+
+  // POST /api/whatsapp/send-interactive — reply buttons (e.g. Yes / No). Meta test #4.
+  static async sendInteractiveButtons(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, bodyText, body: bodyAlt, buttons, fromNumberId } = req.body;
+      const text =
+        bodyText != null && String(bodyText).trim() !== ""
+          ? String(bodyText)
+          : bodyAlt != null
+            ? String(bodyAlt)
+            : "";
+      if (to == null || String(to).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" is required',
+        );
+        return;
+      }
+      if (!text.trim()) {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing required field: "bodyText" (or "body") for interactive message',
+        );
+        return;
+      }
+      if (!Array.isArray(buttons) || buttons.length === 0) {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "buttons" array with { id, title } items',
+        );
+        return;
+      }
+      const normalized = buttons.map(
+        (b: { id?: string; title?: string }) => ({
+          id: b.id != null ? String(b.id) : "",
+          title: b.title != null ? String(b.title) : "",
+        }),
+      );
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendInteractiveButtons(
+        String(to).trim(),
+        text,
+        normalized,
+        fromCredentials,
+      );
+      appendWhatsAppLog(req.body, result);
+      ErrorHandler.sendServiceResult(res, result);
+    } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
+      ErrorHandler.sendErrorResponse(
+        res,
+        error,
+        "Error in sendInteractiveButtons",
+        500,
+      );
+    }
+  }
+
+  // POST /api/whatsapp/send-message
+  static async sendTemplate(req: Request, res: Response): Promise<void> {
+    try {
+      const { to, templateName, languageCode, components, fromNumberId } =
+        req.body;
+      if (to == null || to === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" (recipient phone number) is required',
+        );
+        return;
+      }
+      const toStr = String(to).trim();
+      if (toStr.length === 0) {
+        ErrorHandler.sendValidationError(
+          res,
+          'Recipient "to" cannot be empty or whitespace only.',
+        );
+        return;
+      }
+      if (templateName == null || String(templateName).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "templateName" is required',
+        );
+        return;
+      }
+      // Use default language code if not provided
+      const langCode =
+        languageCode != null && String(languageCode).trim() !== ""
+          ? String(languageCode).trim()
+          : "en";
+
+      // Support both old format (parameters array) and new format (components object with body or bodyNamed)
+      let templateComponents:
+        | Array<{
+            type: string;
+            parameters?: Array<{
+              type: string;
+              text?: string;
+              payload?: string;
+              parameter_name?: string;
+            }>;
+            sub_type?: string;
+            index?: number;
+          }>
+        | undefined = undefined;
+
+      // New dynamic format: components object with header, body (positional or named), buttons
+      if (components) {
+        templateComponents = [];
+
+        // Header component
+        if (components.header && Array.isArray(components.header)) {
+          templateComponents.push({
+            type: "header",
+            parameters: components.header.map(
+              (
+                param:
+                  | string
+                  | { type: string; text?: string; payload?: string },
+              ) =>
+                typeof param === "string"
+                  ? { type: "text", text: param }
+                  : param,
+            ),
+          });
+        }
+
+        // Body: named parameters (object) or positional (array)
+        if (
+          components.bodyNamed &&
+          typeof components.bodyNamed === "object" &&
+          !Array.isArray(components.bodyNamed)
+        ) {
+          templateComponents.push({
+            type: "body",
+            parameters: Object.entries(components.bodyNamed).map(
+              ([parameter_name, value]) => ({
+                type: "text",
+                parameter_name,
+                text: String(value ?? ""),
+              }),
+            ),
+          });
+        } else if (components.body && Array.isArray(components.body)) {
+          templateComponents.push({
+            type: "body",
+            parameters: components.body.map(
+              (param: string | { type: string; text?: string }) =>
+                typeof param === "string"
+                  ? { type: "text", text: param }
+                  : param,
+            ),
+          });
+        }
+
+        // Button components
+        if (
+          components.buttons &&
+          Array.isArray(components.buttons) &&
+          templateComponents
+        ) {
+          const componentsArray = templateComponents; // Store reference for TypeScript
+          components.buttons.forEach(
+            (
+              button: {
+                type: string;
+                text?: string;
+                payload?: string;
+                index?: number;
+              },
+              idx: number,
+            ) => {
+              if (button.type === "quick_reply" || button.type === "url") {
+                componentsArray.push({
+                  type: "button",
+                  sub_type: button.type,
+                  index: button.index !== undefined ? button.index : idx,
+                  parameters: button.payload
+                    ? [{ type: "payload", payload: button.payload }]
+                    : button.text
+                      ? [{ type: "text", text: button.text }]
+                      : [],
+                });
+              }
+            },
+          );
+        }
+      }
+      // Legacy format: simple parameters array (for backward compatibility)
+      else if (req.body.parameters && Array.isArray(req.body.parameters)) {
+        templateComponents = [
+          {
+            type: "body",
+            parameters: req.body.parameters.map((param: string) => ({
+              type: "text",
+              text: param,
+            })),
+          },
+        ];
+      }
+
+      const fromCredentials = resolveFromNumber(fromNumberId);
+      const result = await WhatsAppService.sendTemplate(
+        toStr,
+        String(templateName).trim(),
+        langCode,
+        templateComponents || undefined,
+        fromCredentials,
+      );
+      appendWhatsAppLog(req.body, result);
+      ErrorHandler.sendServiceResult(res, result);
+    } catch (error) {
+      appendWhatsAppLog(req.body, { error: error });
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendTemplate", 500);
     }
   }
   // POST /api/whatsapp/send-dynamic - Flexible template with dynamic parameters
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
-      const { to, templateName, languageCode, parameters, components, fromNumberId } = req.body;
+      const {
+        to,
+        templateName,
+        languageCode,
+        parameters,
+        components,
+        fromNumberId,
+      } = req.body;
 
-      const toStr = to != null ? String(to).trim() : '';
+      const toStr = to != null ? String(to).trim() : "";
       if (!toStr) {
-        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "to" (recipient phone number) is required' });
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "to" (recipient phone number) is required');
+        appendWhatsAppLog(req.body, {
+          error:
+            'Missing or empty required field: "to" (recipient phone number) is required',
+        });
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "to" (recipient phone number) is required',
+        );
         return;
       }
-      if (templateName == null || String(templateName).trim() === '') {
-        appendWhatsAppLog(req.body, { error: 'Missing or empty required field: "templateName" is required' });
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "templateName" is required');
+      if (templateName == null || String(templateName).trim() === "") {
+        appendWhatsAppLog(req.body, {
+          error: 'Missing or empty required field: "templateName" is required',
+        });
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "templateName" is required',
+        );
         return;
       }
 
-      const langCode = (languageCode != null && String(languageCode).trim() !== '') ? String(languageCode).trim() : 'en';
+      const langCode =
+        languageCode != null && String(languageCode).trim() !== ""
+          ? String(languageCode).trim()
+          : "en";
 
       // When components is provided (body/bodyNamed/header/buttons), build WhatsApp components and send directly.
       // Supports positional (components.body array) and named (components.bodyNamed object) parameters.
-      if (components && (components.body ?? components.bodyNamed ?? components.header ?? components.buttons)) {
+      if (
+        components &&
+        (components.body ??
+          components.bodyNamed ??
+          components.header ??
+          components.buttons)
+      ) {
         const templateComponents: Array<{
           type: string;
-          parameters?: Array<{ type: string; text?: string; payload?: string; parameter_name?: string }>;
+          parameters?: Array<{
+            type: string;
+            text?: string;
+            payload?: string;
+            parameter_name?: string;
+          }>;
           sub_type?: string;
           index?: number;
         }> = [];
 
         if (components.header && Array.isArray(components.header)) {
           templateComponents.push({
-            type: 'header',
-            parameters: components.header.map((param: string | { type: string; text?: string; payload?: string }) =>
-              typeof param === 'string' ? { type: 'text', text: param } : param
-            )
-            
+            type: "header",
+            parameters: components.header.map(
+              (
+                param:
+                  | string
+                  | { type: string; text?: string; payload?: string },
+              ) =>
+                typeof param === "string"
+                  ? { type: "text", text: param }
+                  : param,
+            ),
           });
         }
-        if (components.bodyNamed && typeof components.bodyNamed === 'object' && !Array.isArray(components.bodyNamed)) {
+        if (
+          components.bodyNamed &&
+          typeof components.bodyNamed === "object" &&
+          !Array.isArray(components.bodyNamed)
+        ) {
           templateComponents.push({
-            type: 'body',
-            parameters: Object.entries(components.bodyNamed).map(([parameter_name, value]) => ({
-              type: 'text',
-              parameter_name,
-              text: String(value ?? '')
-            }))
+            type: "body",
+            parameters: Object.entries(components.bodyNamed).map(
+              ([parameter_name, value]) => ({
+                type: "text",
+                parameter_name,
+                text: String(value ?? ""),
+              }),
+            ),
           });
         } else if (components.body && Array.isArray(components.body)) {
           templateComponents.push({
-            type: 'body',
-            parameters: components.body.map((param: string | { type: string; text?: string }) =>
-              typeof param === 'string' ? { type: 'text', text: param } : param
-            )
+            type: "body",
+            parameters: components.body.map(
+              (param: string | { type: string; text?: string }) =>
+                typeof param === "string"
+                  ? { type: "text", text: param }
+                  : param,
+            ),
           });
         }
         if (components.buttons && Array.isArray(components.buttons)) {
-          components.buttons.forEach((button: { type: string; text?: string; payload?: string; index?: number }, idx: number) => {
-            if (button.type === 'quick_reply' || button.type === 'url') {
-              templateComponents.push({
-                type: 'button',
-                sub_type: button.type,
-                index: button.index !== undefined ? button.index : idx,
-                parameters: button.payload ? [{ type: 'payload', payload: button.payload }] :
-                  button.text ? [{ type: 'text', text: button.text }] : []
-              });
-            }
-          });
+          components.buttons.forEach(
+            (
+              button: {
+                type: string;
+                text?: string;
+                payload?: string;
+                index?: number;
+              },
+              idx: number,
+            ) => {
+              if (button.type === "quick_reply" || button.type === "url") {
+                templateComponents.push({
+                  type: "button",
+                  sub_type: button.type,
+                  index: button.index !== undefined ? button.index : idx,
+                  parameters: button.payload
+                    ? [{ type: "payload", payload: button.payload }]
+                    : button.text
+                      ? [{ type: "text", text: button.text }]
+                      : [],
+                });
+              }
+            },
+          );
         }
 
         const fromCredentials = resolveFromNumber(fromNumberId);
-        const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, templateComponents, fromCredentials);
+        const result = await WhatsAppService.sendTemplate(
+          toStr,
+          String(templateName).trim(),
+          langCode,
+          templateComponents,
+          fromCredentials,
+        );
         appendWhatsAppLog(req.body, result);
         ErrorHandler.sendServiceResult(res, result);
         return;
@@ -179,55 +464,77 @@ export class WhatsAppController {
 
       // Legacy: parameters object + TemplateBuilder (uses template config / fieldOrder)
       const params = parameters || {};
-      const { TemplateBuilder } = await import('../services/templateBuilder.js');
-      const { getTemplateConfig } = await import('../config/templateConfigs.js');
+      const { TemplateBuilder } =
+        await import("../services/templateBuilder.js");
+      const { getTemplateConfig } =
+        await import("../config/templateConfigs.js");
 
       const config = getTemplateConfig(templateName);
       if (config) {
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
-          ErrorHandler.sendValidationError(res, 'Missing required fields', validation.missing);
+          ErrorHandler.sendValidationError(
+            res,
+            "Missing required fields",
+            validation.missing,
+          );
           return;
         }
       }
 
-      const builtComponents = TemplateBuilder.buildWhatsAppComponents(params, config || {
-        name: templateName,
-        requiredFields: [],
-        optionalFields: [],
-        fieldOrder: Object.keys(params)
-      });
+      const builtComponents = TemplateBuilder.buildWhatsAppComponents(
+        params,
+        config || {
+          name: templateName,
+          requiredFields: [],
+          optionalFields: [],
+          fieldOrder: Object.keys(params),
+        },
+      );
 
       const fromCredentials = resolveFromNumber(fromNumberId);
-      const result = await WhatsAppService.sendTemplate(toStr, String(templateName).trim(), langCode, builtComponents, fromCredentials);
+      const result = await WhatsAppService.sendTemplate(
+        toStr,
+        String(templateName).trim(),
+        langCode,
+        builtComponents,
+        fromCredentials,
+      );
       appendWhatsAppLog(req.body, result);
       ErrorHandler.sendServiceResult(res, result);
     } catch (error) {
       appendWhatsAppLog(req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in sendDynamic', 500);
+      ErrorHandler.sendErrorResponse(res, error, "Error in sendDynamic", 500);
     }
   }
 
-  // From Numbers (fetched from Meta) 
+  // From Numbers (fetched from Meta)
 
-  // GET /api/whatsapp/from-numbers - List all "From" numbers from Meta (WABA phone_numbers). Uses .env WHATSAPP_BUSINESS_ACCOUNT_ID and token. 
+  // GET /api/whatsapp/from-numbers - List all "From" numbers from Meta (WABA phone_numbers). Uses .env WHATSAPP_BUSINESS_ACCOUNT_ID and token.
   static async listFromNumbers(_req: Request, res: Response): Promise<void> {
     try {
       const result = await WhatsAppService.getFromNumbersFromMeta();
       if (!result.ok) {
-        res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
+        res
+          .status(result.error?.status ?? 500)
+          .json({ ok: false, error: result.error });
         return;
       }
       appendFromNumbersLog(_req.body, result);
-      
+
       ErrorHandler.sendSuccess(res, {
-        message: 'From numbers retrieved from Meta successfully',
+        message: "From numbers retrieved from Meta successfully",
         count: result.data?.length ?? 0,
-        data: result.data ?? []
+        data: result.data ?? [],
       });
     } catch (error) {
       appendFromNumbersLog(_req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in listFromNumbers', 500);
+      ErrorHandler.sendErrorResponse(
+        res,
+        error,
+        "Error in listFromNumbers",
+        500,
+      );
     }
   }
 
@@ -235,34 +542,58 @@ export class WhatsAppController {
   static async addFromNumberInMeta(req: Request, res: Response): Promise<void> {
     try {
       const { cc, phone_number, verified_name } = req.body;
-      if (cc == null || String(cc).trim() === '') {
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "cc" (country calling code, e.g. 91 for India) is required');
+      if (cc == null || String(cc).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "cc" (country calling code, e.g. 91 for India) is required',
+        );
         return;
       }
-      if (phone_number == null || String(phone_number).trim() === '') {
-        ErrorHandler.sendValidationError(res, 'Missing or empty required field: "phone_number" is required');
+      if (phone_number == null || String(phone_number).trim() === "") {
+        ErrorHandler.sendValidationError(
+          res,
+          'Missing or empty required field: "phone_number" is required',
+        );
         return;
       }
-      const result = await WhatsAppService.addFromNumberInMeta(String(cc).trim(), String(phone_number).trim(), verified_name != null ? String(verified_name).trim() : undefined);
+      const result = await WhatsAppService.addFromNumberInMeta(
+        String(cc).trim(),
+        String(phone_number).trim(),
+        verified_name != null ? String(verified_name).trim() : undefined,
+      );
       if (!result.ok) {
-        res.status(result.error?.status ?? 500).json({ ok: false, error: result.error });
+        res
+          .status(result.error?.status ?? 500)
+          .json({ ok: false, error: result.error });
         return;
       }
       appendFromNumbersLog(req.body, result);
-      ErrorHandler.sendSuccess(res, {
-        message: 'From number added in Meta successfully. Use the returned "id" (phone_number_id) as fromNumberId when sending messages.',
-        data: result.data
-      }, 201);
+      ErrorHandler.sendSuccess(
+        res,
+        {
+          message:
+            'From number added in Meta successfully. Use the returned "id" (phone_number_id) as fromNumberId when sending messages.',
+          data: result.data,
+        },
+        201,
+      );
     } catch (error) {
       appendFromNumbersLog(req.body, { error: error });
-      ErrorHandler.sendErrorResponse(res, error, 'Error in addFromNumberInMeta', 500);
+      ErrorHandler.sendErrorResponse(
+        res,
+        error,
+        "Error in addFromNumberInMeta",
+        500,
+      );
     }
   }
 }
 
-// Resolve fromNumberId (Meta phone_number_id string) to { phoneNumberId, accessToken } using env token. 
-function resolveFromNumber(fromNumberId: unknown): { phoneNumberId: string; accessToken: string } | undefined {
-  if (fromNumberId == null || fromNumberId === '') return undefined;
+// Resolve fromNumberId (Meta phone_number_id string) to { phoneNumberId, accessToken } using env token.
+function resolveFromNumber(
+  fromNumberId: unknown,
+): { phoneNumberId: string; accessToken: string } | undefined {
+  if (fromNumberId == null || fromNumberId === "") return undefined;
   const id = String(fromNumberId).trim();
   if (id.length === 0) return undefined;
   return WhatsAppService.getCredentialsForPhoneNumberId(id) ?? undefined;
