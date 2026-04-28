@@ -1461,6 +1461,7 @@ const baseNotificationTemplate = templates.ns_temp_Notification_temp2;
 if (baseNotificationTemplate) {
   templates.ns_temp_Notification_temp2_weekly = {
     ...baseNotificationTemplate,
+    subject: "{{StoreName}} Weekly Performance Summary",
     html: baseNotificationTemplate.html
       .replace(
         "Here is your daily performance summary for",
@@ -1471,6 +1472,7 @@ if (baseNotificationTemplate) {
 
   templates.ns_temp_Notification_temp2_monthly = {
     ...baseNotificationTemplate,
+    subject: "{{StoreName}} Monthly Performance Summary",
     html: baseNotificationTemplate.html
       .replace(
         "Here is your daily performance summary for",
