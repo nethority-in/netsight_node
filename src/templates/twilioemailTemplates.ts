@@ -749,9 +749,7 @@ padding:3px;
 .metrics-table td{
 display:inline-block;
 box-sizing:border-box;
-/* padding:2px 1px; */
 padding-left: 5px;
-
 vertical-align:top;
 }
 
@@ -759,18 +757,32 @@ vertical-align:top;
 padding:7px;
 }
 
+/* base spacing */
 .highlight,
 .review{
 padding:7px;
 }
 
+/* 🔥 NEW: specific control */
+.highlight-title,
+.review-title{
+    padding-left: 4px !important;
+}
+
+.highlight-content,
+.review-content{
+    padding-left: 6px !important; /* 🔥 earlier 12px → now less */
+    font-size: 13px !important;
+}
+
+/* keep others same */
 .mobile-view{
-    padding-left: 10px;
+padding-left: 10px;
 padding-right: 10px;
 }
 
 .layer-header{
-    padding-left: 5px;
+padding-left: 5px;
 }
 
 .metric-label{
@@ -888,7 +900,7 @@ display:inline-block !important;
 <h1 style="padding-left:16px; padding-right: 11px;" class="mobile-view">Good day,</h1>
 
 <p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
-This is a performance summary for
+Here is your daily performance summary for
 <b>{{StoreName}}</b> - <b>{{PrevDate}}</b>.
 </p>
 
@@ -1022,7 +1034,7 @@ CAMPAIGN PERFORMANCE
 
 <td>
 <div class="metric-label">Google Spend</div>
-<div class="metric-value">{{Googleadsspend}}</div>
+<div class="metric-value">{{GoogleAdsSpend}}</div>
 </td>
 
 <td>
@@ -1038,26 +1050,22 @@ CAMPAIGN PERFORMANCE
 
 <div class="highlight">
 
-<div class="layer-header" style="margin-bottom:6px; padding-left:0;">
-PERFORMANCE HIGHLIGHTS
-</div>
+  <div class="layer-header highlight-title" style="margin-bottom:5px;">
+    PERFORMANCE HIGHLIGHTS
+  </div>
 
-<div style="white-space: pre-line !important; font-size: 14px;">
-{{PositiveChanges}}
-</div>
+  <div class="highlight-content" style="white-space: pre-line !important; font-size: 14px;">{{PositiveChanges}}</div>
 
 </div>
 
 
 <div class="review">
 
-<div class="layer-header" style="margin-bottom:6px; padding-left:0;">
-REVIEW REQUIRED
-</div>
+  <div class="layer-header review-title" style="margin-bottom:5px;">
+    REVIEW REQUIRED
+  </div>
 
-<div style="white-space: pre-line !important; font-size: 14px;">
-{{RequiresReviews}}
-</div>
+  <div class="review-content" style="white-space: pre-line !important; font-size: 14px;">{{RequiresReviews}}</div>
 
 </div>
 
@@ -1447,6 +1455,30 @@ padding-left:0;
     text: "{{content}}",
   },
 };
+
+const baseNotificationTemplate = templates.ns_temp_Notification_temp2;
+
+if (baseNotificationTemplate) {
+  templates.ns_temp_Notification_temp2_weekly = {
+    ...baseNotificationTemplate,
+    html: baseNotificationTemplate.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your weekly performance summary for",
+      )
+      .replace("View Daily Report", "View Weekly Report"),
+  };
+
+  templates.ns_temp_Notification_temp2_monthly = {
+    ...baseNotificationTemplate,
+    html: baseNotificationTemplate.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your monthly performance summary for",
+      )
+      .replace("View Daily Report", "View Monthly Report"),
+  };
+}
 
 export function getEmailTemplate(templateName: string): EmailTemplate | null {
   return templates[templateName] || null;

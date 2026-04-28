@@ -41,6 +41,7 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'daily_store_performance_update_v3':"HXcbeb93e547c743ad86b3017d3ad0d8aa",
   'dailysummarybutton_v11':"HX7b6ed2f024036ecee86cdb6f951fd504",
   'copy_weeklysummarybutton_v2':"HX598393d1f31fda2cf55d31f3a573b59a",
+  'weeklysummarybutton_v2':"HX0d98892566677e30adda841b523e440f",
   'monthlysummarybutton_v2':"HX68444cd7dc6bc1ef7a48fa521f200309"
 };
 
