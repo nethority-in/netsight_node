@@ -199,6 +199,10 @@ export class TemplateBuilder {
     // But only remove them if they're not part of a still-active conditional
     content = content.replace(/\{\{\/if\}\}/g, '');
 
+    // Final fallback: unresolved placeholders should never leak in outgoing emails.
+    content = content.replace(/\{\{\s*[\w.]+\s*\|\|[^}]+\}\}/g, '0.00');
+    content = content.replace(/\{\{\s*[\w.]+\s*\}\}/g, '0.00');
+
     return content;
   }
 
