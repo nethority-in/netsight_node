@@ -96,6 +96,9 @@ export interface EmailServiceResponse {
 const envLabel = () => (process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL');
 
 export class EmailService {
+  private static replaceUnmatchedPlaceholdersWithZero(content: string): string {
+    return content.replace(/\{\{\s*[\w.]+\s*\}\}/g, "0");
+  }
 
   /** Log email error to file (logs-email.json) and return the same response — ensures 100% of attempts are stored. */
   private static logEmailErrorAndReturn(
@@ -538,6 +541,12 @@ export class EmailService {
         }
       }
 
+      htmlContent = this.replaceUnmatchedPlaceholdersWithZero(htmlContent);
+      emailSubject = this.replaceUnmatchedPlaceholdersWithZero(emailSubject);
+      if (textContent) {
+        textContent = this.replaceUnmatchedPlaceholdersWithZero(textContent);
+      }
+
       return {
         ok: true,
         meta: {
@@ -578,6 +587,7 @@ export class EmailService {
       // Replace template variables
       let htmlContent = template.html;
       let emailSubject = subject || template.subject || 'Message from Netsight';
+      let textContent = template.text;
 
       // Replace variables in HTML content
       Object.keys(templateVariables).forEach(key => {
@@ -594,8 +604,21 @@ export class EmailService {
         });
       }
 
+      if (textContent) {
+        Object.keys(templateVariables).forEach(key => {
+          const regex = new RegExp(`{{${key}}}`, 'g');
+          textContent = textContent!.replace(regex, String(templateVariables[key]));
+        });
+      }
+
+      htmlContent = this.replaceUnmatchedPlaceholdersWithZero(htmlContent);
+      emailSubject = this.replaceUnmatchedPlaceholdersWithZero(emailSubject);
+      if (textContent) {
+        textContent = this.replaceUnmatchedPlaceholdersWithZero(textContent);
+      }
+
       // Send email with processed template
-      return await this.sendEmail(to, emailSubject, htmlContent, template.text, cc, bcc, attachments);
+      return await this.sendEmail(to, emailSubject, htmlContent, textContent, cc, bcc, attachments);
     } catch (error) {
       return this.handleError(error);
     }

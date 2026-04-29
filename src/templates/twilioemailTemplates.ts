@@ -1034,7 +1034,7 @@ CAMPAIGN PERFORMANCE
 
 <td>
 <div class="metric-label">Google Spend</div>
-<div class="metric-value">{{GoogleAdsSpend}}</div>
+<div class="metric-value">{{Googleadsspend}}</div>
 </td>
 
 <td>
