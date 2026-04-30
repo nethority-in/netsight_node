@@ -363,20 +363,27 @@ export class EmailController {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
           } else if (key === 'GrossRevenue') {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
-          } else if (key === 'MetaSpend') {
+          } 
+          else if (key === 'GA4Sessions') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
-          } else if (key === 'GoogleAdsSpend') {
+          } 
+          else if (key === 'GoogleAdsSpend') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
           } else if (key === 'AOV') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
-          } else if (key === 'BlendedROAS') {
+          } 
+          else if (key === 'BlendedROAS') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
-          } else if (key === 'GA4Sessions' || key === 'GA4Users') {
+          }
+          else if (key === 'MetaROAS') {
+            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
+          }
+           else if (key === 'GA4Sessions' || key === 'GA4Users') {
             params[key] = params[key].replace(/(?<!\$)\b\d+\b/g, (match: string) => {
               return parseInt(match).toLocaleString('en-IN');
             });
           } else if (key === 'PositiveChanges' || key === 'RequiresReviews') {
-            params[key] = params[key]
+            params[key] = params[key] 
               .replace(/\\n/g, '<br/>')
               .replace(/\r\n/g, '<br/>')
               .replace(/\r/g, '<br/>')
