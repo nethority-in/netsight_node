@@ -439,7 +439,7 @@ export class EmailController {
         cc,
         bcc,
         attachments,
-        { endpoint: "send-dynamic", parameters: params }
+        { endpoint: "send-dynamic", templateName: String(templateName).trim(), parameters: params }
       );
 
       ErrorHandler.sendServiceResult(res, result);

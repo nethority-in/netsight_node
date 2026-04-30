@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NetSight — Logs Dashboard</title>
+  <style>
+    :root {
+      --bg: #0c1117;
+      --surface: #151b24;
+      --surface2: #1c2430;
+      --border: #2a3544;
+      --text: #e8edf4;
+      --muted: #8b9cb3;
+      --accent: #22d3ee;
+      --accent-dim: #0891b2;
+      --success: #34d399;
+      --warn: #fbbf24;
+      --err: #f87171;
+      --radius: 10px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(1200px 600px at 10% -10%, #132032 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; }
+    header {
+      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.35rem; font-weight: 650; margin: 0; letter-spacing: -0.02em; }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.35rem; max-width: 42rem; }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .badge {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.28rem 0.55rem; border-radius: 6px; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--muted);
+    }
+    .badge.live { border-color: var(--accent-dim); color: var(--accent); }
+    /* .paths {
+      font-size: 0.7rem; color: var(--muted); font-family: ui-monospace, monospace;
+      word-break: break-all; margin-top: 0.75rem; padding: 0.6rem 0.75rem;
+      background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
+    } */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: flex-end;
+      padding: 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 1rem;
+    }
+    .tabs { display: flex; gap: 0.25rem; margin-right: 0.5rem; }
+    .tab {
+      padding: 0.45rem 1rem; border-radius: 8px; border: 1px solid transparent;
+      background: transparent; color: var(--muted); cursor: pointer; font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .tab:hover { color: var(--text); background: var(--surface2); }
+    .tab.on { background: var(--surface2); color: var(--accent); border-color: var(--border); }
+    label { font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 0.2rem; }
+    .field { display: flex; flex-direction: column; min-width: 140px; }
+    select, input[type="search"], input[type="number"] {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.45rem 0.55rem; border-radius: 8px; font-size: 0.88rem;
+    }
+    select:focus, input:focus { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
+    .grow { flex: 1; min-width: 180px; }
+    .btn {
+      border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; background: linear-gradient(165deg, var(--accent), var(--accent-dim));
+      color: #041014;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .stats { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .table-wrap {
+      overflow: auto; border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--surface); max-height: min(62vh, 720px);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      text-align: left; padding: 0.65rem 0.75rem; background: var(--surface2);
+      color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: 0.68rem; position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--border);
+    }
+    td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr { cursor: pointer; }
+    tr:hover td { background: rgba(34, 211, 238, 0.06); }
+    .mono { font-family: ui-monospace, monospace; font-size: 0.78rem; }
+    .status { font-weight: 600; font-size: 0.76rem; }
+    .status.ok, .status.success { color: var(--success); }
+    .status.queued { color: var(--warn); }
+    .status.error, .status.failed { color: var(--err); }
+    .truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pager { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.85rem; flex-wrap: wrap; }
+    .err-banner {
+      background: rgba(248, 113, 113, 0.12); border: 1px solid var(--err); color: var(--err);
+      padding: 0.65rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-size: 0.88rem;
+    }
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 40;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: fixed; top: 0; right: 0; width: min(560px, 100vw); height: 100%;
+      background: var(--surface); border-left: 1px solid var(--border); z-index: 50;
+      transform: translateX(100%); transition: transform 0.22s ease;
+      display: flex; flex-direction: column; box-shadow: -12px 0 40px rgba(0,0,0,0.35);
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head {
+      padding: 1rem 1.1rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    }
+    .drawer-head h2 { margin: 0; font-size: 1rem; }
+    .drawer-body { flex: 1; overflow: auto; padding: 1rem; }
+    pre.json {
+      margin: 0; font-size: 0.72rem; line-height: 1.4; white-space: pre-wrap; word-break: break-word;
+      background: var(--bg); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);
+    }
+    .close-x {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      width: 2rem; height: 2rem; border-radius: 8px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+    }
+    .loading { color: var(--muted); font-size: 0.85rem; padding: 2rem; text-align: center; }
+    .chk { display: flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; color: var(--muted); }
+    .chk input { accent-color: var(--accent); }
+    .view-btn {
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.22rem 0.52rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .view-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+    .html-modal {
+      position: fixed;
+      inset: 4vh 4vw;
+      z-index: 80;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 60px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .html-modal.open { display: flex; }
+    .html-head {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface2);
+    }
+    .html-title {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .html-sub {
+      margin: 0.2rem 0 0;
+      font-size: 0.75rem;
+      color: var(--muted);
+      max-width: 80vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .html-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background: rgba(0, 0, 0, 0.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .auth-overlay.open { display: flex; }
+    .auth-modal {
+      width: min(420px, 96vw);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 16px 60px rgba(0, 0, 0, 0.5);
+    }
+    .auth-modal h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .auth-help {
+      margin: 0 0 0.8rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .auth-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem; }
+    .auth-error {
+      min-height: 1rem;
+      margin-top: 0.4rem;
+      color: var(--err);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>NetSights <span>Logs Dashboard</span></h1>
+        <!-- <p class="sub">
+          Live view of <strong>logs-email.json</strong> and <strong>logs-whatsapp.json</strong> on this machine
+          (local uses <code>src/</code>, production uses <code>logs/</code>). Filter by template name; email rows
+          without <code>templateName</code> may show a best-effort inferred label from parameters.
+        </p> -->
+      </div>
+      <div class="badges">
+        <!-- <span class="badge" id="badge-env">NODE_ENV …</span> -->
+        <!-- <span class="badge live" id="badge-src">…</span> -->
+      </div>
+    </header>
+    <div id="err" class="err-banner" style="display:none;"></div>
+    <div class="paths" id="paths"></div>
+
+    <div class="toolbar" style="margin-top:1rem;">
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab on" data-tab="email">Email</button>
+        <button type="button" class="tab" data-tab="whatsapp">WhatsApp</button>
+      </div>
+      <div class="field">
+        <label for="flt-template">Template</label>
+        <select id="flt-template"><option value="all">All templates</option></select>
+      </div>
+      <div class="field">
+        <label for="flt-env">Environment</label>
+        <select id="flt-env"><option value="all">All</option></select>
+      </div>
+      <div class="field grow">
+        <label for="flt-search">Search (full row JSON)</label>
+        <input type="search" id="flt-search" placeholder="e.g. phone, email, SID…" autocomplete="off" />
+      </div>
+      <div class="field" style="min-width:88px;">
+        <label for="flt-limit">Page size</label>
+        <input type="number" id="flt-limit" min="10" max="500" value="50" />
+      </div>
+      <div class="field chk" style="padding-bottom:0.35rem;">
+        <label style="margin:0;"><input type="checkbox" id="auto-refresh" /> Auto 15s</label>
+      </div>
+      <button type="button" class="btn" id="btn-refresh">Refresh</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="table-wrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="loading" id="loading" style="display:none;">Loading…</div>
+    </div>
+    <div class="pager">
+      <button type="button" class="btn secondary" id="btn-prev">Previous</button>
+      <span id="page-info"></span>
+      <button type="button" class="btn secondary" id="btn-next">Next</button>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Log entry</h2>
+      <button type="button" class="close-x" id="drawer-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <p style="margin:0 0 0.5rem;font-size:0.8rem;color:var(--muted);">Request</p>
+      <pre class="json" id="json-req"></pre>
+      <p style="margin:1rem 0 0.5rem;font-size:0.8rem;color:var(--muted);">Response</p>
+      <pre class="json" id="json-res"></pre>
+    </div>
+  </aside>
+
+  <div class="drawer-overlay" id="html-overlay"></div>
+  <section class="html-modal" id="html-modal" aria-hidden="true">
+    <div class="html-head">
+      <div>
+        <p class="html-title" id="html-title">Email HTML Preview</p>
+        <p class="html-sub" id="html-subject">Subject: —</p>
+      </div>
+      <button type="button" class="close-x" id="html-close" aria-label="Close preview">&times;</button>
+    </div>
+    <iframe class="html-frame" id="html-frame" title="Email rendered preview"></iframe>
+  </section>
+
+  <div class="auth-overlay" id="auth-overlay">
+    <form class="auth-modal" id="auth-form">
+      <h3>Dashboard Login</h3>
+      <p class="auth-help">Please enter username and password to access dashboard.</p>
+      <div class="field">
+        <label for="auth-username">Username</label>
+        <input id="auth-username" type="text" autocomplete="username" required />
+      </div>
+      <div class="field" style="margin-top:0.55rem;">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required />
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="auth-actions">
+        <button type="submit" class="btn" id="auth-submit">Login</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const BASE = '/dashboard';
+    let channel = 'email';
+    let offset = 0;
+    let total = 0;
+    let limit = 50;
+    let timer = null;
+    let isAuthenticated = false;
+
+    const $ = (id) => document.getElementById(id);
+    const errEl = $('err');
+    const tbody = $('tbody');
+    const thead = $('thead');
+    const loading = $('loading');
+    const fltTemplate = $('flt-template');
+    const fltEnv = $('flt-env');
+    const fltSearch = $('flt-search');
+    const fltLimit = $('flt-limit');
+    const authOverlay = $('auth-overlay');
+    const authForm = $('auth-form');
+    const authError = $('auth-error');
+    const authSubmit = $('auth-submit');
+    const htmlModal = $('html-modal');
+    const htmlOverlay = $('html-overlay');
+    const htmlFrame = $('html-frame');
+
+    function showErr(msg) {
+      if (!msg) { errEl.style.display = 'none'; errEl.textContent = ''; return; }
+      errEl.style.display = 'block';
+      errEl.textContent = msg;
+    }
+
+    function showAuthModal(message) {
+      authError.textContent = message || '';
+      authOverlay.classList.add('open');
+      $('auth-username').focus();
+    }
+
+    function hideAuthModal() {
+      authOverlay.classList.remove('open');
+      authError.textContent = '';
+      authForm.reset();
+    }
+
+    async function checkAuthStatus() {
+      const r = await fetch(BASE + '/auth/status');
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j?.error || 'Dashboard auth status failed.');
+      return Boolean(j.authenticated);
+    }
+
+    async function doLogin(username, password) {
+      const r = await fetch(BASE + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(j?.error || 'Invalid username or password.');
+    }
+
+    function statusClass(s) {
+      const x = String(s || '').toLowerCase();
+      if (x.includes('success') || x === 'ok') return 'ok';
+      if (x.includes('queued') || x.includes('sent')) return 'queued';
+      if (x.includes('error') || x.includes('fail') || x.includes('not')) return 'error';
+      return '';
+    }
+
+    async function loadMeta() {
+      if (!isAuthenticated) return;
+      const r = await fetch(BASE + '/meta');
+      if (!r.ok) throw new Error('Meta HTTP ' + r.status);
+      const m = await r.json();
+      // $('badge-env').textContent = 'NODE_ENV: ' + (m.nodeEnv || 'undefined');
+      // $('badge-src').textContent = m.nodeEnv === 'production' ? 'logs/*.json' : 'src/*.json';
+      // $('paths').innerHTML =
+      //   '<strong>Email</strong> — ' + escapeHtml(m.emailLogPath) +
+      //   '<br><strong>WhatsApp</strong> — ' + escapeHtml(m.whatsappLogPath);
+
+      const savedEnv = fltEnv.value;
+      fltEnv.innerHTML = '<option value="all">All</option>';
+      const envs = Array.isArray(m.envsInFile) && m.envsInFile.length ? m.envsInFile : ['LOCAL', 'SERVER'];
+      for (const e of envs) {
+        const o = document.createElement('option');
+        o.value = e;
+        o.textContent = e;
+        fltEnv.appendChild(o);
+      }
+      if ([...fltEnv.options].some((o) => o.value === savedEnv)) fltEnv.value = savedEnv;
+
+      const tpl = fltTemplate.value;
+      fltTemplate.innerHTML = '<option value="all">All templates</option>';
+      const list = channel === 'email' ? (m.emailTemplates || []) : (m.whatsappTemplates || []);
+      for (const name of list) {
+        const o = document.createElement('option');
+        o.value = name;
+        o.textContent = name;
+        fltTemplate.appendChild(o);
+      }
+      if ([...fltTemplate.options].some((o) => o.value === tpl)) fltTemplate.value = tpl;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderHead() {
+      if (channel === 'email') {
+        thead.innerHTML = '<tr><th>#</th><th>Time</th><th>Template</th><th>To</th><th>Subject</th><th>Status</th><th>View</th></tr>';
+      } else {
+        thead.innerHTML = '<tr><th>#</th><th>Time</th><th>Template</th><th>To</th><th>Status</th></tr>';
+      }
+    }
+
+    async function openEmailHtmlPreview(rowIndex) {
+      try {
+        showErr('');
+        $('html-title').textContent = 'Email HTML Preview';
+        $('html-subject').textContent = 'Loading...';
+        htmlFrame.srcdoc = '<html><body style="font-family:Segoe UI;padding:16px;">Loading preview...</body></html>';
+        htmlOverlay.classList.add('open');
+        htmlModal.classList.add('open');
+        htmlModal.setAttribute('aria-hidden', 'false');
+
+        const r = await fetch(BASE + '/data/email-html?rowIndex=' + encodeURIComponent(String(rowIndex)));
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error || ('HTTP ' + r.status));
+
+        $('html-title').textContent = 'Template: ' + (j.templateName || '—');
+        $('html-subject').textContent = 'Subject: ' + (j.subject || '—');
+        htmlFrame.srcdoc = typeof j.html === 'string' && j.html.trim()
+          ? j.html
+          : '<html><body style="font-family:Segoe UI;padding:16px;">Empty HTML preview</body></html>';
+      } catch (e) {
+        closeHtmlModal();
+        showErr(e instanceof Error ? e.message : String(e));
+      }
+    }
+
+    function closeHtmlModal() {
+      htmlOverlay.classList.remove('open');
+      htmlModal.classList.remove('open');
+      htmlModal.setAttribute('aria-hidden', 'true');
+      htmlFrame.srcdoc = '';
+    }
+
+    function renderRows(entries) {
+      tbody.innerHTML = '';
+      for (const row of entries) {
+        const tr = document.createElement('tr');
+        const idx = row._rowIndex;
+        const ts = escapeHtml(row.timestamp || '');
+        const env = escapeHtml(row.env || '');
+        const st = escapeHtml(row.status || '');
+        const stCls = statusClass(row.status);
+        if (channel === 'email') {
+          const tpl = escapeHtml(row.templateLabel || '');
+          const to = escapeHtml(row.toPreview || '');
+          const sub = escapeHtml(row.subjectPreview || '');
+          tr.innerHTML = '<td class="mono">' + idx + '</td><td class="mono">' + ts + '</td><td class="truncate" title="' + tpl + '">' + tpl + '</td><td class="mono truncate" title="' + to + '">' + to +
+            '</td><td class="truncate" title="' + sub + '">' + sub + '</td><td class="status ' + stCls + '">' + st + '</td>' +
+            '<td><button type="button" class="view-btn" data-row-index="' + idx + '">View</button></td>';
+        } else {
+          const tpl = escapeHtml(row.templateName || '');
+          const to = escapeHtml(row.toPreview || '');
+          tr.innerHTML = '<td class="mono">' + idx + '</td><td class="mono">' + ts + '</td><td class="truncate" title="' + tpl + '">' + tpl + '</td><td class="mono">' + to +
+            '</td><td class="status ' + stCls + '">' + st + '</td>';
+        }
+        tr.addEventListener('click', () => {
+          $('json-req').textContent = JSON.stringify(row.request, null, 2);
+          $('json-res').textContent = JSON.stringify(row.response, null, 2);
+          $('overlay').classList.add('open');
+          $('drawer').classList.add('open');
+          $('drawer').setAttribute('aria-hidden', 'false');
+        });
+        if (channel === 'email') {
+          const viewBtn = tr.querySelector('.view-btn');
+          if (viewBtn) {
+            viewBtn.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              void openEmailHtmlPreview(idx);
+            });
+          }
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function closeDrawer() {
+      $('overlay').classList.remove('open');
+      $('drawer').classList.remove('open');
+      $('drawer').setAttribute('aria-hidden', 'true');
+    }
+
+    async function loadData() {
+      if (!isAuthenticated) return;
+      showErr('');
+      loading.style.display = 'block';
+      tbody.innerHTML = '';
+      limit = Math.min(500, Math.max(10, parseInt(fltLimit.value, 10) || 50));
+      fltLimit.value = String(limit);
+      const q = new URLSearchParams();
+      const tpl = fltTemplate.value;
+      if (tpl && tpl !== 'all') q.set('template', tpl);
+      const env = fltEnv.value;
+      if (env && env !== 'all') q.set('env', env);
+      const search = fltSearch.value.trim();
+      if (search) q.set('search', search);
+      q.set('limit', String(limit));
+      q.set('offset', String(offset));
+      const path = channel === 'email' ? '/data/email?' : '/data/whatsapp?';
+      const r = await fetch(BASE + path + q.toString());
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error(t || 'HTTP ' + r.status);
+      }
+      const j = await r.json();
+      total = j.total;
+      const entries = j.entries || [];
+      $('stats').textContent = 'Showing ' + entries.length + ' of ' + total + ' matching rows · channel: ' + j.channel;
+      const pages = Math.max(1, Math.ceil(total / limit));
+      const cur = Math.floor(offset / limit) + 1;
+      $('page-info').textContent = 'Page ' + cur + ' / ' + pages + ' · offset ' + offset;
+      renderRows(entries);
+      loading.style.display = 'none';
+    }
+
+    async function refreshAll() {
+      if (!isAuthenticated) return;
+      try {
+        await loadMeta();
+        renderHead();
+        await loadData();
+      } catch (e) {
+        loading.style.display = 'none';
+        showErr(e instanceof Error ? e.message : String(e));
+      }
+    }
+
+    document.querySelectorAll('.tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((b) => b.classList.remove('on'));
+        btn.classList.add('on');
+        channel = btn.getAttribute('data-tab');
+        offset = 0;
+        void refreshAll();
+      });
+    });
+
+    $('btn-refresh').addEventListener('click', () => { offset = 0; void refreshAll(); });
+    fltTemplate.addEventListener('change', () => { offset = 0; void loadData(); });
+    fltEnv.addEventListener('change', () => { offset = 0; void loadData(); });
+    let searchT;
+    fltSearch.addEventListener('input', () => {
+      clearTimeout(searchT);
+      searchT = setTimeout(() => { offset = 0; void loadData(); }, 350);
+    });
+    fltLimit.addEventListener('change', () => { offset = 0; void loadData(); });
+
+    $('btn-prev').addEventListener('click', () => {
+      offset = Math.max(0, offset - limit);
+      void loadData();
+    });
+    $('btn-next').addEventListener('click', () => {
+      if (offset + limit < total) offset += limit;
+      void loadData();
+    });
+
+    $('drawer-close').addEventListener('click', closeDrawer);
+    $('overlay').addEventListener('click', closeDrawer);
+    $('html-close').addEventListener('click', closeHtmlModal);
+    $('html-overlay').addEventListener('click', closeHtmlModal);
+    authForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      try {
+        authSubmit.disabled = true;
+        authError.textContent = '';
+        const username = $('auth-username').value.trim();
+        const password = $('auth-password').value;
+        await doLogin(username, password);
+        isAuthenticated = true;
+        hideAuthModal();
+        await refreshAll();
+      } catch (e) {
+        authError.textContent = e instanceof Error ? e.message : String(e);
+      } finally {
+        authSubmit.disabled = false;
+      }
+    });
+
+    $('auto-refresh').addEventListener('change', (ev) => {
+      if (ev.target.checked) {
+        timer = setInterval(() => { void loadData(); }, 15000);
+      } else if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    });
+
+    async function bootstrap() {
+      try {
+        isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          showAuthModal('');
+          return;
+        }
+        await refreshAll();
+      } catch (e) {
+        showErr(e instanceof Error ? e.message : String(e));
+      }
+    }
+
+    void bootstrap();
+  </script>
+</body>
+</html>

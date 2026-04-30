@@ -16,6 +16,7 @@ import facebookIsightRoutes from './routes/facebookIsightRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import twilioAuthRoutes from './routes/twilioauthRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import logsDashboardRoutes from './routes/logsDashboardRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -88,6 +89,9 @@ app.use('/api-twilio/whatsapp', twilioWhatsAppRoutes);
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Node.js server is running' });
 });
+
+// Email / WhatsApp JSON log viewer (reads same paths as appendEmailLog / appendWhatsAppLog)
+app.use('/dashboard', logsDashboardRoutes);
 
 // 404 - must be after all routes
 app.use(notFoundHandler);

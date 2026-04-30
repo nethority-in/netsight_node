@@ -13,6 +13,15 @@ const FROM_NUMBERS_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(
 const CREATE_CUSTOM_TEMPLATE_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, "logs", "logs-create-custom-template.json") : path.join(projectRoot, "src", "logs-create-custom-template.json");
 const AUTH_LOG_PATH = process.env.NODE_ENV === 'production' ? path.join(projectRoot, 'logs', 'logs-auth.json') : path.join(projectRoot, 'src', 'logs-auth.json');
 
+/** Resolved paths for the active NODE_ENV (same files appendWhatsAppLog / appendEmailLog write to). */
+export function getResolvedWhatsAppLogPath(): string {
+  return WHATSAPP_LOG_PATH;
+}
+
+export function getResolvedEmailLogPath(): string {
+  return EMAIL_LOG_PATH;
+}
+
 let whatsappLogPromise: Promise<void> = Promise.resolve();
 let emailLogPromise: Promise<void> = Promise.resolve();
 let metaApiLogPromise: Promise<void> = Promise.resolve();

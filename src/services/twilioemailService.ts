@@ -320,7 +320,7 @@ export class EmailService {
     cc?: string[],
     bcc?: string[],
     attachments?: Array<{ filename: string; content: string }>,
-    logContext?: { endpoint?: string; parameters?: Record<string, unknown> }
+    logContext?: { endpoint?: string; parameters?: Record<string, unknown>; templateName?: string }
   ): Promise<EmailServiceResponse> {
     const toArray = Array.isArray(to)
       ? to.map((e: unknown) => (e != null ? String(e).trim() : "")).filter(Boolean)
@@ -333,6 +333,8 @@ export class EmailService {
       subject: subject?.slice(0, 200),
       from: MAIL_FROM_ADDRESS,
       fromName: MAIL_FROM_NAME,
+      ...(logContext?.templateName != null &&
+        String(logContext.templateName).trim() !== '' && { templateName: String(logContext.templateName).trim() }),
       ...(logContext?.parameters != null && { parameters: logContext.parameters }),
     };
 
@@ -462,12 +464,14 @@ export class EmailService {
           hasHtml: true,
           hasText: Boolean(textContent),
           attachmentCount: mailjetAttachments?.length ?? 0,
+          ...(logContext?.templateName != null &&
+            String(logContext.templateName).trim() !== '' && { templateName: String(logContext.templateName).trim() }),
           ...(logContext?.parameters != null && { parameters: logContext.parameters }),
         };
         appendEmailLog(logPayload, serviceResponse);
       } catch (e) {
         console.error("appendEmailLog failed:", e);
-        appendEmailLog({e, endpoint: 'send', env: envLabel(), to: toArray, subject, from: MAIL_FROM_ADDRESS, fromName: MAIL_FROM_NAME, cc: ccList.length > 0 ? ccList : undefined, bcc: bccList.length > 0 ? bccList : undefined, hasHtml: true, hasText: Boolean(textContent), attachmentCount: mailjetAttachments?.length ?? 0, ...(logContext?.parameters != null && { parameters: logContext.parameters }) }, { message: 'Unknown error' });
+        appendEmailLog({e, endpoint: 'send', env: envLabel(), to: toArray, subject, from: MAIL_FROM_ADDRESS, fromName: MAIL_FROM_NAME, cc: ccList.length > 0 ? ccList : undefined, bcc: bccList.length > 0 ? bccList : undefined, hasHtml: true, hasText: Boolean(textContent), attachmentCount: mailjetAttachments?.length ?? 0, ...(logContext?.templateName != null && String(logContext.templateName).trim() !== '' && { templateName: String(logContext.templateName).trim() }), ...(logContext?.parameters != null && { parameters: logContext.parameters }) }, { message: 'Unknown error' });
       }
 
       console.log(
@@ -618,7 +622,11 @@ export class EmailService {
       }
 
       // Send email with processed template
-      return await this.sendEmail(to, emailSubject, htmlContent, textContent, cc, bcc, attachments);
+      return await this.sendEmail(to, emailSubject, htmlContent, textContent, cc, bcc, attachments, {
+        endpoint: 'send-template-twilio',
+        templateName,
+        parameters: templateVariables,
+      });
     } catch (error) {
       return this.handleError(error);
     }
