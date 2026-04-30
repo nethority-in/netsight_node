@@ -38,6 +38,13 @@ function getAuthConfig(): { username: string; password: string; secret: string }
   };
 }
 
+export function hasValidDashboardSession(req: Request): boolean {
+  const cfg = getAuthConfig();
+  if (!cfg) return false;
+  const cookies = parseCookies(req.headers.cookie);
+  return verifySessionToken(cookies[DASHBOARD_COOKIE], cfg.secret);
+}
+
 function signSession(username: string, tsSec: number, secret: string): string {
   return crypto.createHmac('sha256', secret).update(`${username}:${tsSec}`).digest('hex');
 }
@@ -83,8 +90,7 @@ export function dashboardAuthStatus(_req: Request, res: Response): void {
     res.status(500).json({ ok: false, configured: false, authenticated: false });
     return;
   }
-  const cookies = parseCookies(_req.headers.cookie);
-  const authenticated = verifySessionToken(cookies[DASHBOARD_COOKIE], cfg.secret);
+  const authenticated = hasValidDashboardSession(_req);
   res.json({ ok: true, configured: true, authenticated });
 }
 
@@ -126,8 +132,7 @@ export function requireDashboardSession(req: Request, res: Response, next: NextF
     });
     return;
   }
-  const cookies = parseCookies(req.headers.cookie);
-  const ok = verifySessionToken(cookies[DASHBOARD_COOKIE], cfg.secret);
+  const ok = hasValidDashboardSession(req);
   if (!ok) {
     res.status(401).json({ ok: false, error: 'Unauthorized' });
     return;

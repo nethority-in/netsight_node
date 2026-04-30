@@ -4,12 +4,22 @@ import {
   dashboardAuthStatus,
   dashboardLogin,
   dashboardLogout,
+  hasValidDashboardSession,
   requireDashboardSession,
 } from '../middleware/dashboardAuth.js';
 
 const router = Router();
 
-router.get('/', LogsDashboardController.serveUi);
+router.get('/signin', (_req, res) => {
+  res.redirect('/signin');
+});
+router.get('/', (req, res) => {
+  if (!hasValidDashboardSession(req)) {
+    res.redirect('/signin');
+    return;
+  }
+  LogsDashboardController.serveUi(req, res);
+});
 router.get('/auth/status', dashboardAuthStatus);
 router.post('/auth/login', dashboardLogin);
 router.post('/auth/logout', dashboardLogout);

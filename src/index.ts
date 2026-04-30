@@ -17,6 +17,7 @@ import authRoutes from './routes/authRoutes.js';
 import twilioAuthRoutes from './routes/twilioauthRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import logsDashboardRoutes from './routes/logsDashboardRoutes.js';
+import { LogsDashboardController } from './controllers/logsDashboardController.js';
 
 // Load environment variables
 dotenv.config();
@@ -91,6 +92,7 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // Email / WhatsApp JSON log viewer (reads same paths as appendEmailLog / appendWhatsAppLog)
+app.get('/signin', LogsDashboardController.serveSignin);
 app.use('/dashboard', logsDashboardRoutes);
 
 // 404 - must be after all routes

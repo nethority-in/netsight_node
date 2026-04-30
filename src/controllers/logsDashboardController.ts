@@ -10,6 +10,15 @@ import {
 } from '../services/logsDashboardService.js';
 
 export class LogsDashboardController {
+  static serveSignin(_req: Request, res: Response): void {
+    const htmlPath = path.join(process.cwd(), 'src', 'dashboard', 'dashboard-signin.html');
+    if (!fs.existsSync(htmlPath)) {
+      res.status(404).type('text/plain').send('Missing signin file: src/dashboard/dashboard-signin.html');
+      return;
+    }
+    res.sendFile(path.resolve(htmlPath));
+  }
+
   static serveUi(_req: Request, res: Response): void {
     const htmlPath = resolveDashboardHtmlPath();
     if (!fs.existsSync(htmlPath)) {
