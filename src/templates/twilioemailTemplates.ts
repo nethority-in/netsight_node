@@ -897,16 +897,18 @@ display:inline-block !important;
 
 <div class="content">
 
-<h1 style="padding-left:16px; padding-right: 11px;" class="mobile-view">Good day,</h1>
+<div class="" style="margin-top: -4px;">
+  <h1 style="padding-left:16px; padding-right: 11px; margin-bottom: -7px;" class="mobile-view">Good day,</h1>
 
 <p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
 Here is your daily performance summary for
 <b>{{StoreName}}</b> - <b>{{PrevDate}}</b>.
 </p>
+</div>
 
 
 
-<div class="layer teal">
+<div class="layer teal" style="margin-top: -5px;">
 
 <div class="layer-header">
 UNIT ECONOMICS
@@ -1070,7 +1072,7 @@ CAMPAIGN PERFORMANCE
 </div>
 
 
-<div class="footer">
+<div class="footer" style="margin-top: 0.7rem;">
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
 <tr>
