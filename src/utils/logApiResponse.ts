@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { persistEmailLogInMySql, persistWhatsAppLogInMySql } from './mysqlLogStore.js';
 
 // Use project root (cwd) so logs go to src/ even when running from dist/
 const projectRoot = process.cwd();
@@ -69,8 +70,9 @@ async function appendToJsonFile(
 
 //Append WhatsApp API request/response to src/logs-whatsapp.json
 export function appendWhatsAppLog(request: object, response: object): void {
+  const timestamp = getISTTimestamp();
   const entry = {
-    timestamp: getISTTimestamp(),
+    timestamp,
     request,
     response
   };
@@ -80,12 +82,19 @@ export function appendWhatsAppLog(request: object, response: object): void {
     entry,
     whatsappLogPromise
   );
+
+  void persistWhatsAppLogInMySql(
+    timestamp,
+    request as Record<string, unknown>,
+    response as Record<string, unknown>
+  );
 }
 
 //Append Email API request/response to src/logs-email.json
 export function appendEmailLog(request: object, response: object): void {
+  const timestamp = getISTTimestamp();
   const entry = {
-    timestamp: getISTTimestamp(), 
+    timestamp,
     request,
     response
   };
@@ -94,6 +103,12 @@ export function appendEmailLog(request: object, response: object): void {
     EMAIL_LOG_PATH,
     entry,
     emailLogPromise
+  );
+
+  void persistEmailLogInMySql(
+    timestamp,
+    request as Record<string, unknown>,
+    response as Record<string, unknown>
   );
 }
 

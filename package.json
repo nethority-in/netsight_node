@@ -6,15 +6,19 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "predev": "node scripts/kill-port.js 3002",
     "prestart": "npm run build",
     "start": "node dist/index.js",
-    "dev": "concurrently \"tsc --watch\" \"nodemon\"",
+    "dev": "tsx watch src/index.ts",
     "dev:tsx": "tsx watch src/index.ts",
+    "worker:notifications": "tsx src/workers/notificationWorker.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs --runInBand --detectOpenHandles",
     "prisma:generate": "prisma generate",
+    "prisma:generate:logs": "prisma generate --schema prisma/logs.prisma",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "prisma:push:logs": "prisma db push --schema prisma/logs.prisma"
   },
   "keywords": [
     "netsight",
@@ -37,6 +41,7 @@
     "twilio": "^5.12.0"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
