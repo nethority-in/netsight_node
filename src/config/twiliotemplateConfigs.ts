@@ -35,7 +35,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'Revenue',
       'Orders',
       'AOV',
-      'day',
       'RevChgPct',
       'OrdChgPct',
 
@@ -49,6 +48,7 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'MetaCAC',
       'GoogleSummary',
       'GoogleCAC',
+      'period',
       'PositiveChanges',
       'RequiresReviews',
       'url',
@@ -61,7 +61,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'Revenue',
       'Orders',
       'AOV',
-      'day',
       'RevChgPct',
       'OrdChgPct',
 
@@ -73,6 +72,7 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'MetaCAC',
       'GoogleSummary',
       'GoogleCAC',
+      'period',
       'PositiveChanges',
       'RequiresReviews',
       'url',
