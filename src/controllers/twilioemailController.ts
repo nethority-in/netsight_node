@@ -247,9 +247,10 @@ export class EmailController {
             accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
             accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
             accountsHtml += `<tr>`;
+            accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
             accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
             accountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
-            accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+            
             accountsHtml += `</tr>`;
             accountsHtml += `</table>`;
           }
@@ -452,9 +453,10 @@ export class EmailController {
               accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
               accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
               accountsHtml += `<tr>`;
+              accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
               accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
               accountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
-              accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+              
               accountsHtml += `</tr>`;
               accountsHtml += `</table>`;
             }

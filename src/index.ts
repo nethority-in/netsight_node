@@ -16,6 +16,8 @@ import facebookIsightRoutes from './routes/facebookIsightRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import twilioAuthRoutes from './routes/twilioauthRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import logger from './config/logger.js';
 import logsDashboardRoutes from './routes/logsDashboardRoutes.js';
 import { LogsDashboardController } from './controllers/logsDashboardController.js';
 
@@ -29,6 +31,7 @@ const PORT: number = parseInt(process.env.PORT || '3002', 10);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 // Prisma connection and initialization
 const initializePrisma = async (): Promise<void> => {
@@ -103,7 +106,7 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Node.js server is running on port ${PORT}`);
+  logger.info(`Node.js server is running on port ${PORT}`);
 });
 
 export default app;
