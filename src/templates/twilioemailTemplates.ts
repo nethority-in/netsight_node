@@ -582,7 +582,7 @@ const templates: Record<string, EmailTemplate> = {
             <li>
               <span>•</span>
               <span
-                >Total revenue of {{Revenue}} was generated from {{Orders}}
+                >Total revenue of {{GrossRevenue}} was generated from {{Orders}}
                 orders, resulting in an Average Order Value (AOV) of {{AOV}}.
                 Compared to the previous day, revenue increased by {{RevChgPct}}
                 and order volume increased by {{OrdChgPct}}.</span
@@ -605,7 +605,7 @@ const templates: Record<string, EmailTemplate> = {
             <li><span>•</span> <span>{{GoogleCAC}}</span></li>
           </ul>
 
-          <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{period}} 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
+          <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{Period}} 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
           <ul>
             <li>
               <span>•</span>
@@ -637,7 +637,7 @@ const templates: Record<string, EmailTemplate> = {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
     <tr>
       <td style="padding-right: 8px;">
-        <a target="_blank" href="https://isight.netsights.ai/{{url}}"
+        <a target="_blank" href="https://isight.netsights.ai/{{Url}}"
           style="display:inline-block; padding:10px 18px; font-size:15px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px; background-color:#5dbbb8;">
           View Daily Report
         </a>
@@ -699,7 +699,7 @@ const templates: Record<string, EmailTemplate> = {
   ns_temp_Notification_temp2: {
     subject: "{{StoreName}} Daily Performance Summary",
     html: `
-     <!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -722,8 +722,6 @@ background:#ffffff;
 border-radius:10px;
 overflow:hidden;
 }
-
-
 
 .header{
 background:#ffffff;
@@ -750,8 +748,6 @@ color:#374151;
 line-height:1.6;
 }
 
-
-
 .layer{
 border-radius:14px;
 padding:15px;
@@ -765,8 +761,6 @@ margin-bottom:10px;
 font-size:14px;
 letter-spacing:0.2px;
 }
-
-
 
 .metrics-table{
 width:100%;
@@ -790,8 +784,6 @@ font-weight:600;
 color:#111827;
 }
 
-
-
 .teal{
 background:#ecfeff;
 border-color:#5eead4;
@@ -806,8 +798,6 @@ border-color:#f9a8d4;
 background:#eef2ff;
 border-color:#c7d2fe;
 }
-
-
 
 .highlight{
 background:#f0fdf4;
@@ -836,8 +826,6 @@ font-size:14px;
 color:#444;
 }
 
-
-
 .footer{
 background:#f9fafb;
 padding:15px;
@@ -850,8 +838,6 @@ color:#5DBBB8;
 text-decoration:none;
 font-size:13px;
 }
-
-
 
 @media (max-width:600px){
 
@@ -921,8 +907,6 @@ padding:9px 8px !important;
 
 }
 
-
-
 .logo-light{display:inline-block !important;}
 .logo-dark{display:none !important;}
 @media (prefers-color-scheme: dark){
@@ -940,8 +924,6 @@ color:#f3f4f6;
 .container{
 background:#0b0b0b;
 }
-
-
 
 p{
 color:#d1d5db;
@@ -1022,8 +1004,6 @@ Here is your daily performance summary for
 <b>{{StoreName}}</b> - <b>{{PrevDate}}</b>.
 </p>
 </div>
-
-
 
 <div class="layer teal" style="margin-top: -5px;">
 
@@ -1135,6 +1115,35 @@ CAMPAIGN PERFORMANCE
 </td>
 
 <td>
+<div class="metric-label">Blended ROAS</div>
+<div class="metric-value">{{BlendedROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Blended Revenue</div>
+<div class="metric-value">{{BlendedRevenue}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<div class="metric-label">Googlead Spend</div>
+<div class="metric-value">{{Googleadsspend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google ROAS</div>
+<div class="metric-value">{{GoogleROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google Revenue</div>
+<div class="metric-value">{{GoogleRevenue}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
 <div class="metric-label">Meta Spend</div>
 <div class="metric-value">{{MetaSpend}}</div>
 </td>
@@ -1143,26 +1152,18 @@ CAMPAIGN PERFORMANCE
 <div class="metric-label">Meta ROAS</div>
 <div class="metric-value">{{MetaROAS}}</div>
 </td>
-</tr>
-
-<tr>
-<td>
-<div class="metric-label">Blended ROAS</div>
-<div class="metric-value">{{BlendedROAS}}</div>
-</td>
 
 <td>
-<div class="metric-label">Google Spend</div>
-<div class="metric-value">{{Googleadsspend}}</div>
+<div class="metric-label">Meta Revenue</div>
+<div class="metric-value">{{MetaRevenue}}</div>
 </td>
 
-<td>
-<div class="metric-label">Google ROAS</div>
-<div class="metric-value">{{GoogleROAS}}</div>
-</td>
 </tr>
 
 </table>
+
+{{metaAccountsHtml}}
+
 </div>
 
 
@@ -1200,7 +1201,7 @@ CAMPAIGN PERFORMANCE
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
-          <a target="_blank" href="https://isight.netsights.ai/{{url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+          <a target="_blank" href="https://isight.netsights.ai/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
             View Daily Report
           </a>
               </td>
@@ -1542,7 +1543,7 @@ padding-left:0;
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
     <tr>
       <td align="center" style="padding:0 6px; vertical-align:middle;">
-        <a target="_blank" href="https://isight.netsights.ai/{{url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <a target="_blank" href="https://isight.netsights.ai/{{Url}}" style="display:inline-block; padding:8px 24px; background-color:#5DBBB8; color:#ffffff; font-weight:400; border-radius:8px; text-decoration:none; transition:all 200ms ease; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);">
           View Daily Report
         </a>
       </td>

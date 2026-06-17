@@ -44,7 +44,9 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'weeklysummarybutton_v2':"HX0d98892566677e30adda841b523e440f",
   'monthlysummarybutton_v2':"HX68444cd7dc6bc1ef7a48fa521f200309",
   'weeklycxosummary':'HX482b0c55a71c4f13177ed08a3aeb1a95',
-  "monthlycxosummary":'HXfb90159cb745b508e85c2263fd8970fa'
+  "monthlycxosummary":'HXfb90159cb745b508e85c2263fd8970fa',
+  "executive_summary_daily":'HX47b5f2a92adc70a2099073d9be46ab5f',
+  "copy_demo_onboarding_message":'HXc11abcaad2104c6b576de625496e9b71'
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {

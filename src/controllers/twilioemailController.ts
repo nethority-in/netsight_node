@@ -231,6 +231,36 @@ export class EmailController {
       if (templateName === 'ns_temp_Notification_temp2') {
         if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
         if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
+
+        // Pre-render metaAccounts array into HTML for the template
+        const metaAccounts = params.metaAccounts;
+        if (Array.isArray(metaAccounts) && metaAccounts.length > 0) {
+          let accountsHtml = `<div style="margin-top:6px;">`;
+          accountsHtml += `<div class="layer-header">META AD ACCOUNTS</div>`;
+          for (const account of metaAccounts) {
+            const id = account.Id || '';
+            const last4 = id.slice(-4);
+            const name = account.Name || 'N/A';
+            const roas = account.Roas != null ? parseFloat(account.Roas).toFixed(2) : 'N/A';
+            const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+            const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+            accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
+            accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+            accountsHtml += `<tr>`;
+            accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
+            accountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
+            accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+            accountsHtml += `</tr>`;
+            accountsHtml += `</table>`;
+          }
+          accountsHtml += `</div>`;
+          params.metaAccountsHtml = accountsHtml;
+        } else {
+          params.metaAccountsHtml = '<!-- -->';
+        }
+        // Clean up array fields so template builder doesn't choke
+        delete params.metaAccounts;
+        delete params.metaAccounts_count;
       }
 
       const result = await EmailService.previewTemplate(templateName, params);
@@ -406,6 +436,36 @@ export class EmailController {
           // Alias mapping (client keys -> template expected keys)
           if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
           if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
+
+          // Pre-render metaAccounts array into HTML for the template
+          const metaAccounts = params.metaAccounts;
+          if (Array.isArray(metaAccounts) && metaAccounts.length > 0) {
+            let accountsHtml = `<div style="margin-top:6px;">`;
+            accountsHtml += `<div class="layer-header">META AD ACCOUNTS</div>`;
+            for (const account of metaAccounts) {
+              const id = account.Id || '';
+              const last4 = id.slice(-4);
+              const name = account.Name || 'N/A';
+              const roas = account.Roas != null ? parseFloat(account.Roas).toFixed(2) : 'N/A';
+              const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+              const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+              accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
+              accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+              accountsHtml += `<tr>`;
+              accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
+              accountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
+              accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+              accountsHtml += `</tr>`;
+              accountsHtml += `</table>`;
+            }
+            accountsHtml += `</div>`;
+            params.metaAccountsHtml = accountsHtml;
+          } else {
+            params.metaAccountsHtml = '<!-- -->';
+          }
+          // Clean up array fields so template builder doesn't choke
+          delete params.metaAccounts;
+          delete params.metaAccounts_count;
 
           // Normalize whitespace keys (typos like "PositiveC  hanges")
           const paramKeys = Object.keys(params);

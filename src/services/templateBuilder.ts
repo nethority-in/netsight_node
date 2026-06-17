@@ -4,11 +4,14 @@ export interface DynamicParameter {
   label?: string;
 }
 
+// services/templateBuilder.ts
+
 export interface TemplateConfig {
   name: string;
   requiredFields: string[];
   optionalFields: string[];
   fieldOrder: string[];
+  allowedFields?: string[];  // ✅ Add this
 }
 
 export class TemplateBuilder {

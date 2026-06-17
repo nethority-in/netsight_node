@@ -9,6 +9,7 @@ export interface TemplateConfig {
   requiredFields: string[];
   optionalFields: string[];
   fieldOrder: string[];
+  allowedFields?: string[]; // ✅ NEW
 }
 
 export class TemplateBuilder {
@@ -206,18 +207,48 @@ export class TemplateBuilder {
     return content;
   }
 
-  static validateParameters(parameters: Record<string, any>, config: TemplateConfig): { valid: boolean; missing: string[] } {
-    const missing: string[] = [];
+  // static validateParameters(parameters: Record<string, any>, config: TemplateConfig): { valid: boolean; missing: string[] } {
+  //   const missing: string[] = [];
     
-    config.requiredFields.forEach(field => {
-      if (!parameters[field] || parameters[field] === '' || parameters[field] === null || parameters[field] === undefined) {
-        missing.push(field);
-      }
-    });
+  //   config.requiredFields.forEach(field => {
+  //     if (!parameters[field] || parameters[field] === '' || parameters[field] === null || parameters[field] === undefined) {
+  //       missing.push(field);
+  //     }
+  //   });
 
-    return {
-      valid: missing.length === 0,
-      missing 
-    };
-  }
+  //   return {
+  //     valid: missing.length === 0,
+  //     missing 
+  //   };
+  // }
+
+
+static validateParameters(
+  parameters: Record<string, any>,
+  config: TemplateConfig
+): {
+  valid: boolean;
+  missing: string[];
+} {
+
+  const missing: string[] = [];
+
+  config.requiredFields.forEach(field => {
+
+    if (
+      parameters[field] === '' ||
+      parameters[field] === null ||
+      parameters[field] === undefined
+    ) {
+      missing.push(field);
+    }
+
+  });
+
+  return {
+    valid: true, // ✅ Email never blocked
+    missing
+  };
+}
+
 }
