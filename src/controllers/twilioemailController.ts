@@ -264,6 +264,21 @@ export class EmailController {
         delete params.metaAccounts_count;
       }
 
+      // Handle MetaAccountSummary for ns_temp_Notification_temp1
+      if (templateName === 'ns_temp_Notification_temp1' || templateName === 'ns_temp_Notification_temp1_weekly' || templateName === 'ns_temp_Notification_temp1_monthly') {
+        const metaAccountSummary = params.MetaAccountSummary;
+        if (Array.isArray(metaAccountSummary) && metaAccountSummary.length > 0) {
+          let summaryHtml = '';
+          for (const line of metaAccountSummary) {
+            summaryHtml += `<li><span>•</span> <span>${String(line)}</span></li>`;
+          }
+          params.metaAccountSummaryHtml = summaryHtml;
+        } else {
+          params.metaAccountSummaryHtml = '<!-- -->';
+        }
+        delete params.MetaAccountSummary;
+      }
+
       const result = await EmailService.previewTemplate(templateName, params);
 
       if (!result?.ok) {
@@ -481,6 +496,21 @@ export class EmailController {
           for (const required of config.requiredFields) {
             if (params[required] == null || params[required] === '') params[required] = 'N/A';
           }
+        }
+
+        // Handle MetaAccountSummary for ns_temp_Notification_temp1
+        if (config.name === 'ns_temp_Notification_temp1') {
+          const metaAccountSummary = params.MetaAccountSummary;
+          if (Array.isArray(metaAccountSummary) && metaAccountSummary.length > 0) {
+            let summaryHtml = '';
+            for (const line of metaAccountSummary) {
+              summaryHtml += `<li><span>•</span> <span>${String(line)}</span></li>`;
+            }
+            params.metaAccountSummaryHtml = summaryHtml;
+          } else {
+            params.metaAccountSummaryHtml = '<!-- -->';
+          }
+          delete params.MetaAccountSummary;
         }
 
         const validation = TemplateBuilder.validateParameters(params, config);

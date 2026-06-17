@@ -601,6 +601,7 @@ const templates: Record<string, EmailTemplate> = {
           <ul>
             <li><span>•</span> <span>{{MetaSummary}}</span></li>
             <li><span>•</span> <span>{{MetaCAC}}</span></li>
+            {{metaAccountSummaryHtml}}
             <li><span>•</span> <span>{{GoogleSummary}}</span></li>
             <li><span>•</span> <span>{{GoogleCAC}}</span></li>
           </ul>
