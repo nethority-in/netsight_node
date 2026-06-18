@@ -277,6 +277,96 @@ export class EmailController {
           params.metaAccountSummaryHtml = '<!-- -->';
         }
         delete params.MetaAccountSummary;
+
+        // GoogleAccountSummary for ns_temp_Notification_temp1
+        const googleAccountSummary = params.GoogleAccountSummary;
+        if (Array.isArray(googleAccountSummary) && googleAccountSummary.length > 0) {
+          let gSummaryHtml = '';
+          for (const line of googleAccountSummary) {
+            gSummaryHtml += `<li><span>•</span> <span>${String(line)}</span></li>`;
+          }
+          params.googleAccountSummaryHtml = gSummaryHtml;
+        } else {
+          params.googleAccountSummaryHtml = '<!-- -->';
+        }
+        delete params.GoogleAccountSummary;
+      }
+
+      // Handle googleAccounts for ns_temp_Notification_temp2
+      if (templateName === 'ns_temp_Notification_temp2' || templateName === 'ns_temp_Notification_temp2_weekly' || templateName === 'ns_temp_Notification_temp2_monthly') {
+        const googleAccounts = params.googleAccounts;
+        if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
+          let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
+          for (const account of googleAccounts) {
+            const id = account.Id || '';
+            const last4 = id.slice(-4);
+            const name = account.Name || 'N/A';
+            const roas = account.Roas != null ? parseFloat(account.Roas).toFixed(2) : 'N/A';
+            const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+            const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+            gAccountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
+            gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+            gAccountsHtml += `<tr>`;
+            gAccountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
+            gAccountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
+            gAccountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+            gAccountsHtml += `</tr></table>`;
+          }
+          gAccountsHtml += `</div>`;
+          params.googleAccountsHtml = gAccountsHtml;
+        } else {
+          params.googleAccountsHtml = '<!-- -->';
+        }
+        delete params.googleAccounts;
+        delete params.googleAccounts_count;
+      }
+
+      // Handle InventoryHealth for both templates
+      if (templateName.startsWith('ns_temp_Notification_temp1') || templateName.startsWith('ns_temp_Notification_temp2')) {
+        const inventoryHealth = params.InventoryHealth;
+        if (inventoryHealth && String(inventoryHealth).trim() !== '') {
+          if (templateName.startsWith('ns_temp_Notification_temp1')) {
+            // temp1: heading + bullet points style (same as Marketing section)
+            const lines = String(inventoryHealth).split(/\n/).filter(l => l.trim());
+            let ihHtml = `<h1>𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆 𝗛𝗲𝗮𝗹𝘁𝗵</h1><ul>`;
+            for (const line of lines) {
+              ihHtml += `<li><span>•</span> <span>${line.trim()}</span></li>`;
+            }
+            ihHtml += `</ul>`;
+            params.inventoryHealthHtml = ihHtml;
+          } else {
+            // temp2: amber colored box
+            let ihHtml = `<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:12px; margin-top:10px;">`;
+            ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
+            ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
+            ihHtml += `</div>`;
+            params.inventoryHealthHtml = ihHtml;
+          }
+        } else {
+          params.inventoryHealthHtml = '<!-- -->';
+        }
+        delete params.InventoryHealth;
+      }
+
+      // Handle CancelCount/RefundAmount conditionally for both templates
+      if (templateName.startsWith('ns_temp_Notification_temp1') || templateName.startsWith('ns_temp_Notification_temp2')) {
+        const cancelCount = params.CancelCount;
+        const refundAmount = params.RefundAmount;
+        if (cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '') {
+          if (templateName.startsWith('ns_temp_Notification_temp2')) {
+            // temp2: render as metrics table row
+            params.cancelRefundHtml = `<tr><td><div class="metric-label">Cancel Count</div><div class="metric-value">${String(cancelCount)}</div></td><td><div class="metric-label">Refund Amount</div><div class="metric-value">${String(refundAmount)}</div></td><td></td></tr>`;
+          }
+          if (templateName.startsWith('ns_temp_Notification_temp1')) {
+            // temp1: inline text
+            params.cancelRefundText = ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`;
+          }
+        } else {
+          params.cancelRefundHtml = '<!-- -->';
+          params.cancelRefundText = '<!-- -->';
+        }
+        delete params.CancelCount;
+        delete params.RefundAmount;
       }
 
       const result = await EmailService.previewTemplate(templateName, params);
@@ -511,7 +601,91 @@ export class EmailController {
             params.metaAccountSummaryHtml = '<!-- -->';
           }
           delete params.MetaAccountSummary;
+
+          // GoogleAccountSummary for ns_temp_Notification_temp1
+          const googleAccountSummary = params.GoogleAccountSummary;
+          if (Array.isArray(googleAccountSummary) && googleAccountSummary.length > 0) {
+            let gSummaryHtml = '';
+            for (const line of googleAccountSummary) {
+              gSummaryHtml += `<li><span>•</span> <span>${String(line)}</span></li>`;
+            }
+            params.googleAccountSummaryHtml = gSummaryHtml;
+          } else {
+            params.googleAccountSummaryHtml = '<!-- -->';
+          }
+          delete params.GoogleAccountSummary;
         }
+
+        // Handle googleAccounts for ns_temp_Notification_temp2
+        if (config.name === 'ns_temp_Notification_temp2') {
+          const googleAccounts = params.googleAccounts;
+          if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
+            let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
+            for (const account of googleAccounts) {
+              const id = account.Id || '';
+              const last4 = id.slice(-4);
+              const name = account.Name || 'N/A';
+              const roas = account.Roas != null ? parseFloat(account.Roas).toFixed(2) : 'N/A';
+              const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+              const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
+              gAccountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
+              gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+              gAccountsHtml += `<tr>`;
+              gAccountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
+              gAccountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
+              gAccountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
+              gAccountsHtml += `</tr></table>`;
+            }
+            gAccountsHtml += `</div>`;
+            params.googleAccountsHtml = gAccountsHtml;
+          } else {
+            params.googleAccountsHtml = '<!-- -->';
+          }
+          delete params.googleAccounts;
+          delete params.googleAccounts_count;
+        }
+
+        // Handle InventoryHealth for both templates
+        const inventoryHealth = params.InventoryHealth;
+        if (inventoryHealth && String(inventoryHealth).trim() !== '') {
+          if (config.name === 'ns_temp_Notification_temp1') {
+            // temp1: heading + bullet points style (same as Marketing section)
+            const lines = String(inventoryHealth).split(/\n/).filter((l: string) => l.trim());
+            let ihHtml = `<h1>𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆 𝗛𝗲𝗮𝗹𝘁𝗵</h1><ul>`;
+            for (const line of lines) {
+              ihHtml += `<li><span>•</span> <span>${line.trim()}</span></li>`;
+            }
+            ihHtml += `</ul>`;
+            params.inventoryHealthHtml = ihHtml;
+          } else {
+            // temp2: amber colored box
+            let ihHtml = `<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:12px; margin-top:10px;">`;
+            ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
+            ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
+            ihHtml += `</div>`;
+            params.inventoryHealthHtml = ihHtml;
+          }
+        } else {
+          params.inventoryHealthHtml = '<!-- -->';
+        }
+        delete params.InventoryHealth;
+
+        // Handle CancelCount/RefundAmount conditionally
+        const cancelCount = params.CancelCount;
+        const refundAmount = params.RefundAmount;
+        if (cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '') {
+          if (config.name === 'ns_temp_Notification_temp2') {
+            params.cancelRefundHtml = `<tr><td><div class="metric-label">Cancel Count</div><div class="metric-value">${String(cancelCount)}</div></td><td><div class="metric-label">Refund Amount</div><div class="metric-value">${String(refundAmount)}</div></td><td></td></tr>`;
+          }
+          if (config.name === 'ns_temp_Notification_temp1') {
+            params.cancelRefundText = ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`;
+          }
+        } else {
+          params.cancelRefundHtml = '<!-- -->';
+          params.cancelRefundText = '<!-- -->';
+        }
+        delete params.CancelCount;
+        delete params.RefundAmount;
 
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {

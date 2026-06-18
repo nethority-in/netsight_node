@@ -581,12 +581,12 @@ const templates: Record<string, EmailTemplate> = {
           <ul>
             <li>
               <span>•</span>
-              <span
-                >Total revenue of {{GrossRevenue}} was generated from {{Orders}}
+              <span>
+                Total revenue of {{GrossRevenue}} was generated from {{Orders}}
                 orders, resulting in an Average Order Value (AOV) of {{AOV}}.
                 Compared to the previous day, revenue increased by {{RevChgPct}}
-                and order volume increased by {{OrdChgPct}}.</span
-              >
+                and order volume increased by {{OrdChgPct}}.{{cancelRefundText}}
+              </span>
             </li>
           </ul>
 
@@ -604,7 +604,10 @@ const templates: Record<string, EmailTemplate> = {
             {{metaAccountSummaryHtml}}
             <li><span>•</span> <span>{{GoogleSummary}}</span></li>
             <li><span>•</span> <span>{{GoogleCAC}}</span></li>
+            {{googleAccountSummaryHtml}}
           </ul>
+
+          {{inventoryHealthHtml}}
 
           <h1>𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀 {{Period}} 𝗰𝗼𝗺𝗽𝗮𝗿𝗶𝘀𝗼𝗻</h1>
           <ul>
@@ -1015,8 +1018,6 @@ UNIT ECONOMICS
 <table class="metrics-table" cellpadding="0" cellspacing="0">
 
 <tr>
-
-<tr>
 <td>
 <div class="metric-label">Gross Revenue</div>
 <div class="metric-value">{{GrossRevenue}}</div>
@@ -1033,6 +1034,7 @@ UNIT ECONOMICS
 </td>
 </tr>
 
+<tr>
 <td>
 <div class="metric-label">AOV</div>
 <div class="metric-value">{{AOV}}</div>
@@ -1048,6 +1050,8 @@ UNIT ECONOMICS
 <div class="metric-value">{{LTVCACRatio}}</div>
 </td>
 </tr>
+
+{{cancelRefundHtml}}
 
 </table>
 </div>
@@ -1125,7 +1129,28 @@ CAMPAIGN PERFORMANCE
 <div class="metric-value">{{BlendedRevenue}}</div>
 </td>
 </tr>
+</table>
 
+<table class="metrics-table">
+<tr>
+<td>
+<div class="metric-label">Meta Spend</div>
+<div class="metric-value">{{MetaSpend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta ROAS</div>
+<div class="metric-value">{{MetaROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta Revenue</div>
+<div class="metric-value">{{MetaRevenue}}</div>
+</td>
+</tr>
+</table>
+
+<table class="metrics-table">
 <tr>
 <td>
 <div class="metric-label">Googlead Spend</div>
@@ -1142,32 +1167,15 @@ CAMPAIGN PERFORMANCE
 <div class="metric-value">{{GoogleRevenue}}</div>
 </td>
 </tr>
-
-<tr>
-<td>
-<div class="metric-label">Meta Spend</div>
-<div class="metric-value">{{MetaSpend}}</div>
-</td>
-
-<td>
-<div class="metric-label">Meta ROAS</div>
-<div class="metric-value">{{MetaROAS}}</div>
-</td>
-
-<td>
-<div class="metric-label">Meta Revenue</div>
-<div class="metric-value">{{MetaRevenue}}</div>
-</td>
-
-</tr>
-
 </table>
 
 {{metaAccountsHtml}}
 
+{{googleAccountsHtml}}
+
 </div>
 
-
+{{inventoryHealthHtml}}
 
 <div class="highlight">
 
