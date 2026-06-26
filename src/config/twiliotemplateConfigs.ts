@@ -192,8 +192,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'AOV',
       'LTV',
       'LTVCACRatio',
-      'CancelCount',
-      'RefundAmount',
 
       'NewVsRepeat',
       'OrderFrequency',
@@ -231,8 +229,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'AOV',
       'LTV',
       'LTVCACRatio',
-      'CancelCount',
-      'RefundAmount',
 
       'NewVsRepeat',
       'OrderFrequency',
@@ -267,8 +263,6 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       'AOV',
       'LTV',
       'LTVCACRatio',
-      'CancelCount',
-      'RefundAmount',
 
       'NewVsRepeat',
       'OrderFrequency',
@@ -299,6 +293,136 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     requiredFields: ['StoreName', 'OTP'],
     optionalFields: [],
     fieldOrder: ['StoreName', 'OTP']
+  },
+
+  // =========================
+  // TEMP1 WEEKLY / MONTHLY
+  // =========================
+
+  ns_temp_Notification_temp1_weekly: {
+    name: 'ns_temp_Notification_temp1_weekly',
+    requiredFields: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    optionalFields: [],
+    allowedFields: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    fieldOrder: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ]
+  },
+
+  ns_temp_Notification_temp1_monthly: {
+    name: 'ns_temp_Notification_temp1_monthly',
+    requiredFields: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    optionalFields: [],
+    allowedFields: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    fieldOrder: [
+      'StoreName', 'PrevDate', 'GrossRevenue', 'Orders', 'AOV',
+      'RevChgPct', 'OrdChgPct', 'CancelCount', 'RefundAmount',
+      'Bestseller1', 'Bestseller2', 'Bestseller3',
+      'MetaSummary', 'MetaCAC', 'GoogleSummary', 'GoogleCAC',
+      'Period', 'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ]
+  },
+
+  // =========================
+  // TEMP2 WEEKLY / MONTHLY
+  // =========================
+
+  ns_temp_Notification_temp2_weekly: {
+    name: 'ns_temp_Notification_temp2_weekly',
+    requiredFields: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    optionalFields: [],
+    allowedFields: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    fieldOrder: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ]
+  },
+
+  ns_temp_Notification_temp2_monthly: {
+    name: 'ns_temp_Notification_temp2_monthly',
+    requiredFields: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    optionalFields: [],
+    allowedFields: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ],
+    fieldOrder: [
+      'StoreName', 'PrevDate',
+      'GrossRevenue', 'NetSales', 'Orders', 'AOV', 'LTV', 'LTVCACRatio',
+      'NewVsRepeat', 'OrderFrequency', 'TotalDiscountRate', 'OrderFulfillmentRate',
+      'GA4Sessions', 'GA4Users',
+      'BlendedSpend', 'BlendedROAS', 'BlendedRevenue',
+      'MetaSpend', 'MetaROAS', 'MetaRevenue',
+      'Googleadsspend', 'GoogleROAS', 'GoogleRevenue',
+      'PositiveChanges', 'RequiresReviews', 'Url', 'ScaleUrl'
+    ]
   },
 
   daily_store_performance_summary: {
