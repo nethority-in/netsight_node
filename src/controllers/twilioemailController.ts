@@ -198,17 +198,17 @@ export class EmailController {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
           }
           else if (key === 'MetaAdsSpend') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+            params[key] = params[key].replace(/\.\d+/g, '');
           }
           else if (key === 'GoogleAdsSpend') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+            params[key] = params[key].replace(/\.\d+/g, '');
           }
           else if (key === 'AOV') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+            params[key] = params[key].replace(/\.\d+/g, '');
           }
           else if (key === 'BlendedROAS') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
-          } 
+          }
           else if (key === 'GA4Sessions' || key === 'GA4Users') {
             params[key] = params[key].replace(/\d+/g, (match: string) => {
               return parseInt(match).toLocaleString('en-IN');
@@ -765,13 +765,10 @@ export class EmailController {
           } else if (key === 'GrossRevenue') {
             params[key] = params[key].replace(/\d+\.\d{3,}/g, (match: string) => parseFloat(match).toFixed(2));
           } 
-          else if (key === 'GA4Sessions') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
-          } 
-          else if (key === 'GoogleAdsSpend') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+          else if (key === 'GoogleAdsSpend' || key === 'MetaAdsSpend') {
+            params[key] = params[key].replace(/\.\d+/g, '');
           } else if (key === 'AOV') {
-            params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(0));
+            params[key] = params[key].replace(/\.\d+/g, '');
           } 
           else if (key === 'BlendedROAS') {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
@@ -780,6 +777,7 @@ export class EmailController {
             params[key] = params[key].replace(/\d+\.\d+/g, (match: string) => parseFloat(match).toFixed(1));
           }
           else if (key === 'GA4Sessions' || key === 'GA4Users') {
+            params[key] = params[key].replace(/\.\d+/g, '');
             params[key] = params[key].replace(/(?<!\$)\b\d+\b/g, (match: string) => {
               return parseInt(match).toLocaleString('en-IN');
             });
