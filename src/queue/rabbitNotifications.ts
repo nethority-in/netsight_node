@@ -1,4 +1,4 @@
-import amqp, { Channel, ConsumeMessage } from "amqplib";
+﻿import amqp, { ConfirmChannel, ConsumeMessage } from "amqplib";
 import { randomUUID } from "crypto";
 import { PrismaClient } from "@prisma/logs-client";
 import { EmailService } from "../services/twilioemailService.js";
@@ -52,9 +52,21 @@ interface NotificationJobMessage {
   createdAt: string;
 }
 
+// --- Custom error for 429 rate-limit from external APIs ---
+class RateLimitError extends Error {
+  retryAfterMs: number;
+  constructor(message: string, retryAfterMs: number) {
+    super(message);
+    this.name = "RateLimitError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
 const logsPrisma = new PrismaClient();
-let channel: Channel | null = null;
-let setupPromise: Promise<Channel> | null = null;
+let channel: ConfirmChannel | null = null;
+let setupPromise: Promise<ConfirmChannel> | null = null;
+
+const isDryRun = (): boolean => process.env.DRY_RUN_MODE === "true";
 
 const cfg = {
   url: process.env.RABBITMQ_URL || "amqp://127.0.0.1:5672",
@@ -71,6 +83,8 @@ const cfg = {
     process.env.RABBITMQ_RETRY_QUEUE || "netsight.notifications.retry",
   dlq: process.env.RABBITMQ_DLQ || "netsight.notifications.dlq",
   maxRetries: Number(process.env.RABBITMQ_MAX_RETRIES || 3),
+  // 429 rate-limited jobs get more attempts before DLQ
+  maxRetriesRateLimit: Number(process.env.RABBITMQ_MAX_RETRIES_RATE_LIMIT || 6),
   prefetch: Number(process.env.RABBITMQ_PREFETCH || 10),
   retryDelays: String(
     process.env.RABBITMQ_RETRY_DELAYS_MS || "5000,30000,120000",
@@ -78,7 +92,30 @@ const cfg = {
     .split(",")
     .map((v) => Number(v.trim()))
     .filter((v) => Number.isFinite(v) && v >= 0),
+  // DLQ alerting WhatsApp number
+  dlqAlertPhone: process.env.DLQ_ALERT_WHATSAPP || "+918698673161",
 };
+
+// --- Point 4: Startup config validation ---
+export function validateRabbitConfig(): void {
+  if (!isRabbitEnabled()) return;
+
+  const url = process.env.RABBITMQ_URL;
+  if (!url || url.trim() === "") {
+    throw new Error(
+      "[RabbitMQ] RABBITMQ_ENABLED=true but RABBITMQ_URL is missing. " +
+        "Set RABBITMQ_URL (e.g. amqp://user:pass@host:5672) or disable RabbitMQ.",
+    );
+  }
+
+  // Basic URL format validation
+  if (!url.startsWith("amqp://") && !url.startsWith("amqps://")) {
+    throw new Error(
+      `[RabbitMQ] RABBITMQ_URL is malformed: "${url}". ` +
+        "Must start with amqp:// or amqps://",
+    );
+  }
+}
 
 export function isRabbitEnabled(): boolean {
   return (
@@ -89,6 +126,14 @@ export function isRabbitEnabled(): boolean {
 
 function safeJson(value: unknown): string {
   try {
+    // Error objects don't stringify (non-enumerable props), so extract manually
+    if (value instanceof Error) {
+      return JSON.stringify({
+        message: value.message,
+        name: value.name,
+        stack: value.stack?.split('\n').slice(0, 3).join(' | '),
+      });
+    }
     return JSON.stringify(value ?? {});
   } catch {
     return JSON.stringify({ fallback: "serialization_failed" });
@@ -111,6 +156,40 @@ function deriveMeta(type: NotificationJobType): {
   };
 }
 
+// --- Detect 429 from external API errors (Twilio / Mailjet) ---
+function extractRateLimitDelay(error: unknown): number | null {
+  if (!error || typeof error !== "object") return null;
+
+  const err = error as Record<string, unknown>;
+
+  // Twilio returns status 429 with a Retry-After header in the error object
+  const status =
+    (err.status as number) ??
+    (err.statusCode as number) ??
+    (err.code as number);
+
+  if (status !== 429) return null;
+
+  // Try to read Retry-After (seconds) from error metadata
+  const retryAfter =
+    (err.retryAfter as number | string) ??
+    (err.headers as Record<string, string>)?.["retry-after"] ??
+    (err.response as { headers?: Record<string, string> })?.headers?.[
+      "retry-after"
+    ];
+
+  if (retryAfter !== undefined && retryAfter !== null) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      return seconds * 1000; // convert to ms
+    }
+  }
+
+  // Default: 60 seconds if 429 but no Retry-After header
+  return 60_000;
+}
+
+// --- DB tracking (all wrapped safely for consumer use) ---
 async function trackQueued(job: NotificationJobMessage): Promise<void> {
   const meta = deriveMeta(job.type);
   await logsPrisma.notificationJobTracking.create({
@@ -127,7 +206,10 @@ async function trackQueued(job: NotificationJobMessage): Promise<void> {
   });
 }
 
-async function trackProcessing(jobId: string, attempts: number): Promise<void> {
+async function trackProcessing(
+  jobId: string,
+  attempts: number,
+): Promise<void> {
   await logsPrisma.notificationJobTracking.update({
     where: { job_id: jobId },
     data: {
@@ -189,7 +271,55 @@ async function trackDead(
   });
 }
 
-async function setupChannel(): Promise<Channel> {
+// --- Point 3: DLQ alerting via WhatsApp (direct call, no queue) ---
+async function sendDlqAlert(
+  jobId: string,
+  jobType: string,
+  attempts: number,
+  error: unknown,
+): Promise<void> {
+  // Skip alert in dry run mode — no real messages
+  if (isDryRun()) {
+    console.log(
+      `[DLQ Alert - DRY RUN] Would alert for job ${jobId} (${jobType}), ${attempts} attempts`,
+    );
+    return;
+  }
+
+  try {
+    const errorMsg =
+      error instanceof Error ? error.message : safeJson(error);
+    const truncatedError =
+      errorMsg.length > 200 ? errorMsg.substring(0, 200) + "..." : errorMsg;
+
+    const body =
+      `[Netsight DLQ Alert]\n` +
+      `Job: ${jobId}\n` +
+      `Type: ${jobType}\n` +
+      `Failed after ${attempts} attempts.\n` +
+      `Error: ${truncatedError}`;
+
+    // Direct Twilio call - NOT via RabbitMQ (avoids feedback loop)
+    const twilio = await import("twilio");
+    const client = twilio.default(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+    );
+    const fromNumber = process.env.TWILIO_WHATSAPP_FROM || "+19785889593";
+
+    await client.messages.create({
+      from: `whatsapp:${fromNumber}`,
+      to: `whatsapp:${cfg.dlqAlertPhone}`,
+      body,
+    });
+  } catch (alertError) {
+    // Alert failure must never crash the consumer
+    console.error("[DLQ Alert] Failed to send WhatsApp alert:", alertError);
+  }
+}
+
+// --- Point 2: Confirm channel for publisher confirms ---
+async function setupChannel(): Promise<ConfirmChannel> {
   if (channel) return channel;
   if (setupPromise) return setupPromise;
 
@@ -205,7 +335,9 @@ async function setupChannel(): Promise<Channel> {
       setTimeout(() => setupChannel(), 5000); // auto reconnect
     });
 
-    const ch = await conn.createChannel();
+    // Use createConfirmChannel instead of createChannel
+    const ch = await conn.createConfirmChannel();
+
     await ch.assertExchange(cfg.exchange, "direct", { durable: true });
     await ch.assertExchange(cfg.retryExchange, "direct", { durable: true });
     await ch.assertExchange(cfg.dlxExchange, "direct", { durable: true });
@@ -234,6 +366,22 @@ async function setupChannel(): Promise<Channel> {
   return setupPromise;
 }
 
+// Helper: publish with broker confirmation (awaits ack from RabbitMQ)
+function publishWithConfirm(
+  ch: ConfirmChannel,
+  exchange: string,
+  routingKey: string,
+  content: Buffer,
+  options: amqp.Options.Publish,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    ch.publish(exchange, routingKey, content, options, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 export async function publishNotificationJob(
   type: NotificationJobType,
   payload: NotificationJobPayload,
@@ -257,7 +405,9 @@ export async function publishNotificationJob(
     throw dbError;
   }
 
-  const ok = ch.publish(
+  // Await broker confirmation before returning success
+  await publishWithConfirm(
+    ch,
     cfg.exchange,
     cfg.route,
     Buffer.from(JSON.stringify(job), "utf-8"),
@@ -271,14 +421,37 @@ export async function publishNotificationJob(
     },
   );
 
-  if (!ok) {
-    throw new Error("RabbitMQ publish backpressure");
-  }
-
   return { queued: true, jobId: job.jobId };
 }
 
 async function processJob(job: NotificationJobMessage): Promise<unknown> {
+  // --- DRY RUN MODE ---
+  // Simulates job processing without calling real Twilio/Mailjet.
+  // Set DRY_RUN_FAIL_RATE (0-100) to control what percentage of jobs fail.
+  //   DRY_RUN_FAIL_RATE=100  → all fail (tests full retry → DLQ flow)
+  //   DRY_RUN_FAIL_RATE=0    → all succeed (tests happy path throughput)
+  //   DRY_RUN_FAIL_RATE=30   → 30% fail randomly (realistic mixed scenario)
+  if (isDryRun()) {
+    // Simulate processing time (50-300ms random)
+    const delay = 50 + Math.floor(Math.random() * 250);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    const failRate = Number(process.env.DRY_RUN_FAIL_RATE ?? "100");
+    const shouldFail = Math.random() * 100 < failRate;
+
+    if (shouldFail) {
+      console.log(
+        `[DRY RUN] Simulated FAILURE for job ${job.jobId} (type: ${job.type})`,
+      );
+      throw new Error(`DRY RUN simulated failure (failRate=${failRate}%)`);
+    }
+
+    console.log(
+      `[DRY RUN] Simulated SUCCESS for job ${job.jobId} (type: ${job.type})`,
+    );
+    return { ok: true, dryRun: true, jobId: job.jobId };
+  }
+
   if (job.type === "whatsapp_send_message_twilio") {
     const p = job.payload as WhatsAppTemplateQueuePayload;
     const res = await WhatsAppService.sendTemplate(
@@ -288,7 +461,21 @@ async function processJob(job: NotificationJobMessage): Promise<unknown> {
       p.components,
       p.fromCredentials,
     );
-    if (!res.ok) throw res.error ?? new Error("WhatsApp send failed");
+    if (!res.ok) {
+      const err = res.error ?? {
+        message: "WhatsApp send failed",
+        status: 500,
+      };
+      // Check if it's a 429 from Twilio
+      const rateLimitDelay = extractRateLimitDelay(err);
+      if (rateLimitDelay !== null) {
+        throw new RateLimitError(
+          err.message || "Twilio rate limit",
+          rateLimitDelay,
+        );
+      }
+      throw err;
+    }
     return res;
   }
 
@@ -303,7 +490,18 @@ async function processJob(job: NotificationJobMessage): Promise<unknown> {
     p.attachments,
     p.logContext,
   );
-  if (!res.ok) throw res.error ?? new Error("Email send failed");
+  if (!res.ok) {
+    const err = res.error ?? { message: "Email send failed", status: 500 };
+    // Check if it's a 429 from Mailjet
+    const rateLimitDelay = extractRateLimitDelay(err);
+    if (rateLimitDelay !== null) {
+      throw new RateLimitError(
+        err.message || "Mailjet rate limit",
+        rateLimitDelay,
+      );
+    }
+    throw err;
+  }
   return res;
 }
 
@@ -323,55 +521,97 @@ export async function startNotificationConsumer(): Promise<void> {
       if (!msg) return;
 
       const raw = msg.content.toString("utf-8");
-      const headers = (msg.properties.headers || {}) as Record<string, unknown>;
+      const headers = (msg.properties.headers || {}) as Record<
+        string,
+        unknown
+      >;
       const attempts = Number(headers["x-attempts"] ?? 0);
 
       let parsed: NotificationJobMessage | null = null;
+      let alreadyAcked = false;
+
       try {
         parsed = JSON.parse(raw) as NotificationJobMessage;
         await trackProcessing(parsed.jobId, attempts);
         const response = await processJob(parsed);
-        await trackSucceeded(parsed.jobId, attempts, response);
-        ch.ack(msg);
+        await trackSucceeded(parsed.jobId, attempts, response).catch((e) =>
+          console.error("[Track] trackSucceeded failed:", e),
+        );
       } catch (error) {
         if (!parsed) {
+          // Unparseable message — ack and discard immediately
           ch.ack(msg);
+          alreadyAcked = true;
           return;
         }
 
+        // Determine max retries: 429 gets more chances
+        const isRateLimit = error instanceof RateLimitError;
+        const maxForThisJob = isRateLimit
+          ? cfg.maxRetriesRateLimit
+          : cfg.maxRetries;
         const nextAttempt = attempts + 1;
-        if (nextAttempt <= cfg.maxRetries) {
-          const delayMs = getRetryDelay(nextAttempt);
-          await trackRetry(parsed.jobId, nextAttempt, error, delayMs);
-          ch.publish(
-            cfg.retryExchange,
-            cfg.retryRoute,
-            Buffer.from(JSON.stringify(parsed), "utf-8"),
-            {
-              persistent: true,
-              expiration: String(delayMs),
-              headers: {
-                "x-job-id": parsed.jobId,
-                "x-attempts": nextAttempt,
+
+        try {
+          if (nextAttempt <= maxForThisJob) {
+            // Use Retry-After delay for 429, otherwise use fixed schedule
+            const delayMs = isRateLimit
+              ? (error as RateLimitError).retryAfterMs
+              : getRetryDelay(nextAttempt);
+
+            await trackRetry(parsed.jobId, nextAttempt, error, delayMs);
+            ch.publish(
+              cfg.retryExchange,
+              cfg.retryRoute,
+              Buffer.from(JSON.stringify(parsed), "utf-8"),
+              {
+                persistent: true,
+                expiration: String(delayMs),
+                headers: {
+                  "x-job-id": parsed.jobId,
+                  "x-attempts": nextAttempt,
+                },
               },
-            },
-          );
-        } else {
-          await trackDead(parsed.jobId, nextAttempt, error);
-          ch.publish(
-            cfg.dlxExchange,
-            cfg.dlqRoute,
-            Buffer.from(JSON.stringify(parsed), "utf-8"),
-            {
-              persistent: true,
-              headers: {
-                "x-job-id": parsed.jobId,
-                "x-attempts": nextAttempt,
+            );
+          } else {
+            // Dead letter
+            await trackDead(parsed.jobId, nextAttempt, error).catch((e) =>
+              console.error("[Track] trackDead DB failed:", e),
+            );
+            ch.publish(
+              cfg.dlxExchange,
+              cfg.dlqRoute,
+              Buffer.from(JSON.stringify(parsed), "utf-8"),
+              {
+                persistent: true,
+                headers: {
+                  "x-job-id": parsed.jobId,
+                  "x-attempts": nextAttempt,
+                },
               },
-            },
+            );
+            // Fire DLQ WhatsApp alert (non-blocking)
+            sendDlqAlert(
+              parsed.jobId,
+              parsed.type,
+              nextAttempt,
+              error,
+            ).catch(() => {});
+          }
+        } catch (retryError) {
+          // If tracking/republish itself fails, log and continue
+          console.error(
+            "[Consumer] Retry/DLQ handling failed for job:",
+            parsed.jobId,
+            retryError,
           );
         }
-        ch.ack(msg);
+      } finally {
+        // CRITICAL: Always ack — prevents unacked message buildup
+        // Guard against double-ack (when parsed was null)
+        if (!alreadyAcked) {
+          ch.ack(msg);
+        }
       }
     },
     { noAck: false },
@@ -379,3 +619,4 @@ export async function startNotificationConsumer(): Promise<void> {
 
   console.log(`RabbitMQ consumer started. queue=${cfg.queue}, dlq=${cfg.dlq}`);
 }
+

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+﻿/* eslint-disable @typescript-eslint/no-unused-vars */
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -20,10 +20,13 @@ import { requestLogger } from './middleware/requestLogger.js';
 import logger from './config/logger.js';
 import logsDashboardRoutes from './routes/logsDashboardRoutes.js';
 import { LogsDashboardController } from './controllers/logsDashboardController.js';
-import { isRabbitEnabled, startNotificationConsumer } from './queue/rabbitNotifications.js';
+import { isRabbitEnabled, startNotificationConsumer, validateRabbitConfig } from './queue/rabbitNotifications.js';
 
 // Load environment variables
 dotenv.config();
+
+// Point 4: Fail fast if RabbitMQ config is invalid
+validateRabbitConfig();
 
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '3002', 10);
@@ -117,3 +120,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

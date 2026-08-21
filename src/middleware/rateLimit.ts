@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from '../utils/errorHandler.js';
 
 // In-memory store: key -> { count, resetAt } 
@@ -25,7 +25,7 @@ function cleanup(): void {
 setInterval(cleanup, CLEAN_INTERVAL_MS);
 
 export interface RateLimitOptions {
-  // Max requests per window (default 60 for send endpoints) 
+  // Max requests per window (default 200 for send endpoints) 
   maxRequests?: number;
   // Window in ms (default 60_000) 
   windowMs?: number;
@@ -33,9 +33,12 @@ export interface RateLimitOptions {
 
 // Rate limiting / abuse protection for email and WhatsApp send endpoints.
 // Uses in-memory store keyed by IP or authenticated user ID.
+// Default: 500 requests/minute — supports burst traffic while preventing abuse.
+// At 400 msgs/day (current load), even 60/min is fine, but 200/min
+// gives headroom for growth and batch sends without false 429s.
 
 export function createRateLimiter(options: RateLimitOptions = {}) {
-  const { maxRequests = 60, windowMs = WINDOW_MS } = options;
+  const { maxRequests = 500, windowMs = WINDOW_MS } = options;
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const key = getKey(req);
@@ -63,7 +66,10 @@ export function createRateLimiter(options: RateLimitOptions = {}) {
   };
 }
 
-// Pre-configured limiter for notification send routes (email/WhatsApp) 
-export const notificationRateLimiter = createRateLimiter({ maxRequests: 60, windowMs: 60_000 });
+// Pre-configured limiter for notification send routes (email/WhatsApp)
+// 500 req/min per IP — handles burst sends while blocking abuse.
+export const notificationRateLimiter = createRateLimiter({ maxRequests: 500, windowMs: 60_000 });
+
+
 
 
