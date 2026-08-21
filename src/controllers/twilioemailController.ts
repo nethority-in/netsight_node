@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { EmailService } from '../services/twilioemailService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
+import { isRabbitEnabled, publishNotificationJob } from '../queue/rabbitNotifications.js';
 
 function normalizeKeyWhitespace(key: string): string {
   // e.g. "PositiveC  hanges" -> "PositiveChanges"
@@ -968,6 +969,29 @@ export class EmailController {
       const htmlContent = TemplateBuilder.buildEmailContent(template.html, params);
       const emailSubject = subject || TemplateBuilder.buildEmailContent(template.subject, params);
       const textContent = template.text ? TemplateBuilder.buildEmailContent(template.text, params) : undefined;
+
+      if (isRabbitEnabled()) {
+        const queued = await publishNotificationJob('email_send_dynamic_twilio', {
+          to: toVal.length === 1 ? toVal[0] : toVal,
+          subject: emailSubject,
+          htmlContent,
+          textContent,
+          cc,
+          bcc,
+          attachments,
+          logContext: { endpoint: "send-dynamic", templateName: String(templateName).trim(), parameters: params }
+        });
+
+        ErrorHandler.sendSuccess(res, {
+          message: 'Email request queued',
+          data: {
+            queued: queued.queued,
+            jobId: queued.jobId,
+            endpoint: 'api-twilio/email/send-dynamic-twilio'
+          }
+        }, 202);
+        return;
+      }
 
       const result = await EmailService.sendEmail(
         toVal.length === 1 ? toVal[0] : toVal,

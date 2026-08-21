@@ -20,6 +20,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import logger from './config/logger.js';
 import logsDashboardRoutes from './routes/logsDashboardRoutes.js';
 import { LogsDashboardController } from './controllers/logsDashboardController.js';
+import { isRabbitEnabled, startNotificationConsumer } from './queue/rabbitNotifications.js';
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,12 @@ const initializePrisma = async (): Promise<void> => {
 
 // Initialize Prisma
 initializePrisma();
+
+if (isRabbitEnabled() && (process.env.RABBITMQ_CONSUMER_ENABLED ?? 'true') === 'true') {
+  startNotificationConsumer().catch((error) => {
+    console.error('Failed to start RabbitMQ consumer:', error);
+  });
+}
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

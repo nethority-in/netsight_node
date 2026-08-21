@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/twiliowhatsappService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { appendFromNumbersLog } from '../utils/logApiResponse.js';
+import { isRabbitEnabled, publishNotificationJob } from '../queue/rabbitNotifications.js';
 
 export class WhatsAppController {
       // POST /api/whatsapp/send-message
@@ -207,7 +208,26 @@ export class WhatsAppController {
       }
   
       const fromCredentials = resolveFromNumber(fromNumberId);
-  
+      if (isRabbitEnabled()) {
+        const queued = await publishNotificationJob('whatsapp_send_message_twilio', {
+          to: toStr,
+          templateName: String(templateName).trim(),
+          languageCode: langCode,
+          components: templateComponents || undefined,
+          fromCredentials
+        });
+
+        ErrorHandler.sendSuccess(res, {
+          message: 'WhatsApp request queued',
+          data: {
+            queued: queued.queued,
+            jobId: queued.jobId,
+            endpoint: 'api-twilio/whatsapp/send-message-twilio'
+          }
+        }, 202);
+        return;
+      }
+
       const result = await WhatsAppService.sendTemplate(
         toStr,
         String(templateName).trim(),

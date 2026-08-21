@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/logs-client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("LOGS_DATABASE_URL")
+}
+
+model EmailLog {
+  id                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  timestamp_ist       String?  @db.VarChar(64)
+  endpoint            String?  @db.VarChar(120)
+  env                 String?  @db.VarChar(32)
+  recipient           String?  @db.LongText
+  sender              String?  @db.VarChar(190)
+  subject             String?  @db.VarChar(255)
+  template_name       String?  @db.VarChar(190)
+  provider_message_id String?  @db.VarChar(190)
+  status              String?  @db.VarChar(80)
+  is_error            Boolean  @default(false)
+  request_payload     String   @db.LongText
+  response_payload    String   @db.LongText
+  full_payload        String   @default("") @db.LongText
+  created_at          DateTime @default(now()) @db.Timestamp(0)
+
+  @@map("email_logs")
+}
+
+model WhatsAppLog {
+  id                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  timestamp_ist       String?  @db.VarChar(64)
+  endpoint            String?  @db.VarChar(120)
+  env                 String?  @db.VarChar(32)
+  recipient           String?  @db.VarChar(128)
+  sender              String?  @db.VarChar(128)
+  template_name       String?  @db.VarChar(190)
+  provider_message_id String?  @db.VarChar(190)
+  status              String?  @db.VarChar(80)
+  is_error            Boolean  @default(false)
+  request_payload     String   @db.LongText
+  response_payload    String   @db.LongText
+  full_payload        String   @default("") @db.LongText
+  created_at          DateTime @default(now()) @db.Timestamp(0)
+
+  @@map("whatsapp_logs")
+}
+
+model NotificationJobTracking {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  job_id           String    @unique @db.VarChar(64)
+  job_type         String    @db.VarChar(80)
+  channel          String    @db.VarChar(30)
+  endpoint         String    @db.VarChar(150)
+  status           String    @db.VarChar(30)
+  attempts         Int       @default(0)
+  max_attempts     Int       @default(0)
+  last_error       String?   @db.LongText
+  request_payload  String?   @db.LongText
+  response_payload String?   @db.LongText
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  processed_at     DateTime? @db.Timestamp(0)
+  next_retry_at    DateTime? @db.Timestamp(0)
+
+  @@map("notification_job_tracking")
+}
