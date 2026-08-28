@@ -1608,6 +1608,39 @@ if (baseNotificationTemplate1) {
       )
       .replace("View Daily Report", "View Monthly Report"),
   };
+
+  templates.ns_temp_Notification_temp1_quarterly = {
+    ...baseNotificationTemplate1,
+    subject: "{{StoreName}} Quarterly Performance Summary",
+    html: baseNotificationTemplate1.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your quarterly performance summary for",
+      )
+      .replace("View Daily Report", "View Quarterly Report"),
+  };
+
+  templates.ns_temp_Notification_temp1_halfyearly = {
+    ...baseNotificationTemplate1,
+    subject: "{{StoreName}} Half-Yearly Performance Summary",
+    html: baseNotificationTemplate1.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your half-yearly performance summary for",
+      )
+      .replace("View Daily Report", "View Half Yearly Report"),
+  };
+
+  templates.ns_temp_Notification_temp1_yearly = {
+    ...baseNotificationTemplate1,
+    subject: "{{StoreName}} Yearly Performance Summary",
+    html: baseNotificationTemplate1.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your yearly performance summary for",
+      )
+      .replace("View Daily Report", "View Yearly Report"),
+  };
 }
 
 const baseNotificationTemplate = templates.ns_temp_Notification_temp2;
@@ -1633,6 +1666,39 @@ if (baseNotificationTemplate) {
         "Here is your monthly performance summary for",
       )
       .replace("View Daily Report", "View Monthly Report"),
+  };
+
+  templates.ns_temp_Notification_temp2_quarterly = {
+    ...baseNotificationTemplate,
+    subject: "{{StoreName}} Quarterly Performance Summary",
+    html: baseNotificationTemplate.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your quarterly performance summary for",
+      )
+      .replace("View Daily Report", "View Quarterly Report"),
+  };
+
+  templates.ns_temp_Notification_temp2_halfyearly = {
+    ...baseNotificationTemplate,
+    subject: "{{StoreName}} Half-Yearly Performance Summary",
+    html: baseNotificationTemplate.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your half-yearly performance summary for",
+      )
+      .replace("View Daily Report", "View Half Yearly Report"),
+  };
+
+  templates.ns_temp_Notification_temp2_yearly = {
+    ...baseNotificationTemplate,
+    subject: "{{StoreName}} Yearly Performance Summary",
+    html: baseNotificationTemplate.html
+      .replace(
+        "Here is your daily performance summary for",
+        "Here is your yearly performance summary for",
+      )
+      .replace("View Daily Report", "View Yearly Report"),
   };
 }
 

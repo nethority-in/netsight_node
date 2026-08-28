@@ -153,7 +153,7 @@ export class EmailController {
 
       // Compatibility: handle common payload aliases / key typos for this template
       // (template expects camel/case-specific keys like `Googleadsspend`, but clients may send `GoogleAdsSpend`).
-      if (String(templateName).trim() === 'ns_temp_Notification_temp2') {
+      if (['ns_temp_Notification_temp2', 'ns_temp_Notification_temp2_weekly', 'ns_temp_Notification_temp2_monthly', 'ns_temp_Notification_temp2_quarterly', 'ns_temp_Notification_temp2_halfyearly', 'ns_temp_Notification_temp2_yearly'].includes(String(templateName).trim())) {
         if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
         if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
       }
@@ -229,7 +229,7 @@ export class EmailController {
 
       // Compatibility: handle common payload aliases / key typos for this template
       // (template expects `Googleadsspend`, but clients may send `GoogleAdsSpend`).
-      if (templateName === 'ns_temp_Notification_temp2') {
+      if (templateName === 'ns_temp_Notification_temp2' || templateName === 'ns_temp_Notification_temp2_weekly' || templateName === 'ns_temp_Notification_temp2_monthly' || templateName === 'ns_temp_Notification_temp2_quarterly' || templateName === 'ns_temp_Notification_temp2_halfyearly' || templateName === 'ns_temp_Notification_temp2_yearly') {
         if (params.MetaSpend == null && params.MetaAdsSpend != null) params.MetaSpend = params.MetaAdsSpend;
         if (params.Googleadsspend == null && params.GoogleAdsSpend != null) params.Googleadsspend = params.GoogleAdsSpend;
 
@@ -266,7 +266,7 @@ export class EmailController {
       }
 
       // Handle MetaAccountSummary for ns_temp_Notification_temp1
-      if (templateName === 'ns_temp_Notification_temp1' || templateName === 'ns_temp_Notification_temp1_weekly' || templateName === 'ns_temp_Notification_temp1_monthly') {
+      if (templateName === 'ns_temp_Notification_temp1' || templateName === 'ns_temp_Notification_temp1_weekly' || templateName === 'ns_temp_Notification_temp1_monthly' || templateName === 'ns_temp_Notification_temp1_quarterly' || templateName === 'ns_temp_Notification_temp1_halfyearly' || templateName === 'ns_temp_Notification_temp1_yearly') {
         const metaAccountSummary = params.MetaAccountSummary;
         if (Array.isArray(metaAccountSummary) && metaAccountSummary.length > 0) {
           let summaryHtml = '';
@@ -294,7 +294,7 @@ export class EmailController {
       }
 
       // Handle googleAccounts for ns_temp_Notification_temp2
-      if (templateName === 'ns_temp_Notification_temp2' || templateName === 'ns_temp_Notification_temp2_weekly' || templateName === 'ns_temp_Notification_temp2_monthly') {
+      if (templateName === 'ns_temp_Notification_temp2' || templateName === 'ns_temp_Notification_temp2_weekly' || templateName === 'ns_temp_Notification_temp2_monthly' || templateName === 'ns_temp_Notification_temp2_quarterly' || templateName === 'ns_temp_Notification_temp2_halfyearly' || templateName === 'ns_temp_Notification_temp2_yearly') {
         const googleAccounts = params.googleAccounts;
         if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
           let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
@@ -804,13 +804,19 @@ export class EmailController {
         const isTemp2Variant = [
           'ns_temp_Notification_temp2',
           'ns_temp_Notification_temp2_weekly',
-          'ns_temp_Notification_temp2_monthly'
+          'ns_temp_Notification_temp2_monthly',
+          'ns_temp_Notification_temp2_quarterly',
+          'ns_temp_Notification_temp2_halfyearly',
+          'ns_temp_Notification_temp2_yearly'
         ].includes(config.name);
 
         const isTemp1Variant = [
           'ns_temp_Notification_temp1',
           'ns_temp_Notification_temp1_weekly',
-          'ns_temp_Notification_temp1_monthly'
+          'ns_temp_Notification_temp1_monthly',
+          'ns_temp_Notification_temp1_quarterly',
+          'ns_temp_Notification_temp1_halfyearly',
+          'ns_temp_Notification_temp1_yearly'
         ].includes(config.name);
 
         if (isTemp2Variant) {
