@@ -337,7 +337,7 @@ export class EmailController {
             params.inventoryHealthHtml = ihHtml;
           } else {
             // temp2: amber colored box
-            let ihHtml = `<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:12px; margin-top:10px;">`;
+            let ihHtml = `<div class="inventory">`;
             ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
             ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
             ihHtml += `</div>`;
@@ -931,7 +931,7 @@ export class EmailController {
             ihHtml += `</ul>`;
             params.inventoryHealthHtml = ihHtml;
           } else {
-            let ihHtml = `<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:12px; margin-top:10px;">`;
+            let ihHtml = `<div class="inventory">`;
             ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
             ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
             ihHtml += `</div>`;

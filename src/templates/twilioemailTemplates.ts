@@ -819,6 +819,14 @@ border-radius:12px;
 margin-top:10px;
 }
 
+.inventory{
+background:#fffbeb;
+border-left:4px solid #f59e0b;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+}
+
 ul{
 margin:3px 0 0 0;
 padding-left:15px;
@@ -965,6 +973,11 @@ border-color:#22c55e;
 .review{
 background:transparent;
 border-color:#ef4444;
+}
+
+.inventory{
+background:transparent;
+border-color:#fbbf24;
 }
 
 .footer{
