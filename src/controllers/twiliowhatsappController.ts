@@ -340,11 +340,17 @@ export class WhatsAppController {
         ? String(mediaVariableKey).trim()
         : 'MediaUrl';
 
-      // Media value based on mode: 'full' (default) = complete URL; 'filename' = filename without extension
+      // Media value based on mode:
+      //  'full'     = complete public URL (template header = {{MediaUrl}})
+      //  'filename' = path AFTER /reports/ WITHOUT extension, e.g. "2026-09/Netsights-Report_..._abcd1234"
+      //               (template header = https://.../reports/{{MediaUrl}}.pdf).
+      //               This now includes the month subfolder so it resolves correctly.
       const mode = String(mediaUrlMode || 'full').trim().toLowerCase();
       let mediaValue = rendered.publicUrl;
-      if (mode === 'filename' && rendered.fileName) {
-        mediaValue = rendered.fileName.replace(/\.[^.]+$/, '');
+      if (mode === 'filename' && rendered.publicUrl) {
+        // Take everything after the last "/reports/" and drop the extension.
+        const afterReports = rendered.publicUrl.split('/reports/').pop() || rendered.fileName || '';
+        mediaValue = afterReports.replace(/\.[^.]+$/, '');
       }
 
       // If RabbitMQ is enabled, queue the media send (rendering already done above).
@@ -543,11 +549,6 @@ export class WhatsAppController {
     }
   }
   
-  
-
-
-
-
   // POST /api/whatsapp/send-dynamic - Flexible template with dynamic parameters
   static async sendDynamic(req: Request, res: Response): Promise<void> {
     try {
@@ -709,6 +710,7 @@ function resolveFromNumber(fromNumberId: unknown): { phoneNumberId: string; acce
   if (id.length === 0) return undefined;
   return WhatsAppService.getCredentialsForPhoneNumberId(id) ?? undefined;
 }
+
 
 
 

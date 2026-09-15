@@ -42,8 +42,16 @@ async function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
-async function ensureMediaDir(): Promise<void> {
-  await fs.mkdir(MEDIA_DIR, { recursive: true });
+// Current month subfolder name, e.g. "2026-09". Reports are grouped per month.
+function currentMonthFolder(): string {
+  return new Date().toISOString().slice(0, 7); // YYYY-MM
+}
+
+// Ensure the month subfolder under MEDIA_DIR exists and return its absolute path.
+async function ensureMediaDir(): Promise<string> {
+  const monthDir = path.join(MEDIA_DIR, currentMonthFolder());
+  await fs.mkdir(monthDir, { recursive: true });
+  return monthDir;
 }
 
 export interface RenderResult {
@@ -104,7 +112,8 @@ function buildFooterTemplate(): string {
 export async function renderHtmlToImage(html: string, fileNameHint?: string): Promise<RenderResult> {
   let page;
   try {
-    await ensureMediaDir();
+    const monthDir = await ensureMediaDir();
+    const monthFolder = currentMonthFolder();
     const browser = await getBrowser();
     page = await browser.newPage();
     await page.setViewport({ width: RENDER_WIDTH, height: 800, deviceScaleFactor: DEVICE_SCALE });
@@ -128,11 +137,11 @@ export async function renderHtmlToImage(html: string, fileNameHint?: string): Pr
     const isJpeg = output[0] === 0xff && output[1] === 0xd8;
     const ext = isJpeg ? 'jpg' : 'png';
     const fileName = buildFileName(ext, fileNameHint);
-    const filePath = path.join(MEDIA_DIR, fileName);
+    const filePath = path.join(monthDir, fileName);
     await fs.writeFile(filePath, output);
 
-    const publicUrl = `${MEDIA_PUBLIC_BASE}/${fileName}`;
-    logger.info('Report image rendered', { fileName, bytes: output.length, publicUrl });
+    const publicUrl = `${MEDIA_PUBLIC_BASE}/${monthFolder}/${fileName}`;
+    logger.info('Report image rendered', { fileName, monthFolder, bytes: output.length, publicUrl });
     return { ok: true, publicUrl, filePath, fileName, bytes: output.length };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -147,7 +156,8 @@ export async function renderHtmlToImage(html: string, fileNameHint?: string): Pr
 export async function renderHtmlToPdf(html: string, fileNameHint?: string): Promise<RenderResult> {
   let page;
   try {
-    await ensureMediaDir();
+    const monthDir = await ensureMediaDir();
+    const monthFolder = currentMonthFolder();
     const browser = await getBrowser();
     page = await browser.newPage();
     await page.setViewport({ width: RENDER_WIDTH, height: 800, deviceScaleFactor: DEVICE_SCALE });
@@ -166,56 +176,81 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
           .highlight, .review, .inventory { break-inside: avoid; page-break-inside: avoid; }
           /* one ad-account row: keep together */
           .metrics-table { break-inside: avoid; page-break-inside: avoid; }
-          /* big sections: allow split */
-          .layer { break-inside: auto; page-break-inside: auto; }
           /* hide in-body header (repeating PDF header used instead) */
           .header { display: none !important; }
-          /* footer: keep the CTA button, drop its bg/border. Copyright + links
-             are removed in the DOM transform (they live in the PDF footer now). */
           .footer { background: transparent !important; border-top: none !important; padding-top: 4px !important; }
         }
-        /* Split .layer -> table; outer box styling removed, table cells carry the box. */
-        .layer.is-split { background:transparent !important; border:none !important; padding:0 !important; border-radius:0 !important; }
-        /* separate (not collapse) so border-radius on cells is respected */
-        table.layer-split { width:100%; border-collapse:separate; border-spacing:0; }
-        table.layer-split thead { display: table-header-group; }
-        /* Header cell = top of the box: rounded TOP corners + top/left/right border accent */
-        table.layer-split .layer-header-cell {
-          padding: 15px 15px 8px 15px;
-          border-top-left-radius: 14px; border-top-right-radius: 14px;
+        /* Split ".layer" loses its own box; each computed CHUNK is a self-contained
+           rounded box (top AND bottom radius) rendered by JS bin-packing below.
+           No table / thead / box-decoration-break — those were unreliable for radius. */
+        .layer.is-split { background:transparent !important; border:none !important; padding:0 !important; border-radius:0 !important; margin:0 !important; }
+
+        .layer-chunk {
+          border-radius: 14px;
           border-left: 4px solid #6366f1;
+          padding: 15px;
+          margin-bottom: 24px;               /* clean gap so nothing hugs the footer */
+          overflow: hidden;
+          background-clip: padding-box;
+          break-inside: avoid; page-break-inside: avoid;   /* a chunk is atomic */
+          -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        /* Body cells = middle of the box: left border only */
-        table.layer-split .layer-body-cell {
-          padding: 0 15px 0 15px;
-          border-left: 4px solid #6366f1;
-          break-inside: avoid; page-break-inside: avoid;
-        }
-        /* Last body cell = bottom of the box: rounded BOTTOM corners + bottom padding */
-        table.layer-split tbody tr:last-child .layer-body-cell {
-          padding-bottom: 15px;
-          border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
-        }
-        table.layer-split.teal   .layer-header-cell, table.layer-split.teal   .layer-body-cell { background:#ecfeff; border-left-color:#5eead4; }
-        table.layer-split.pink   .layer-header-cell, table.layer-split.pink   .layer-body-cell { background:#fdf2f8; border-left-color:#f9a8d4; }
-        table.layer-split.indigo .layer-header-cell, table.layer-split.indigo .layer-body-cell { background:#eef2ff; border-left-color:#c7d2fe; }
+        /* Continuation chunks start on a fresh page (set inline by JS too). */
+        .layer-chunk.chunk-break { break-before: page; page-break-before: always; }
+        .layer-chunk-header { margin-bottom: 10px; }
+
+        .layer-chunk.teal   { background:#ecfeff; border-left-color:#5eead4; }
+        .layer-chunk.pink   { background:#fdf2f8; border-left-color:#f9a8d4; }
+        .layer-chunk.indigo { background:#eef2ff; border-left-color:#c7d2fe; }
+
+        .account-block { break-inside: avoid; page-break-inside: avoid; }
+
         a.footer-btn-link:hover, a[href*="netsights.ai"]:hover { background-color:#4da9a6 !important; color:#ffffff !important; }
       </style>
     `;
     const htmlForPdf = html.includes('</head>') ? html.replace('</head>', printCss + '</head>') : printCss + html;
     await page.setContent(htmlForPdf, { waitUntil: 'load', timeout: 30000 });
 
-    // Transform ONLY big ".layer" sections into a header-repeating table.
-    // Small boxes (.highlight/.review/.inventory) are left untouched -> single clean box.
-    const transformFn = `() => {
-      var layers = document.querySelectorAll('.layer');
+    // -- Measured bin-packing pagination for big ".layer" sections --
+    // Instead of relying on Chromium auto-splitting a table/tbody (which breaks
+    // rounded corners at the cut point), we MEASURE each content block and group them
+    // into page-sized chunks. Each chunk is rendered as its own self-contained rounded
+    // box with a repeated header + explicit page-break -- so border-radius is always
+    // correct on both ends and nothing hugs the footer.
+    const PDF_MARGIN_TOP_PX = 70;    // matches page.pdf margin.top
+    const PDF_MARGIN_BOTTOM_PX = 60; // matches page.pdf margin.bottom
+    const PAGE_SAFETY_BUFFER_PX = 28; // keep content clear of the footer
+
+    const paginateFn = `(cfg) => {
+      var A4_HEIGHT_PX = 1123; // A4 @ 96dpi
+      var usable = A4_HEIGHT_PX - cfg.marginTop - cfg.marginBottom - cfg.safety;
+      var CHUNK_GAP = 24; // matches .layer-chunk margin-bottom
+
+      // Track cumulative document height already consumed (running fill of the page flow).
+      // Non-.layer content (intro text, small boxes) also consumes space, so we measure
+      // each top-level flow element's real height and advance runningY as we go.
+      var container = document.querySelector('.content') || document.body;
+
+      // We only reflow ".layer" sections; everything else keeps natural flow.
+      // To know where a section STARTS on its page, we measure the live offsetTop
+      // of the layer relative to the container BEFORE transforming it, and reduce
+      // it modulo the page height to get the position within the current page.
+      var containerTop = container.getBoundingClientRect().top;
+
+      var layers = Array.prototype.slice.call(document.querySelectorAll('.layer'));
       layers.forEach(function (layer) {
         var header = layer.querySelector('.layer-header');
         if (!header) return;
         var variant = layer.classList.contains('teal') ? 'teal'
                     : layer.classList.contains('pink') ? 'pink'
                     : layer.classList.contains('indigo') ? 'indigo' : '';
-        // Flatten ad-account wrapper divs so each account becomes its own row.
+
+        // Where does this section currently start, measured from the top of the flow?
+        var layerTopAbs = layer.getBoundingClientRect().top - containerTop;
+        // Position within the current page (how much of the page is already used above it).
+        var usedOnThisPage = ((layerTopAbs % usable) + usable) % usable;
+        var remainingOnFirstPage = usable - usedOnThisPage;
+
         var blocks = [];
         layer.childNodes.forEach(function (n) {
           if (n === header) return;
@@ -223,52 +258,119 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
           if (n.nodeType === 1 && n.tagName === 'DIV' && n.querySelector && n.querySelector('.layer-header')) {
             n.childNodes.forEach(function (c) {
               if (c.nodeType === 3 && !String(c.textContent).trim()) return;
-              blocks.push(c);
+              if (c.nodeType === 1) blocks.push(c);
             });
-          } else {
+          } else if (n.nodeType === 1) {
             blocks.push(n);
           }
         });
-        var table = document.createElement('table');
-        table.className = 'layer-split' + (variant ? ' ' + variant : '');
-        var thead = document.createElement('thead');
-        var htr = document.createElement('tr');
-        var hcell = document.createElement('td');
-        hcell.className = 'layer-header-cell';
-        hcell.appendChild(header.cloneNode(true));
-        htr.appendChild(hcell);
-        thead.appendChild(htr);
-        var tbody = document.createElement('tbody');
-        blocks.forEach(function (n) {
-          var btr = document.createElement('tr');
-          var bcell = document.createElement('td');
-          bcell.className = 'layer-body-cell';
-          bcell.appendChild(n);
-          btr.appendChild(bcell);
-          tbody.appendChild(btr);
+
+        var layerWidth = layer.getBoundingClientRect().width;
+
+        function buildChunk(blockEls) {
+          var chunk = document.createElement('div');
+          chunk.className = 'layer-chunk' + (variant ? ' ' + variant : '');
+          var h = header.cloneNode(true);
+          h.classList.add('layer-chunk-header');
+          chunk.appendChild(h);
+          blockEls.forEach(function (b) {
+            var wrap = document.createElement('div');
+            wrap.className = 'account-block';
+            wrap.appendChild(b);
+            chunk.appendChild(wrap);
+          });
+          return chunk;
+        }
+
+        // Measure header height (empty chunk).
+        var probe = buildChunk([]);
+        probe.style.position = 'absolute';
+        probe.style.visibility = 'hidden';
+        probe.style.width = layerWidth + 'px';
+        document.body.appendChild(probe);
+        var headerH = probe.getBoundingClientRect().height;
+        document.body.removeChild(probe);
+
+        // Measure each block height inside a chunk-styled container.
+        var measurer = document.createElement('div');
+        measurer.className = 'layer-chunk' + (variant ? ' ' + variant : '');
+        measurer.style.position = 'absolute';
+        measurer.style.visibility = 'hidden';
+        measurer.style.width = layerWidth + 'px';
+        document.body.appendChild(measurer);
+        var blockHeights = blocks.map(function (b) {
+          var w = document.createElement('div');
+          w.className = 'account-block';
+          w.appendChild(b.cloneNode(true));
+          measurer.appendChild(w);
+          var hgt = w.getBoundingClientRect().height;
+          measurer.removeChild(w);
+          return hgt;
         });
-        table.appendChild(thead);
-        table.appendChild(tbody);
+        document.body.removeChild(measurer);
+
+        // Bin-pack. The FIRST chunk uses whatever space remains on the current page
+        // (remainingOnFirstPage). Subsequent chunks use a full page (usable).
+        // A chunk always includes the header, so its budget = capacity - headerH.
+        // If the first-page remaining space can't even fit header + 1 block, that
+        // first chunk will simply be small/empty of blocks -> we instead start the
+        // section fresh on a new page (chunk-break) to avoid an ugly stub.
+        var chunks = [];
+        var chunkStartsNewPage = []; // parallel array: does chunk[i] force a page break?
+
+        var firstCapacity = remainingOnFirstPage;
+        // If not enough room on the current page for header + first block, start on next page.
+        var startFresh = false;
+        if (blocks.length > 0 && (headerH + blockHeights[0] + CHUNK_GAP) > firstCapacity) {
+          startFresh = true;
+          firstCapacity = usable;
+        } else if (blocks.length === 0 && (headerH + CHUNK_GAP) > firstCapacity) {
+          startFresh = true;
+          firstCapacity = usable;
+        }
+
+        var current = [];
+        var runningH = headerH;
+        var capacity = firstCapacity;
+        var isFirstChunk = true;
+        for (var i = 0; i < blocks.length; i++) {
+          var bh = blockHeights[i];
+          if (current.length > 0 && (runningH + bh + CHUNK_GAP) > capacity) {
+            chunks.push(current);
+            chunkStartsNewPage.push(isFirstChunk ? startFresh : true);
+            isFirstChunk = false;
+            current = [];
+            runningH = headerH;
+            capacity = usable; // subsequent chunks get a full page
+          }
+          current.push(blocks[i]);
+          runningH += bh;
+        }
+        if (current.length > 0 || chunks.length === 0) {
+          chunks.push(current);
+          chunkStartsNewPage.push(isFirstChunk ? startFresh : true);
+        }
+
         header.remove();
         layer.classList.add('is-split');
-        layer.appendChild(table);
+        while (layer.firstChild) layer.removeChild(layer.firstChild);
+
+        chunks.forEach(function (blockEls, idx) {
+          var chunk = buildChunk(blockEls);
+          if (chunkStartsNewPage[idx]) chunk.classList.add('chunk-break');
+          layer.appendChild(chunk);
+        });
       });
 
-      // Footer cleanup: keep the CTA button table, remove the copyright <p> and
-      // the Support|Contact links table (those are shown in the repeating PDF footer).
       var footer = document.querySelector('.footer');
       if (footer) {
-        // remove copyright paragraph(s)
         footer.querySelectorAll('p').forEach(function (p) { p.remove(); });
-        // remove the LAST table (support|contact links); keep the first (buttons)
         var tables = footer.querySelectorAll('table');
-        if (tables.length > 1) {
-          tables[tables.length - 1].remove();
-        }
+        if (tables.length > 1) tables[tables.length - 1].remove();
       }
     }`;
-    await (page as any).evaluate(`(${transformFn})()`);
-
+    var paginateCfg = JSON.stringify({ marginTop: PDF_MARGIN_TOP_PX, marginBottom: PDF_MARGIN_BOTTOM_PX, safety: PAGE_SAFETY_BUFFER_PX });
+    await (page as any).evaluate("(" + paginateFn + ")(" + paginateCfg + ")");
     await new Promise((r) => setTimeout(r, 400));
 
     const pdfBuffer = (await page.pdf({
@@ -286,11 +388,11 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
     }
 
     const fileName = buildFileName('pdf', fileNameHint);
-    const filePath = path.join(MEDIA_DIR, fileName);
+    const filePath = path.join(monthDir, fileName);
     await fs.writeFile(filePath, pdfBuffer);
 
-    const publicUrl = `${MEDIA_PUBLIC_BASE}/${fileName}`;
-    logger.info('Report PDF rendered', { fileName, bytes: pdfBuffer.length, publicUrl });
+    const publicUrl = `${MEDIA_PUBLIC_BASE}/${monthFolder}/${fileName}`;
+    logger.info('Report PDF rendered', { fileName, monthFolder, bytes: pdfBuffer.length, publicUrl });
     return { ok: true, publicUrl, filePath, fileName, bytes: pdfBuffer.length };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -300,6 +402,12 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
     if (page) await page.close().catch(() => {});
   }
 }
+
+
+
+
+
+
 
 
 
