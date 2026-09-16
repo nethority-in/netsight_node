@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import https from 'https';
 import logger from '../config/logger.js';
 
 const WHATSAPP_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5MB
@@ -79,13 +80,52 @@ function buildFileName(ext: string, hint?: string): string {
   return `Netsights-Report_${slug}_${datePart}_${shortId}.${ext}`;
 }
 
+// Puppeteer's PDF header/footer templates render in an isolated context that does
+// NOT reliably load external images. So we fetch the logo once and cache it as a
+// base64 data URI — this always renders inside the header.
+const LOGO_URL = 'https://app.netsights.ai/images/logo/netsight-Black.svg';
+let cachedLogoDataUri: string | null = null;
+
+function fetchLogoDataUri(): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      https
+        .get(LOGO_URL, (res) => {
+          if (res.statusCode !== 200) {
+            res.resume();
+            resolve(null);
+            return;
+          }
+          const contentType = res.headers['content-type'] || 'image/svg+xml';
+          const chunks: Buffer[] = [];
+          res.on('data', (c) => chunks.push(c as Buffer));
+          res.on('end', () => {
+            const b64 = Buffer.concat(chunks).toString('base64');
+            resolve(`data:${contentType};base64,${b64}`);
+          });
+        })
+        .on('error', () => resolve(null));
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function getLogoDataUri(): Promise<string> {
+  if (cachedLogoDataUri) return cachedLogoDataUri;
+  const uri = await fetchLogoDataUri();
+  // Fall back to the remote URL if fetch failed (better than nothing).
+  cachedLogoDataUri = uri || LOGO_URL;
+  return cachedLogoDataUri;
+}
+
 // Shared: repeating per-page header (logo + green line) and footer (copyright,
 // support links, page number). Uses Puppeteer displayHeaderFooter templates.
-function buildHeaderTemplate(): string {
+function buildHeaderTemplate(logoSrc: string): string {
   return `
     <div style="width:100%; -webkit-print-color-adjust:exact; print-color-adjust:exact; padding:0 12px; box-sizing:border-box;">
       <div style="text-align:center; padding:6px 0 8px 0; border-bottom:3px solid #5DBBB8;">
-        <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" style="height:26px;" />
+        <img src="${logoSrc}" style="height:26px;" />
       </div>
     </div>
   `;
@@ -172,8 +212,8 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
     const printCss = `
       <style>
         @media print {
-          /* small boxes: single box, never split */
-          .highlight, .review, .inventory { break-inside: avoid; page-break-inside: avoid; }
+          /* small boxes: single box, never split. Add bottom gap to match .layer chunks. */
+          .highlight, .review, .inventory { break-inside: avoid; page-break-inside: avoid; margin-bottom: 24px !important; }
           /* one ad-account row: keep together */
           .metrics-table { break-inside: avoid; page-break-inside: avoid; }
           /* hide in-body header (repeating PDF header used instead) */
@@ -373,11 +413,14 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
     await (page as any).evaluate("(" + paginateFn + ")(" + paginateCfg + ")");
     await new Promise((r) => setTimeout(r, 400));
 
+    // Resolve the logo as a base64 data URI so the repeating PDF header shows it.
+    const logoSrc = await getLogoDataUri();
+
     const pdfBuffer = (await page.pdf({
       format: 'A4',
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: buildHeaderTemplate(),
+      headerTemplate: buildHeaderTemplate(logoSrc),
       footerTemplate: buildFooterTemplate(),
       // Room for repeating header (top) and footer (bottom).
       margin: { top: '70px', bottom: '60px', left: '12px', right: '12px' },
@@ -402,6 +445,10 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
     if (page) await page.close().catch(() => {});
   }
 }
+
+
+
+
 
 
 
