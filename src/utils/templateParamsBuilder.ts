@@ -173,5 +173,25 @@ export function buildTemplateParams(
     delete params.RefundAmount;
   }
 
+  // --- CheckOut / RTO (both templates, conditional; shown below Cancel/Refund) ---
+  if (isTemp1 || isTemp2) {
+    const checkOut = params.CheckOut;
+    const rto = params.RTO;
+    if (checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '') {
+      if (isTemp2) {
+        params.checkoutRtoHtml = `<tr><td><div class="metric-label">Checkout</div><div class="metric-value">${String(checkOut)}</div></td><td><div class="metric-label">RTO</div><div class="metric-value">${String(rto)}</div></td><td></td></tr>`;
+      }
+      if (isTemp1) {
+        params.checkoutRtoText = ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`;
+      }
+    } else {
+      params.checkoutRtoHtml = '<!-- -->';
+      params.checkoutRtoText = '<!-- -->';
+    }
+    delete params.CheckOut;
+    delete params.RTO;
+  }
+
   return params;
 }
+

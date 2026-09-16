@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { EmailService } from '../services/twilioemailService.js';
 import { ErrorHandler } from '../utils/errorHandler.js';
 import { isRabbitEnabled, publishNotificationJob } from '../queue/rabbitNotifications.js';
@@ -959,6 +959,23 @@ export class EmailController {
         delete params.CancelCount;
         delete params.RefundAmount;
 
+        // Handle CheckOut/RTO conditionally (below Cancel/Refund)
+        const checkOut = params.CheckOut;
+        const rto = params.RTO;
+        if (checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '') {
+          if (isTemp2Variant) {
+            params.checkoutRtoHtml = `<tr><td><div class="metric-label">Checkout</div><div class="metric-value">${String(checkOut)}</div></td><td><div class="metric-label">RTO</div><div class="metric-value">${String(rto)}</div></td><td></td></tr>`;
+          }
+          if (isTemp1Variant) {
+            params.checkoutRtoText = ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`;
+          }
+        } else {
+          params.checkoutRtoHtml = '<!-- -->';
+          params.checkoutRtoText = '<!-- -->';
+        }
+        delete params.CheckOut;
+        delete params.RTO;
+
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
           ErrorHandler.sendValidationError(res, "Missing required fields", validation.missing);
@@ -1069,3 +1086,5 @@ export class EmailController {
     }
   }
 }
+
+

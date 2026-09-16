@@ -1,4 +1,4 @@
-export interface EmailTemplate {
+﻿export interface EmailTemplate {
   subject: string;
   html: string;
   text?: string;
@@ -583,9 +583,9 @@ const templates: Record<string, EmailTemplate> = {
               <span>•</span>
               <span>
                 Total revenue of {{GrossRevenue}} was generated from {{Orders}}
-                orders, resulting in an Average Order Value (AOV) of {{AOV}}.
+                orders, with Net Sales of {{NetSales}} and an Average Order Value (AOV) of {{AOV}}.
                 Compared to the previous day, revenue increased by {{RevChgPct}}
-                and order volume increased by {{OrdChgPct}}.{{cancelRefundText}}
+                and order volume increased by {{OrdChgPct}}.{{cancelRefundText}}{{checkoutRtoText}}
               </span>
             </li>
           </ul>
@@ -1065,6 +1065,8 @@ UNIT ECONOMICS
 </tr>
 
 {{cancelRefundHtml}}
+
+{{checkoutRtoHtml}}
 
 </table>
 </div>
@@ -1732,3 +1734,5 @@ export default {
   getAvailableTemplates,
   registerTemplate,
 };
+
+
