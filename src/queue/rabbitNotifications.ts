@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { PrismaClient } from "@prisma/logs-client";
 import { EmailService } from "../services/twilioemailService.js";
 import { WhatsAppService } from "../services/twiliowhatsappService.js";
+import { sendSystemAlert } from "../utils/systemAlert.js";
 
 export type NotificationJobType =
   | "email_send_dynamic_twilio"
@@ -289,58 +290,233 @@ async function trackDead(
 }
 
 // --- Point 3: DLQ alerting via WhatsApp (direct call, no queue) ---
+// async function sendDlqAlert(
+//   jobId: string,
+//   jobType: string,
+//   attempts: number,
+//   error: unknown,
+// ): Promise<void> {
+//   // Skip alert in dry run mode — no real messages
+//   if (isDryRun()) {
+//     console.log(
+//       `[DLQ Alert - DRY RUN] Would alert for job ${jobId} (${jobType}), ${attempts} attempts`,
+//     );
+//     return;
+//   }
+
+//   try {
+//     const errorMsg =
+//       error instanceof Error ? error.message : safeJson(error);
+//     const truncatedError =
+//       errorMsg.length > 200 ? errorMsg.substring(0, 200) + "..." : errorMsg;
+
+//     const body =
+//       `[Netsight DLQ Alert]\n` +
+//       `Job: ${jobId}\n` +
+//       `Type: ${jobType}\n` +
+//       `Failed after ${attempts} attempts.\n` +
+//       `Error: ${truncatedError}`;
+
+//     // Direct Twilio call - NOT via RabbitMQ (avoids feedback loop)
+//     const twilio = await import("twilio");
+//     const client = twilio.default(
+//       process.env.TWILIO_ACCOUNT_SID,
+//       process.env.TWILIO_AUTH_TOKEN,
+//     );
+//     const fromNumber = process.env.TWILIO_WHATSAPP_FROM || "+19785889593";
+
+//     await client.messages.create({
+//       from: `whatsapp:${fromNumber}`,
+//       to: `whatsapp:${cfg.dlqAlertPhone}`,
+//       body,
+//     });
+//   } catch (alertError) {
+//     // Alert failure must never crash the consumer
+//     console.error("[DLQ Alert] Failed to send WhatsApp alert:", alertError);
+//   }
+// }
+
+// --- Point 3: DLQ alerting via WhatsApp (direct call, no queue) ---
+// Set to true to show the full phone/email in the alert instead of masked.
+const SHOW_FULL_RECIPIENT = false;
+
+function maskRecipient(value: unknown): string {
+  const one = String(value ?? "").trim();
+  if (!one) return "N/A";
+  if (SHOW_FULL_RECIPIENT) return one;
+  if (one.includes("@")) {
+    const [local, domain] = one.split("@");
+    return `${local.slice(0, 2)}***@${domain}`;
+  }
+  const digits = one.replace(/[^0-9]/g, "");
+  if (digits.length <= 6) return "****";
+  return `+${digits.slice(0, 2)}${"X".repeat(digits.length - 6)}${digits.slice(-4)}`;
+}
+
+function describeRecipient(to: unknown): string | null {
+  if (to === undefined || to === null || to === "") return null;
+  if (Array.isArray(to)) {
+    if (to.length === 0) return null;
+    const extra = to.length > 1 ? ` (+${to.length - 1} more)` : "";
+    return `${maskRecipient(to[0])}${extra}`;
+  }
+  return maskRecipient(to);
+}
+
 async function sendDlqAlert(
   jobId: string,
   jobType: string,
   attempts: number,
   error: unknown,
+  payload?: unknown,
 ): Promise<void> {
-  // Skip alert in dry run mode — no real messages
-  if (isDryRun()) {
-    console.log(
-      `[DLQ Alert - DRY RUN] Would alert for job ${jobId} (${jobType}), ${attempts} attempts`,
-    );
-    return;
-  }
+  const p = (payload ?? {}) as Record<string, any>;
+  const templateName: string | undefined =
+    p.templateName ?? p.logContext?.templateName;
+  const recipient = describeRecipient(p.to);
 
-  try {
-    const errorMsg =
-      error instanceof Error ? error.message : safeJson(error);
-    const truncatedError =
-      errorMsg.length > 200 ? errorMsg.substring(0, 200) + "..." : errorMsg;
+  const e = (error ?? {}) as Record<string, any>;
+  const code = e.code ?? e.details?.code;
+  const status = e.status ?? e.details?.status;
+  const msg = typeof e.message === "string" ? e.message : safeJson(error);
 
-    const body =
-      `[Netsight DLQ Alert]\n` +
-      `Job: ${jobId}\n` +
-      `Type: ${jobType}\n` +
-      `Failed after ${attempts} attempts.\n` +
-      `Error: ${truncatedError}`;
+  const hints: Record<string, string> = {
+    "20003": "Twilio authentication failed - check account SID and token",
+    "21211": "Invalid phone number",
+    "21656": "Content variables invalid - check template variables",
+    "63007": "WhatsApp sender not found - check TWILIO_WHATSAPP_FROM",
+    "63018": "WhatsApp rate limit exceeded",
+    "429": "Rate limited",
+  };
+  const codeStr = code !== undefined ? String(code) : undefined;
+  const hint =
+    error instanceof RateLimitError
+      ? hints["429"]
+      : codeStr !== undefined
+        ? (hints[codeStr] ??
+          (/^\d{4,5}$/.test(codeStr) && jobType.startsWith("whatsapp_")
+            ? `See twilio.com/docs/api/errors/${codeStr}`
+            : undefined))
+        : undefined;
 
-    // Direct Twilio call - NOT via RabbitMQ (avoids feedback loop)
-    const twilio = await import("twilio");
-    const client = twilio.default(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN,
-    );
-    const fromNumber = process.env.TWILIO_WHATSAPP_FROM || "+19785889593";
+  const details = [
+    templateName ? `Template: ${templateName}` : null,
+    recipient ? `To: ${recipient}` : null,
+    code !== undefined ? `Code: ${code}` : null,
+    status !== undefined ? `HTTP: ${status}` : null,
+    hint ?? null,
+    `Attempts: ${attempts}`,
+    `Error: ${msg}`,
+  ]
+    .filter(Boolean)
+    .join(" | ");
 
-    await client.messages.create({
-      from: `whatsapp:${fromNumber}`,
-      to: `whatsapp:${cfg.dlqAlertPhone}`,
-      body,
-    });
-  } catch (alertError) {
-    // Alert failure must never crash the consumer
-    console.error("[DLQ Alert] Failed to send WhatsApp alert:", alertError);
-  }
+  await sendSystemAlert({
+    title: "Notification job failed",
+    source: jobType,
+    reference: jobId,
+    details,
+  });
 }
 
 // --- Point 2: Confirm channel for publisher confirms ---
+// async function setupChannel(): Promise<ConfirmChannel> {
+//   if (channel) return channel;
+//   if (setupPromise) return setupPromise;
+
+//   setupPromise = (async () => {
+//     const conn = await amqp.connect(cfg.url);
+//     conn.on("error", (err) => {
+//       console.error("RabbitMQ connection error:", err);
+//     });
+
+//     conn.on("close", () => {
+//       channel = null;
+//       setupPromise = null;
+//       setTimeout(() => setupChannel(), 5000); // auto reconnect
+//     });
+
+//     // Use createConfirmChannel instead of createChannel
+//     const ch = await conn.createConfirmChannel();
+
+//     await ch.assertExchange(cfg.exchange, "direct", { durable: true });
+//     await ch.assertExchange(cfg.retryExchange, "direct", { durable: true });
+//     await ch.assertExchange(cfg.dlxExchange, "direct", { durable: true });
+
+//     await ch.assertQueue(cfg.queue, {
+//       durable: true,
+//     });
+//     await ch.assertQueue(cfg.retryQueue, {
+//       durable: true,
+//       arguments: {
+//         "x-dead-letter-exchange": cfg.exchange,
+//         "x-dead-letter-routing-key": cfg.route,
+//       },
+//     });
+//     await ch.assertQueue(cfg.dlq, { durable: true });
+
+//     await ch.bindQueue(cfg.queue, cfg.exchange, cfg.route);
+//     await ch.bindQueue(cfg.retryQueue, cfg.retryExchange, cfg.retryRoute);
+//     await ch.bindQueue(cfg.dlq, cfg.dlxExchange, cfg.dlqRoute);
+//     await ch.prefetch(cfg.prefetch);
+
+//     channel = ch;
+//     return ch;
+//   })();
+
+//   return setupPromise;
+// }
+
+// --- Point 2: Confirm channel for publisher confirms ---
+let consumerChannel: ConfirmChannel | null = null;
+let consumerWanted = false;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let reconnectAttempts = 0;
+const lastRabbitAlertAt: Record<string, number> = {};
+const RABBIT_ALERT_COOLDOWN_MS = 15 * 60 * 1000;
+
+// Throttled: the same kind of alert is sent at most once per 15 minutes
+function alertRabbitIssue(kind: string, details: string): void {
+  const now = Date.now();
+  if (now - (lastRabbitAlertAt[kind] ?? 0) < RABBIT_ALERT_COOLDOWN_MS) return;
+  lastRabbitAlertAt[kind] = now;
+  sendSystemAlert({
+    title: kind,
+    source: "rabbitmq",
+    reference: "n/a",
+    details,
+  }).catch(() => {});
+}
+
+// Reconnect with backoff: 5s, 10s, 20s, 40s, then every 60s
+function scheduleReconnect(): void {
+  if (reconnectTimer) return;
+  const delay = Math.min(5000 * 2 ** reconnectAttempts, 60000);
+  reconnectAttempts += 1;
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+    try {
+      await setupChannel();
+      // Re-register the consumer on the new channel
+      if (consumerWanted) await startNotificationConsumer();
+      reconnectAttempts = 0;
+      console.log("[RabbitMQ] Reconnected");
+    } catch (err) {
+      console.error("[RabbitMQ] Reconnect failed:", err);
+      alertRabbitIssue(
+        "RabbitMQ reconnect failing",
+        `Reconnect attempt ${reconnectAttempts} failed. Check the RabbitMQ service.`,
+      );
+      scheduleReconnect();
+    }
+  }, delay);
+}
+
 async function setupChannel(): Promise<ConfirmChannel> {
   if (channel) return channel;
   if (setupPromise) return setupPromise;
 
-  setupPromise = (async () => {
+  const p = (async () => {
     const conn = await amqp.connect(cfg.url);
     conn.on("error", (err) => {
       console.error("RabbitMQ connection error:", err);
@@ -349,38 +525,67 @@ async function setupChannel(): Promise<ConfirmChannel> {
     conn.on("close", () => {
       channel = null;
       setupPromise = null;
-      setTimeout(() => setupChannel(), 5000); // auto reconnect
+      consumerChannel = null;
+      console.error("[RabbitMQ] Connection closed, reconnecting...");
+      alertRabbitIssue(
+        "RabbitMQ connection lost",
+        "Connection to RabbitMQ closed. Automatic reconnect started.",
+      );
+      scheduleReconnect();
     });
 
-    // Use createConfirmChannel instead of createChannel
-    const ch = await conn.createConfirmChannel();
+    try {
+      // Use createConfirmChannel instead of createChannel
+      const ch = await conn.createConfirmChannel();
+      ch.on("error", (err) => {
+        console.error("[RabbitMQ] Channel error:", err);
+      });
+      ch.on("close", () => {
+        if (channel === ch) {
+          channel = null;
+          setupPromise = null;
+          consumerChannel = null;
+          scheduleReconnect();
+        }
+      });
 
-    await ch.assertExchange(cfg.exchange, "direct", { durable: true });
-    await ch.assertExchange(cfg.retryExchange, "direct", { durable: true });
-    await ch.assertExchange(cfg.dlxExchange, "direct", { durable: true });
+      await ch.assertExchange(cfg.exchange, "direct", { durable: true });
+      await ch.assertExchange(cfg.retryExchange, "direct", { durable: true });
+      await ch.assertExchange(cfg.dlxExchange, "direct", { durable: true });
 
-    await ch.assertQueue(cfg.queue, {
-      durable: true,
-    });
-    await ch.assertQueue(cfg.retryQueue, {
-      durable: true,
-      arguments: {
-        "x-dead-letter-exchange": cfg.exchange,
-        "x-dead-letter-routing-key": cfg.route,
-      },
-    });
-    await ch.assertQueue(cfg.dlq, { durable: true });
+      await ch.assertQueue(cfg.queue, {
+        durable: true,
+      });
+      await ch.assertQueue(cfg.retryQueue, {
+        durable: true,
+        arguments: {
+          "x-dead-letter-exchange": cfg.exchange,
+          "x-dead-letter-routing-key": cfg.route,
+        },
+      });
+      await ch.assertQueue(cfg.dlq, { durable: true });
 
-    await ch.bindQueue(cfg.queue, cfg.exchange, cfg.route);
-    await ch.bindQueue(cfg.retryQueue, cfg.retryExchange, cfg.retryRoute);
-    await ch.bindQueue(cfg.dlq, cfg.dlxExchange, cfg.dlqRoute);
-    await ch.prefetch(cfg.prefetch);
+      await ch.bindQueue(cfg.queue, cfg.exchange, cfg.route);
+      await ch.bindQueue(cfg.retryQueue, cfg.retryExchange, cfg.retryRoute);
+      await ch.bindQueue(cfg.dlq, cfg.dlxExchange, cfg.dlqRoute);
+      await ch.prefetch(cfg.prefetch);
 
-    channel = ch;
-    return ch;
+      channel = ch;
+      return ch;
+    } catch (err) {
+      // Do not leak a half-open connection when setup fails
+      conn.removeAllListeners("close");
+      conn.close().catch(() => {});
+      throw err;
+    }
   })();
 
-  return setupPromise;
+  setupPromise = p;
+  // A failed setup must not stay cached, otherwise every later call fails
+  p.catch(() => {
+    if (setupPromise === p) setupPromise = null;
+  });
+  return p;
 }
 
 // Helper: publish with broker confirmation (awaits ack from RabbitMQ)
@@ -551,7 +756,24 @@ function getRetryDelay(attempt: number): number {
 
 export async function startNotificationConsumer(): Promise<void> {
   if (!isRabbitEnabled()) return;
-  const ch = await setupChannel();
+  consumerWanted = true;
+
+  let ch: ConfirmChannel;
+  try {
+    ch = await setupChannel();
+  } catch (err) {
+    // RabbitMQ down at startup: keep retrying instead of giving up
+    console.error("[RabbitMQ] Consumer start failed, will retry:", err);
+    alertRabbitIssue(
+      "RabbitMQ unavailable",
+      "Could not connect to RabbitMQ. The notification consumer is retrying.",
+    );
+    scheduleReconnect();
+    return;
+  }
+
+  // Already consuming on this channel: do not register a second consumer
+  if (consumerChannel === ch) return;
 
   await ch.consume(
     cfg.queue,
@@ -597,7 +819,9 @@ export async function startNotificationConsumer(): Promise<void> {
               ? (error as RateLimitError).retryAfterMs
               : getRetryDelay(nextAttempt);
 
-            await trackRetry(parsed.jobId, nextAttempt, error, delayMs);
+            await trackRetry(parsed.jobId, nextAttempt, error, delayMs).catch(
+              (e) => console.error("[Track] trackRetry failed:", e),
+            );
             ch.publish(
               cfg.retryExchange,
               cfg.retryRoute,
@@ -634,6 +858,7 @@ export async function startNotificationConsumer(): Promise<void> {
               parsed.type,
               nextAttempt,
               error,
+              parsed.payload,
             ).catch(() => {});
           }
         } catch (retryError) {
@@ -648,13 +873,19 @@ export async function startNotificationConsumer(): Promise<void> {
         // CRITICAL: Always ack — prevents unacked message buildup
         // Guard against double-ack (when parsed was null)
         if (!alreadyAcked) {
-          ch.ack(msg);
+          try {
+            ch.ack(msg);
+          } catch (ackError) {
+            // Channel closed mid-job: RabbitMQ redelivers unacked messages after reconnect
+            console.error("[Consumer] ack failed (channel closed):", ackError);
+          }
         }
       }
     },
     { noAck: false },
   );
 
+  consumerChannel = ch;
   console.log(`RabbitMQ consumer started. queue=${cfg.queue}, dlq=${cfg.dlq}`);
 }
 

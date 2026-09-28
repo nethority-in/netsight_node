@@ -154,44 +154,63 @@ export function buildTemplateParams(
     delete params.InventoryHealth;
   }
 
-  // --- CancelCount / RefundAmount (both templates, conditional) ---
+  // --- CancelCount / RefundAmount / CheckOut / RTO (conditional) ---
+  // temp2: lay these 4 values out in the 3-column metrics grid so they align:
+  //   Row: Cancel Count | Refund Amount | Checkout
+  //   Row: RTO          |               |
+  // temp1: inline text (unchanged).
   if (isTemp1 || isTemp2) {
     const cancelCount = params.CancelCount;
     const refundAmount = params.RefundAmount;
-    if (cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '') {
-      if (isTemp2) {
-        params.cancelRefundHtml = `<tr><td><div class="metric-label">Cancel Count</div><div class="metric-value">${String(cancelCount)}</div></td><td><div class="metric-label">Refund Amount</div><div class="metric-value">${String(refundAmount)}</div></td><td></td></tr>`;
-      }
-      if (isTemp1) {
-        params.cancelRefundText = ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`;
-      }
-    } else {
-      params.cancelRefundHtml = '<!-- -->';
-      params.cancelRefundText = '<!-- -->';
-    }
-    delete params.CancelCount;
-    delete params.RefundAmount;
-  }
-
-  // --- CheckOut / RTO (both templates, conditional; shown below Cancel/Refund) ---
-  if (isTemp1 || isTemp2) {
     const checkOut = params.CheckOut;
     const rto = params.RTO;
-    if (checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '') {
-      if (isTemp2) {
-        params.checkoutRtoHtml = `<tr><td><div class="metric-label">Checkout</div><div class="metric-value">${String(checkOut)}</div></td><td><div class="metric-label">RTO</div><div class="metric-value">${String(rto)}</div></td><td></td></tr>`;
+
+    const hasCancelRefund =
+      cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '';
+    const hasCheckoutRto =
+      checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '';
+
+    if (isTemp2) {
+      // Build cells for whichever values are present, then pack into 3-col rows.
+      const cell = (label: string, value: string) =>
+        `<td><div class="metric-label">${label}</div><div class="metric-value">${value}</div></td>`;
+      const emptyCell = '<td></td>';
+      const cells: string[] = [];
+      if (hasCancelRefund) {
+        cells.push(cell('Cancel Count', String(cancelCount)));
+        cells.push(cell('Refund Amount', String(refundAmount)));
       }
-      if (isTemp1) {
-        params.checkoutRtoText = ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`;
+      if (hasCheckoutRto) {
+        cells.push(cell('Checkout', String(checkOut)));
+        cells.push(cell('RTO', String(rto)));
       }
-    } else {
-      params.checkoutRtoHtml = '<!-- -->';
-      params.checkoutRtoText = '<!-- -->';
+      // Pack cells 3 per row; pad the final row with empty cells.
+      let rowsHtml = '';
+      for (let i = 0; i < cells.length; i += 3) {
+        const rowCells = cells.slice(i, i + 3);
+        while (rowCells.length < 3) rowCells.push(emptyCell);
+        rowsHtml += `<tr>${rowCells.join('')}</tr>`;
+      }
+      params.cancelRefundHtml = rowsHtml || '<!-- -->';
+      params.checkoutRtoHtml = '<!-- -->'; // combined into cancelRefundHtml for temp2
     }
+
+    if (isTemp1) {
+      params.cancelRefundText = hasCancelRefund
+        ? ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`
+        : '<!-- -->';
+      params.checkoutRtoText = hasCheckoutRto
+        ? ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`
+        : '<!-- -->';
+    }
+
+    delete params.CancelCount;
+    delete params.RefundAmount;
     delete params.CheckOut;
     delete params.RTO;
   }
 
   return params;
 }
+
 

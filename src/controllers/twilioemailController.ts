@@ -942,39 +942,56 @@ export class EmailController {
         }
         delete params.InventoryHealth;
 
-        // Handle CancelCount/RefundAmount conditionally
-        const cancelCount = params.CancelCount;
-        const refundAmount = params.RefundAmount;
-        if (cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '') {
-          if (isTemp2Variant) {
-            params.cancelRefundHtml = `<tr><td><div class="metric-label">Cancel Count</div><div class="metric-value">${String(cancelCount)}</div></td><td><div class="metric-label">Refund Amount</div><div class="metric-value">${String(refundAmount)}</div></td><td></td></tr>`;
-          }
-          if (isTemp1Variant) {
-            params.cancelRefundText = ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`;
-          }
-        } else {
-          params.cancelRefundHtml = '<!-- -->';
-          params.cancelRefundText = '<!-- -->';
-        }
-        delete params.CancelCount;
-        delete params.RefundAmount;
+        // Handle CancelCount/RefundAmount/CheckOut/RTO conditionally.
+        // temp2: pack the 4 values into the 3-col metrics grid:
+        //   Row: Cancel Count | Refund Amount | Checkout
+        //   Row: RTO          |               |
+        // temp1: inline text.
+        {
+          const cancelCount = params.CancelCount;
+          const refundAmount = params.RefundAmount;
+          const checkOut = params.CheckOut;
+          const rto = params.RTO;
+          const hasCancelRefund =
+            cancelCount && String(cancelCount).trim() !== '' && refundAmount && String(refundAmount).trim() !== '';
+          const hasCheckoutRto =
+            checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '';
 
-        // Handle CheckOut/RTO conditionally (below Cancel/Refund)
-        const checkOut = params.CheckOut;
-        const rto = params.RTO;
-        if (checkOut && String(checkOut).trim() !== '' && rto && String(rto).trim() !== '') {
           if (isTemp2Variant) {
-            params.checkoutRtoHtml = `<tr><td><div class="metric-label">Checkout</div><div class="metric-value">${String(checkOut)}</div></td><td><div class="metric-label">RTO</div><div class="metric-value">${String(rto)}</div></td><td></td></tr>`;
+            const cell = (label: string, value: string) =>
+              `<td><div class="metric-label">${label}</div><div class="metric-value">${value}</div></td>`;
+            const emptyCell = '<td></td>';
+            const cells: string[] = [];
+            if (hasCancelRefund) {
+              cells.push(cell('Cancel Count', String(cancelCount)));
+              cells.push(cell('Refund Amount', String(refundAmount)));
+            }
+            if (hasCheckoutRto) {
+              cells.push(cell('Checkout', String(checkOut)));
+              cells.push(cell('RTO', String(rto)));
+            }
+            let rowsHtml = '';
+            for (let i = 0; i < cells.length; i += 3) {
+              const rowCells = cells.slice(i, i + 3);
+              while (rowCells.length < 3) rowCells.push(emptyCell);
+              rowsHtml += `<tr>${rowCells.join('')}</tr>`;
+            }
+            params.cancelRefundHtml = rowsHtml || '<!-- -->';
+            params.checkoutRtoHtml = '<!-- -->';
           }
           if (isTemp1Variant) {
-            params.checkoutRtoText = ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`;
+            params.cancelRefundText = hasCancelRefund
+              ? ` A total of ${String(cancelCount)} orders were cancelled, with a refund amount of ${String(refundAmount)}.`
+              : '<!-- -->';
+            params.checkoutRtoText = hasCheckoutRto
+              ? ` Of these orders, ${String(rto)} were returned to origin, and ${String(checkOut)} did not complete checkout.`
+              : '<!-- -->';
           }
-        } else {
-          params.checkoutRtoHtml = '<!-- -->';
-          params.checkoutRtoText = '<!-- -->';
+          delete params.CancelCount;
+          delete params.RefundAmount;
+          delete params.CheckOut;
+          delete params.RTO;
         }
-        delete params.CheckOut;
-        delete params.RTO;
 
         const validation = TemplateBuilder.validateParameters(params, config);
         if (!validation.valid) {
@@ -1086,5 +1103,6 @@ export class EmailController {
     }
   }
 }
+
 
 
