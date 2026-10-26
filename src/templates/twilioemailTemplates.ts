@@ -780,7 +780,7 @@ body {
           class="footer-copyright"
           style="margin-bottom: 8px; text-align: center"
         >
-          © <script>document.write(new Date().getFullYear())</script> Team Neo (formerly Netsights AI).
+           © ${new Date().getFullYear()} Neo (formerly Netsights AI). All rights reserved
         </p>
 
         <!-- Links -->
@@ -1526,7 +1526,7 @@ CAMPAIGN PERFORMANCE
 </table>
 
 <p style="margin-bottom:8px; text-align:center;">
-  © <script>document.write(new Date().getFullYear())</script> Team NEO (formerly Netsights AI).
+   © ${new Date().getFullYear()} Neo (formerly Netsights AI). All rights reserved
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
