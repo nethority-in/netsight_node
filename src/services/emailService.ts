@@ -9,7 +9,7 @@ dotenv.config();
 const MAILJET_API_KEY = process.env.MAILJET_API_KEY;
 const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY;
 const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'netsightai@gmail.com';
-const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Netsight';
+const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Neo';
 
 const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024; // 5MB per attachment
 
@@ -245,7 +245,7 @@ export class EmailService {
 
       // Replace template variables
       let htmlContent = template.html;
-      let emailSubject = subject || template.subject || 'Message from Netsight';
+      let emailSubject = subject || template.subject || 'Message from Neo';
 
       // Replace variables in HTML content
       Object.keys(templateVariables).forEach(key => {

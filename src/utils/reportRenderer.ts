@@ -83,7 +83,7 @@ function buildFileName(ext: string, hint?: string): string {
 // Puppeteer's PDF header/footer templates render in an isolated context that does
 // NOT reliably load external images. So we fetch the logo once and cache it as a
 // base64 data URI — this always renders inside the header.
-const LOGO_URL = 'https://app.netsights.ai/images/logo/netsight-Black.svg';
+const LOGO_URL = 'https://app.netsights.ai/images/neo-logo/neo-logo.svg';
 let cachedLogoDataUri: string | null = null;
 
 function fetchLogoDataUri(): Promise<string | null> {
@@ -136,7 +136,7 @@ function buildFooterTemplate(): string {
   return `
     <div style="width:100%; font-family:Arial,Helvetica,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; padding:0 12px; box-sizing:border-box;">
       <div style="border-top:1px solid #e5e7eb; padding-top:6px; text-align:center; color:#6b7280; font-size:9px; line-height:1.5;">
-        <div>&copy; ${new Date().getFullYear()} Netsights.ai. All rights reserved</div>
+        <div>&copy; ${new Date().getFullYear()} Team NEO (formerly Netsights AI).</div>
         <div style="margin-top:2px;">
           <a href="https://netsights.ai/support/" style="color:#5DBBB8; text-decoration:none;">Support</a>
           &nbsp;|&nbsp;
