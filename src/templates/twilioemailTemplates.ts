@@ -450,7 +450,7 @@ body {
   background-image: linear-gradient(90deg, #7b4df2 0%, #5b63f0 50%, #22a3ec 100%);
 }
 .header {
-  border-bottom: 1px solid #e4def6;
+  border-bottom: none;
 }
 .content h1 {
   font-family: "Nunito Sans", "Segoe UI", Roboto, Arial, sans-serif;
@@ -668,9 +668,7 @@ body {
   </head>
   <body>
     <div class="email-container">
-      <div class="grad-bar">&nbsp;</div>
-
-<!-- Header -->
+<!-- Header --> 
       <div class="header">
         <img
           src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
@@ -685,6 +683,8 @@ body {
           style="height: 46px"
         />
       </div>
+
+      <div class="grad-bar">&nbsp;</div>
 
       <!-- Content -->
       <div class="content">
@@ -916,7 +916,6 @@ width:100%;
 }
 
 .metrics-table + .metrics-table{
-border-top:1px solid rgba(97,82,240,0.16);
 margin-top:6px;
 }
 
@@ -1172,10 +1171,6 @@ background:#120E20;
 border-color:#2A2342;
 }
 
-.metrics-table + .metrics-table{
-border-top-color:#221B36;
-}
-
 .acct-section{
 border-top-color:#2A2342;
 }
@@ -1280,12 +1275,12 @@ display:inline-block !important;
 
 <div class="container">
 
-<div class="grad-bar">&nbsp;</div>
-
 <div class="header">
 <img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
 <img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
 </div>
+
+<div class="grad-bar">&nbsp;</div>
 
 <div class="content">
 
