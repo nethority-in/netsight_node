@@ -1,0 +1,727 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Email Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI','Oxygen','Ubuntu','Cantarell',sans-serif;
+font-weight:300;
+margin:0;
+padding:16px 0;
+background:#F6F3FF;
+color:#17141C;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+background:#ffffff;
+border:1px solid #E4DEF6;
+border-radius:16px;
+overflow:hidden;
+}
+
+.grad-bar{
+height:3px;
+line-height:3px;
+font-size:0;
+background:#6152F0;
+background-image:linear-gradient(90deg,#7B4DF2 0%,#5B63F0 50%,#22A3EC 100%);
+}
+
+.header{
+background:#ffffff;
+padding:15px;
+border-bottom:1px solid #E4DEF6;
+text-align:center;
+}
+
+.header img{
+height:46px;
+}
+
+h1{
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-size:22px;
+font-weight:800;
+letter-spacing:-0.028em;
+color:#17141C;
+}
+
+h2{
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-size:18px;
+font-weight:800;
+letter-spacing:-0.02em;
+color:#17141C;
+}
+
+p{
+font-size:14px;
+color:#565070;
+line-height:1.6;
+font-weight:300;
+}
+
+.layer{
+background:#ffffff;
+border:1px solid #E4DEF6;
+border-left:4px solid #7B4DF2;
+border-radius:14px;
+padding:15px;
+margin:10px 14px 0 14px;
+}
+
+.layer-header{
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-weight:700;
+margin-bottom:10px;
+font-size:10.5px;
+text-transform:uppercase;
+letter-spacing:0.09em;
+}
+
+.metrics-table{
+width:100%;
+}
+
+.metrics-table + .metrics-table{
+border-top:1px solid rgba(97,82,240,0.16);
+margin-top:6px;
+}
+
+.metrics-table td{
+width:33%;
+padding:6px 3px;
+vertical-align:top;
+}
+
+.metric-label{
+font-size:12px;
+color:#7A7593;
+margin-bottom:2px;
+font-weight:300;
+}
+
+.metric-value{
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-size:15px;
+font-weight:700;
+letter-spacing:-0.025em;
+color:#17141C;
+}
+
+.acct-section{
+margin-top:8px;
+padding-top:10px;
+border-top:1px solid rgba(97,82,240,0.16);
+}
+
+/* section colours (Nethority palette) */
+.teal{
+background:#F0EBFE;
+border-color:#DDD3FA;
+border-left-color:#7B4DF2;
+}
+.teal .layer-header{
+color:#7B4DF2;
+}
+
+.pink{
+background:#EAF5FD;
+border-color:#CFE6F8;
+border-left-color:#22A3EC;
+}
+.pink .layer-header{
+color:#1C7FB8;
+}
+
+.indigo{
+background:#E9E7FE;
+border-color:#D2CEFB;
+border-left-color:#5B63F0;
+}
+.indigo .layer-header{
+color:#5B63F0;
+}
+
+.highlight{
+background:#E8F4FE;
+border:1px solid #D3E8F9;
+border-left:4px solid #22A3EC;
+padding:15px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.highlight .layer-header{
+color:#1C7FB8;
+}
+
+.review{
+background:#FCEDEA;
+border:1px solid #F5D3CD;
+border-left:4px solid #E0614F;
+padding:15px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.review .layer-header{
+color:#B84636;
+}
+
+.inventory{
+background:#FBF2E2;
+border:1px solid #F0DDB8;
+border-left:4px solid #D9952B;
+padding:15px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.inventory .layer-header{
+color:#A4701C;
+}
+
+.highlight-content,
+.review-content{
+color:#2B2640;
+font-weight:300;
+line-height:1.6;
+}
+
+ul{
+margin:3px 0 0 0;
+padding-left:15px;
+}
+
+li{
+margin-bottom:3px;
+font-size:14px;
+color:#444;
+}
+
+.footer{
+background:#F6F3FF;
+padding:15px;
+border-top:1px solid #E4DEF6;
+text-align:center;
+}
+
+.footer a{
+color:#6152F0;
+font-size:13px;
+}
+
+.footer p{
+color:#7A7593;
+font-size:12px;
+}
+
+.btn-ghost-cell{
+background:#ffffff;
+border:1px solid #CFC4F6;
+}
+
+.btn-ghost{
+color:#7B4DF2 !important;
+}
+
+@media (max-width:600px){
+
+body{
+padding:0;
+}
+
+.container{
+border-radius:0;
+border-left:0;
+border-right:0;
+}
+
+.content{
+padding:3px;
+}
+
+.metrics-table td{
+display:inline-block;
+box-sizing:border-box;
+padding-left: 5px;
+vertical-align:top;
+}
+
+.layer{
+padding:7px;
+margin-left:0;
+margin-right:0;
+}
+
+/* base spacing */
+.highlight,
+.review,
+.inventory{
+padding:7px;
+margin-left:0;
+margin-right:0;
+}
+
+.highlight-title,
+.review-title,
+.inventory-title{
+    padding-left: 4px !important;
+}
+
+.highlight-content,
+.review-content{
+    padding-left: 6px !important;
+    font-size: 13px !important;
+}
+
+/* keep others same */
+.mobile-view{
+padding-left: 10px;
+padding-right: 10px;
+}
+
+.layer-header{
+padding-left: 5px;
+}
+
+.metric-label{
+font-size:11px;
+color:#7A7593;
+margin-bottom:2px;
+}
+
+.metric-value{
+font-size:13px;
+}
+
+.footer-btn-cell{
+width:50% !important;
+}
+
+.footer-btn-link{
+display:block !important;
+font-size:14px !important;
+line-height:18px !important;
+padding:9px 8px !important;
+}
+
+}
+
+.logo-light{display:inline-block !important;}
+.logo-dark{display:none !important;}
+@media (prefers-color-scheme: dark){
+body{
+background:#0A0714;
+color:#F6F4FC;
+}
+
+.container{
+background:#0A0714;
+border-color:#2A2342;
+}
+
+.header{
+background:#0A0714 !important;
+border-bottom:1px solid #2A2342;
+}
+.header .logo-light{display:none !important;}
+.header .logo-dark{display:inline-block !important;}
+
+h1,
+h2{
+color:#F6F4FC;
+}
+
+p{
+color:#C2BCD6;
+}
+
+.layer{
+background:#120E20;
+border-color:#2A2342;
+}
+
+.metrics-table + .metrics-table{
+border-top-color:#221B36;
+}
+
+.acct-section{
+border-top-color:#2A2342;
+}
+
+.teal{
+border-left-color:#9B7BFF;
+}
+.teal .layer-header{
+color:#B49BFF;
+}
+
+.pink{
+border-left-color:#4FC3F7;
+}
+.pink .layer-header{
+color:#7FD4FA;
+}
+
+.indigo{
+border-left-color:#8E97FF;
+}
+.indigo .layer-header{
+color:#8E97FF;
+}
+
+.metric-label{
+color:#8C85A4;
+}
+
+.metric-value{
+color:#F6F4FC;
+}
+
+.highlight{
+background:rgba(79,195,247,0.10);
+border-color:#2A2342;
+border-left-color:#4FC3F7;
+}
+.highlight .layer-header{
+color:#7FD4FA;
+}
+
+.review{
+background:rgba(242,113,95,0.10);
+border-color:#2A2342;
+border-left-color:#F2715F;
+}
+.review .layer-header{
+color:#F5A294;
+}
+
+.inventory{
+background:rgba(240,169,60,0.10);
+border-color:#2A2342;
+border-left-color:#F0A93C;
+}
+.inventory .layer-header{
+color:#F3C070;
+}
+
+.highlight-content,
+.review-content{
+color:#C2BCD6;
+}
+
+.footer{
+background:#120E20;
+border-top:1px solid #2A2342;
+}
+
+.footer a{
+color:#B49BFF;
+}
+
+.footer p{
+color:#8C85A4;
+}
+
+.btn-ghost-cell{
+background:transparent !important;
+border-color:rgba(142,151,255,0.42) !important;
+}
+
+.btn-ghost{
+color:#B49BFF !important;
+}
+
+.footer .logo-light{
+display:none !important;
+}
+
+.footer .logo-dark{
+display:inline-block !important;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="grad-bar">&nbsp;</div>
+
+<div class="header">
+<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
+<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
+</div>
+
+<div class="content">
+
+<div class="" style="margin-top: -4px;">
+  <h1 style="padding-left:16px; padding-right: 11px; margin-bottom: -7px;" class="mobile-view">Good day,</h1>
+
+<p style="padding-left:16px; padding-right: 11px; font-size: 13px;">
+Here is your daily performance summary for
+<b>{{StoreName}}</b> - <b>{{PrevDate}}</b>.
+</p>
+</div>
+
+<div class="layer teal" style="margin-top: -5px;">
+
+<div class="layer-header">
+UNIT ECONOMICS
+</div>
+
+<table class="metrics-table" cellpadding="0" cellspacing="0">
+
+<tr>
+<td>
+<div class="metric-label">Gross Revenue</div>
+<div class="metric-value">{{GrossRevenue}}</div>
+</td>
+
+<td>
+<div class="metric-label">Net Sales</div>
+<div class="metric-value">{{NetSales}}</div>
+</td>
+
+<td>
+<div class="metric-label">Orders</div>
+<div class="metric-value">{{Orders}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<div class="metric-label">AOV</div>
+<div class="metric-value">{{AOV}}</div>
+</td>
+
+<td>
+<div class="metric-label">LTV</div>
+<div class="metric-value">{{LTV}}</div>
+</td>
+
+<td>
+<div class="metric-label">LTV : CAC</div>
+<div class="metric-value">{{LTVCACRatio}}</div>
+</td>
+</tr>
+
+{{cancelRefundHtml}}
+
+{{checkoutRtoHtml}}
+
+</table>
+</div>
+
+
+
+
+<div class="layer pink">
+
+<div class="layer-header">
+OPERATIONAL METRICS
+</div>
+
+<table class="metrics-table">
+
+<tr>
+<td>
+<div class="metric-label">New vs Repeat</div>
+<div class="metric-value">{{NewVsRepeat}}</div>
+</td>
+
+<td>
+<div class="metric-label">Order Frequency</div>
+<div class="metric-value">{{OrderFrequency}}</div>
+</td>
+
+<td>
+<div class="metric-label">Discount Rate</div>
+<div class="metric-value">{{TotalDiscountRate}}</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<div class="metric-label">Fulfilment Rate</div>
+<div class="metric-value">{{OrderFulfillmentRate}}</div>
+</td>
+
+<td>
+<div class="metric-label">GA4 Sessions</div>
+<div class="metric-value">{{GA4Sessions}}</div>
+</td>
+
+<td>
+<div class="metric-label">GA4 Users</div>
+<div class="metric-value">{{GA4Users}}</div>
+</td>
+</tr>
+
+</table>
+</div>
+
+
+
+<div class="layer indigo">
+
+<div class="layer-header">
+CAMPAIGN PERFORMANCE
+</div>
+
+<table class="metrics-table">
+<tr>
+<td>
+<div class="metric-label">Blended Spend</div>
+<div class="metric-value">{{BlendedSpend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Blended ROAS</div>
+<div class="metric-value">{{BlendedROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Blended Revenue</div>
+<div class="metric-value">{{BlendedRevenue}}</div>
+</td>
+</tr>
+</table>
+
+<table class="metrics-table">
+<tr>
+<td>
+<div class="metric-label">Meta Spend</div>
+<div class="metric-value">{{MetaSpend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta ROAS</div>
+<div class="metric-value">{{MetaROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Meta Revenue</div>
+<div class="metric-value">{{MetaRevenue}}</div>
+</td>
+</tr>
+</table>
+
+<table class="metrics-table">
+<tr>
+<td>
+<div class="metric-label">Googlead Spend</div>
+<div class="metric-value">{{Googleadsspend}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google ROAS</div>
+<div class="metric-value">{{GoogleROAS}}</div>
+</td>
+
+<td>
+<div class="metric-label">Google Revenue</div>
+<div class="metric-value">{{GoogleRevenue}}</div>
+</td>
+</tr>
+</table>
+
+{{metaAccountsHtml}}
+
+{{googleAccountsHtml}}
+
+</div>
+
+{{inventoryHealthHtml}}
+
+<div class="highlight">
+
+  <div class="layer-header highlight-title" style="margin-bottom:5px;">
+    PERFORMANCE HIGHLIGHTS
+  </div>
+
+  <div class="highlight-content" style="white-space: pre-line !important; font-size: 14px;">{{PositiveChanges}}</div>
+
+</div>
+
+
+<div class="review">
+
+  <div class="layer-header review-title" style="margin-bottom:5px;">
+    REVIEW REQUIRED
+  </div>
+
+  <div class="review-content" style="white-space: pre-line !important; font-size: 14px;">{{RequiresReviews}}</div>
+
+</div>
+
+
+<div class="footer" style="margin-top: 0.7rem;">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0; padding:0;">
+<tr>
+  <td align="center" style="padding:6px 0 0 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+      <tr>
+        <td align="center" class="footer-btn-cell" style="padding-right:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" bgcolor="#6152F0" style="border-radius:999px; background-image:linear-gradient(135deg,#7B4DF2 0%,#5B63F0 55%,#22A3EC 100%);">
+          <a target="_blank" href="https://isight.netsights.ai/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px;">
+            View Daily Report
+          </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td align="center" class="footer-btn-cell" style="padding-left:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" bgcolor="#FFFFFF" class="btn-ghost-cell" style="border-radius:999px; border:1px solid #CFC4F6;">
+          <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="footer-btn-link btn-ghost" style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7B4DF2; text-decoration:none; white-space:nowrap; border-radius:999px;">
+            Visit Neo Intelligence
+          </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+
+<p style="margin-bottom:8px; text-align:center;">
+  © <script>document.write(new Date().getFullYear())</script> Team NEO (formerly Netsights AI).
+</p>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
+<tr>
+  <td align="center">
+    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+    <span style="color:#d1d5db;"> | </span>
+    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+  </td>
+</tr>
+</table>
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

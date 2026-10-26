@@ -279,7 +279,8 @@ const templates: Record<string, EmailTemplate> = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title>Netsights Email Template</title>
+    <title>Neo Email Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
       body {
         font-family:
@@ -429,7 +430,73 @@ const templates: Record<string, EmailTemplate> = {
         background-color: #5dbbb8;
       }
 
-      /* ── LOGO SWITCHING ── */
+      /* ── NETHORITY DESIGN (light) ── */
+body {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 300;
+  background-color: #f6f3ff;
+  color: #17141c;
+}
+.email-container {
+  border: 1px solid #e4def6;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(80, 60, 160, 0.06);
+}
+.grad-bar {
+  height: 3px;
+  line-height: 3px;
+  font-size: 0;
+  background: #6152f0;
+  background-image: linear-gradient(90deg, #7b4df2 0%, #5b63f0 50%, #22a3ec 100%);
+}
+.header {
+  border-bottom: 1px solid #e4def6;
+}
+.content h1 {
+  font-family: "Nunito Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #7b4df2;
+  margin: 22px 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e4def6;
+}
+.content h2 {
+  font-family: "Nunito Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #7b4df2;
+}
+.content p {
+  color: #565070;
+}
+.highlight-box li {
+  color: #2b2640;
+}
+.highlight-box li span:first-child {
+  color: #7b4df2;
+}
+.content .dynamic-fill {
+  color: #2b2640;
+}
+.label-blue {
+  color: #1c7fb8;
+}
+.footer {
+  background: #f6f3ff;
+  border-top: 1px solid #e4def6;
+}
+.footer p,
+.footer .footer-copyright {
+  color: #7a7593;
+  font-size: 12px;
+}
+.footer-links {
+  color: #6152f0;
+}
+
+/* ── LOGO SWITCHING ── */
       .logo-light {
         display: inline-block !important;
       }
@@ -514,7 +581,57 @@ const templates: Record<string, EmailTemplate> = {
           color: #5eead4;
         }
 
-        .footer .logo-light {
+        body {
+  background: #0a0714;
+  color: #f6f4fc;
+}
+.email-container {
+  background: #0a0714;
+  border-color: #2a2342;
+}
+.header {
+  border-bottom: 1px solid #2a2342;
+}
+.content h1 {
+  color: #b49bff;
+  border-bottom-color: #2a2342;
+}
+.content h2 {
+  color: #b49bff;
+}
+.content p {
+  color: #c2bcd6;
+}
+.highlight-box li {
+  color: #c2bcd6;
+}
+.highlight-box li span:first-child {
+  color: #b49bff;
+}
+.content .dynamic-fill {
+  color: #c2bcd6;
+}
+.label-blue {
+  color: #7fd4fa;
+}
+.footer {
+  background: #120e20;
+  border-top-color: #2a2342;
+}
+.footer p,
+.footer .footer-copyright {
+  color: #8c85a4;
+}
+.footer-links {
+  color: #b49bff;
+}
+.cta-ghost {
+  background: transparent !important;
+  border-color: rgba(142, 151, 255, 0.42) !important;
+  color: #b49bff !important;
+}
+
+.footer .logo-light {
           display: none !important;
         }
         .footer .logo-dark {
@@ -525,7 +642,7 @@ const templates: Record<string, EmailTemplate> = {
       /* ── MOBILE ── */
       @media (max-width: 480px) {
    body { padding: 0; }
-  .email-container { border-radius: 0; }
+  .email-container { border-radius: 0; border-left: 0; border-right: 0; }
   .content { padding: 16px 12px; }
   .header { padding: 15px; }
   .footer { padding: 12px; }
@@ -551,17 +668,19 @@ const templates: Record<string, EmailTemplate> = {
   </head>
   <body>
     <div class="email-container">
-      <!-- Header -->
+      <div class="grad-bar">&nbsp;</div>
+
+<!-- Header -->
       <div class="header">
         <img
-          src="https://app.netsights.ai/images/logo/netsight-Black.svg"
-          alt="Netsights Logo"
+          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          alt="Neo Logo"
           class="logo-light"
           style="height: 46px"
         />
         <img
-          src="https://app.netsights.ai/images/logo/netsight-white.svg"
-          alt="Netsights Logo"
+          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          alt="Neo Logo"
           class="logo-dark"
           style="height: 46px"
         />
@@ -613,7 +732,7 @@ const templates: Record<string, EmailTemplate> = {
           <ul>
             <li>
               <span>•</span>
-              <span style="font-weight: bold">Positive changes</span>
+              <span class="label-blue" style="font-weight: bold">Positive changes</span>
             </li>
           </ul>
           <div class="dynamic-fill">{{PositiveChanges}}</div>
@@ -621,7 +740,7 @@ const templates: Record<string, EmailTemplate> = {
           <ul>
             <li>
               <span>•</span>
-              <span style="font-weight: bold">Requires a review</span>
+              <span class="label-blue" style="font-weight: bold">Requires a review</span>
             </li>
           </ul>
           <div class="dynamic-fill reviews-block">{{RequiresReviews}}</div>
@@ -629,7 +748,7 @@ const templates: Record<string, EmailTemplate> = {
 
         <p class="email-closing" style="margin-top: 24px">
           Regards,<br />
-          <span>Netsights.ai</span>
+          <span>Team Neo (formerly Netsights AI)</span>
         </p>
       </div>
 
@@ -642,14 +761,14 @@ const templates: Record<string, EmailTemplate> = {
     <tr>
       <td style="padding-right: 8px;">
         <a target="_blank" href="https://isight.netsights.ai/{{Url}}"
-          style="display:inline-block; padding:10px 18px; font-size:15px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px; background-color:#5dbbb8;">
+          style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px; background-color:#6152f0; background-image:linear-gradient(135deg,#7b4df2 0%,#5b63f0 55%,#22a3ec 100%);">
           View Daily Report
         </a>
       </td>
       <td style="padding-left: 0px;">
-        <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}"
-          style="display:inline-block; padding:10px 18px; font-size:15px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px; background-color:#5dbbb8;">
-          Visit Scaleboard
+        <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="cta-ghost"
+          style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7b4df2; text-decoration:none; white-space:nowrap; border-radius:999px; background-color:#ffffff; border:1px solid #cfc4f6;">
+          Visit Neo Intelligence
         </a>
       </td>
     </tr>
@@ -661,7 +780,7 @@ const templates: Record<string, EmailTemplate> = {
           class="footer-copyright"
           style="margin-bottom: 8px; text-align: center"
         >
-          © 2026 Netsights.ai. All rights reserved
+          © <script>document.write(new Date().getFullYear())</script> Team Neo (formerly Netsights AI).
         </p>
 
         <!-- Links -->
@@ -678,7 +797,7 @@ const templates: Record<string, EmailTemplate> = {
                 target="_blank"
                 href="https://netsights.ai/support/"
                 class="footer-links"
-                style="text-decoration: none; color: #0066cc"
+                style="text-decoration: none"
                 >Support</a
               >
               <span style="color: #d1d5db"> | </span>
@@ -686,7 +805,7 @@ const templates: Record<string, EmailTemplate> = {
                 target="_blank"
                 href="https://netsights.ai/contact-us/"
                 class="footer-links"
-                style="text-decoration: none; color: #0066cc"
+                style="text-decoration: none"
                 >Contact Us</a
               >
             </td>
@@ -703,7 +822,7 @@ const templates: Record<string, EmailTemplate> = {
   ns_temp_Notification_temp2: {
     subject: "{{StoreName}} Daily Performance Summary",
     html: `
-      <!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -711,26 +830,39 @@ const templates: Record<string, EmailTemplate> = {
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
 <title>Email Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
 body{
-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
+font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI','Oxygen','Ubuntu','Cantarell',sans-serif;
+font-weight:300;
 margin:0;
-color:#111827;
+padding:16px 0;
+background:#F6F3FF;
+color:#17141C;
 }
 
 .container{
 max-width:600px;
 margin:auto;
 background:#ffffff;
-border-radius:10px;
+border:1px solid #E4DEF6;
+border-radius:16px;
 overflow:hidden;
+}
+
+.grad-bar{
+height:3px;
+line-height:3px;
+font-size:0;
+background:#6152F0;
+background-image:linear-gradient(90deg,#7B4DF2 0%,#5B63F0 50%,#22A3EC 100%);
 }
 
 .header{
 background:#ffffff;
 padding:15px;
-border-bottom:4px solid #5DBBB8;
+border-bottom:1px solid #E4DEF6;
 text-align:center;
 }
 
@@ -739,35 +871,53 @@ height:46px;
 }
 
 h1{
-font-size:20px;
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-size:22px;
+font-weight:800;
+letter-spacing:-0.028em;
+color:#17141C;
 }
 
 h2{
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
 font-size:18px;
+font-weight:800;
+letter-spacing:-0.02em;
+color:#17141C;
 }
 
 p{
 font-size:14px;
-color:#374151;
+color:#565070;
 line-height:1.6;
+font-weight:300;
 }
 
 .layer{
+background:#ffffff;
+border:1px solid #E4DEF6;
+border-left:4px solid #7B4DF2;
 border-radius:14px;
 padding:15px;
-margin-top:10px;
-border-left:4px solid;
+margin:10px 14px 0 14px;
 }
 
 .layer-header{
-font-weight:600;
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-weight:700;
 margin-bottom:10px;
-font-size:14px;
-letter-spacing:0.2px;
+font-size:10.5px;
+text-transform:uppercase;
+letter-spacing:0.09em;
 }
 
 .metrics-table{
 width:100%;
+}
+
+.metrics-table + .metrics-table{
+border-top:1px solid rgba(97,82,240,0.16);
+margin-top:6px;
 }
 
 .metrics-table td{
@@ -777,54 +927,95 @@ vertical-align:top;
 }
 
 .metric-label{
-font-size:13px;
-color:#6b7280;
+font-size:12px;
+color:#7A7593;
 margin-bottom:2px;
+font-weight:300;
 }
 
 .metric-value{
-font-size:13px;
-font-weight:600;
-color:#111827;
+font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif;
+font-size:15px;
+font-weight:700;
+letter-spacing:-0.025em;
+color:#17141C;
 }
 
+.acct-section{
+margin-top:8px;
+padding-top:10px;
+border-top:1px solid rgba(97,82,240,0.16);
+}
+
+/* section colours (Nethority palette) */
 .teal{
-background:#ecfeff;
-border-color:#5eead4;
+background:#F0EBFE;
+border-color:#DDD3FA;
+border-left-color:#7B4DF2;
+}
+.teal .layer-header{
+color:#7B4DF2;
 }
 
 .pink{
-background:#fdf2f8;
-border-color:#f9a8d4;
+background:#EAF5FD;
+border-color:#CFE6F8;
+border-left-color:#22A3EC;
+}
+.pink .layer-header{
+color:#1C7FB8;
 }
 
 .indigo{
-background:#eef2ff;
-border-color:#c7d2fe;
+background:#E9E7FE;
+border-color:#D2CEFB;
+border-left-color:#5B63F0;
+}
+.indigo .layer-header{
+color:#5B63F0;
 }
 
 .highlight{
-background:#f0fdf4;
-border-left:4px solid #6ee7b7;
+background:#E8F4FE;
+border:1px solid #D3E8F9;
+border-left:4px solid #22A3EC;
 padding:15px;
-border-radius:12px;
-margin-top:10px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.highlight .layer-header{
+color:#1C7FB8;
 }
 
 .review{
-background:#fff1f2;
-border-left:4px solid #fca5a5;
+background:#FCEDEA;
+border:1px solid #F5D3CD;
+border-left:4px solid #E0614F;
 padding:15px;
-border-radius:12px;
-margin-top:10px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.review .layer-header{
+color:#B84636;
 }
 
 .inventory{
-background:#fffbeb;
-border-left:4px solid #f59e0b;
+background:#FBF2E2;
+border:1px solid #F0DDB8;
+border-left:4px solid #D9952B;
 padding:15px;
-border-radius:12px;
-margin-top:10px;
+border-radius:14px;
+margin:10px 14px 0 14px;
+}
+.inventory .layer-header{
+color:#A4701C;
+}
+
+.highlight-content,
+.review-content{
+color:#2B2640;
+font-weight:300;
+line-height:1.6;
 }
 
 ul{
@@ -839,22 +1030,41 @@ color:#444;
 }
 
 .footer{
-background:#f9fafb;
+background:#F6F3FF;
 padding:15px;
-border-top:1px solid #e5e7eb;
+border-top:1px solid #E4DEF6;
 text-align:center;
 }
 
-.footer-links a{
-color:#5DBBB8;
-text-decoration:none;
+.footer a{
+color:#6152F0;
 font-size:13px;
+}
+
+.footer p{
+color:#7A7593;
+font-size:12px;
+}
+
+.btn-ghost-cell{
+background:#ffffff;
+border:1px solid #CFC4F6;
+}
+
+.btn-ghost{
+color:#7B4DF2 !important;
 }
 
 @media (max-width:600px){
 
+body{
+padding:0;
+}
+
 .container{
 border-radius:0;
+border-left:0;
+border-right:0;
 }
 
 .content{
@@ -870,23 +1080,28 @@ vertical-align:top;
 
 .layer{
 padding:7px;
+margin-left:0;
+margin-right:0;
 }
 
 /* base spacing */
 .highlight,
-.review{
+.review,
+.inventory{
 padding:7px;
+margin-left:0;
+margin-right:0;
 }
 
-/* 🔥 NEW: specific control */
 .highlight-title,
-.review-title{
+.review-title,
+.inventory-title{
     padding-left: 4px !important;
 }
 
 .highlight-content,
 .review-content{
-    padding-left: 6px !important; /* 🔥 earlier 12px → now less */
+    padding-left: 6px !important;
     font-size: 13px !important;
 }
 
@@ -902,8 +1117,12 @@ padding-left: 5px;
 
 .metric-label{
 font-size:11px;
-color:#6b7280;
+color:#7A7593;
 margin-bottom:2px;
+}
+
+.metric-value{
+font-size:13px;
 }
 
 .footer-btn-cell{
@@ -922,71 +1141,126 @@ padding:9px 8px !important;
 .logo-light{display:inline-block !important;}
 .logo-dark{display:none !important;}
 @media (prefers-color-scheme: dark){
-.header{
-background:#0b0b0b !important;
-border-bottom:4px solid #5DBBB8;
-}
-.header .logo-light{display:none !important;}
-.header .logo-dark{display:inline-block !important;}
 body{
-background:#0b0b0b;
-color:#f3f4f6;
+background:#0A0714;
+color:#F6F4FC;
 }
 
 .container{
-background:#0b0b0b;
+background:#0A0714;
+border-color:#2A2342;
+}
+
+.header{
+background:#0A0714 !important;
+border-bottom:1px solid #2A2342;
+}
+.header .logo-light{display:none !important;}
+.header .logo-dark{display:inline-block !important;}
+
+h1,
+h2{
+color:#F6F4FC;
 }
 
 p{
-color:#d1d5db;
+color:#C2BCD6;
 }
 
 .layer{
-background:#0f0f0f;
+background:#120E20;
+border-color:#2A2342;
+}
+
+.metrics-table + .metrics-table{
+border-top-color:#221B36;
+}
+
+.acct-section{
+border-top-color:#2A2342;
 }
 
 .teal{
-border-color:#2dd4bf;
+border-left-color:#9B7BFF;
+}
+.teal .layer-header{
+color:#B49BFF;
 }
 
 .pink{
-border-color:#ec4899;
+border-left-color:#4FC3F7;
+}
+.pink .layer-header{
+color:#7FD4FA;
 }
 
 .indigo{
-border-color:#6366f1;
+border-left-color:#8E97FF;
+}
+.indigo .layer-header{
+color:#8E97FF;
 }
 
 .metric-label{
-color:#9ca3af;
+color:#8C85A4;
 }
 
 .metric-value{
-color:#f9fafb;
+color:#F6F4FC;
 }
 
 .highlight{
-background:transparent;
-border-color:#22c55e;
+background:rgba(79,195,247,0.10);
+border-color:#2A2342;
+border-left-color:#4FC3F7;
+}
+.highlight .layer-header{
+color:#7FD4FA;
 }
 
 .review{
-background:transparent;
-border-color:#ef4444;
+background:rgba(242,113,95,0.10);
+border-color:#2A2342;
+border-left-color:#F2715F;
+}
+.review .layer-header{
+color:#F5A294;
 }
 
 .inventory{
-background:transparent;
-border-color:#fbbf24;
+background:rgba(240,169,60,0.10);
+border-color:#2A2342;
+border-left-color:#F0A93C;
+}
+.inventory .layer-header{
+color:#F3C070;
+}
+
+.highlight-content,
+.review-content{
+color:#C2BCD6;
 }
 
 .footer{
-background:#0b0b0b;
-border-top:1px solid #222;
+background:#120E20;
+border-top:1px solid #2A2342;
 }
 
-.footer-links a{
-color:#5eead4;
+.footer a{
+color:#B49BFF;
+}
+
+.footer p{
+color:#8C85A4;
+}
+
+.btn-ghost-cell{
+background:transparent !important;
+border-color:rgba(142,151,255,0.42) !important;
+}
+
+.btn-ghost{
+color:#B49BFF !important;
 }
 
 .footer .logo-light{
@@ -1006,9 +1280,11 @@ display:inline-block !important;
 
 <div class="container">
 
+<div class="grad-bar">&nbsp;</div>
+
 <div class="header">
-<img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
-<img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
+<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
+<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
 </div>
 
 <div class="content">
@@ -1224,8 +1500,8 @@ CAMPAIGN PERFORMANCE
         <td align="center" class="footer-btn-cell" style="padding-right:6px;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
-              <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
-          <a target="_blank" href="https://isight.netsights.ai/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
+              <td align="center" bgcolor="#6152F0" style="border-radius:999px; background-image:linear-gradient(135deg,#7B4DF2 0%,#5B63F0 55%,#22A3EC 100%);">
+          <a target="_blank" href="https://isight.netsights.ai/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px;">
             View Daily Report
           </a>
               </td>
@@ -1235,9 +1511,9 @@ CAMPAIGN PERFORMANCE
         <td align="center" class="footer-btn-cell" style="padding-left:6px;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
-              <td align="center" bgcolor="#5DBBB8" style="border-radius:6px;">
-          <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-size:16px; line-height:20px; font-weight:500; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:6px;">
-            Visit Scaleboard
+              <td align="center" bgcolor="#FFFFFF" class="btn-ghost-cell" style="border-radius:999px; border:1px solid #CFC4F6;">
+          <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="footer-btn-link btn-ghost" style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7B4DF2; text-decoration:none; white-space:nowrap; border-radius:999px;">
+            Visit Neo Intelligence
           </a>
               </td>
             </tr>
@@ -1249,7 +1525,9 @@ CAMPAIGN PERFORMANCE
 </tr>
 </table>
 
-<p style="margin-bottom:8px; text-align:center;">© 2026 Netsights.ai. All rights reserved</p>
+<p style="margin-bottom:8px; text-align:center;">
+  © <script>document.write(new Date().getFullYear())</script> Team NEO (formerly Netsights AI).
+</p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
 <tr>
@@ -1261,7 +1539,7 @@ CAMPAIGN PERFORMANCE
 </tr>
 </table>
 
-
+</div>
 
 </div>
 
@@ -1281,7 +1559,7 @@ CAMPAIGN PERFORMANCE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Netsights Email Template</title>
+    <title>Neo Email Template</title>
     <style>
         :root {
             --ns-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -1524,8 +1802,8 @@ padding-left:0;
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-    <img src="https://app.netsights.ai/images/logo/netsight-Black.svg" alt="Netsights Logo" class="logo-light" style="height:46px;">
-    <img src="https://app.netsights.ai/images/logo/netsight-white.svg" alt="Netsights Logo" class="logo-dark" style="height:46px;">
+    <img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
+    <img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
     </div>
 
         <!-- Content -->
@@ -1540,7 +1818,7 @@ padding-left:0;
 
             <p style="margin-top: 32px;">
                 Regards,<br>
-                <span style="font-weight: inherit; color: #111827;">Netsights.ai</span>
+                <span style="font-weight: inherit; color: #111827;">Neo</span>
             </p>
         </div>
 

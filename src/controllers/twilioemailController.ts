@@ -236,7 +236,7 @@ export class EmailController {
         // Pre-render metaAccounts array into HTML for the template
         const metaAccounts = params.metaAccounts;
         if (Array.isArray(metaAccounts) && metaAccounts.length > 0) {
-          let accountsHtml = `<div style="margin-top:6px;">`;
+          let accountsHtml = `<div class="acct-section">`;
           accountsHtml += `<div class="layer-header">META AD ACCOUNTS</div>`;
           for (const account of metaAccounts) {
             const id = account.Id || '';
@@ -246,7 +246,7 @@ export class EmailController {
             const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
             const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
             accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-            accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+            accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
             accountsHtml += `<tr>`;
             accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
             accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
@@ -297,7 +297,7 @@ export class EmailController {
       if (templateName === 'ns_temp_Notification_temp2' || templateName === 'ns_temp_Notification_temp2_weekly' || templateName === 'ns_temp_Notification_temp2_monthly' || templateName === 'ns_temp_Notification_temp2_quarterly' || templateName === 'ns_temp_Notification_temp2_halfyearly' || templateName === 'ns_temp_Notification_temp2_yearly') {
         const googleAccounts = params.googleAccounts;
         if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
-          let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
+          let gAccountsHtml = `<div class="acct-section"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
           for (const account of googleAccounts) {
             const id = account.Id || '';
             const last4 = id.slice(-4);
@@ -306,7 +306,7 @@ export class EmailController {
             const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
             const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
             gAccountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-            gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+            gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
             gAccountsHtml += `<tr>`;
             gAccountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
             gAccountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
@@ -338,8 +338,8 @@ export class EmailController {
           } else {
             // temp2: amber colored box
             let ihHtml = `<div class="inventory">`;
-            ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
-            ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
+            ihHtml += `<div class="layer-header inventory-title" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
+            ihHtml += `<div class="highlight-content" style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
             ihHtml += `</div>`;
             params.inventoryHealthHtml = ihHtml;
           }
@@ -547,7 +547,7 @@ export class EmailController {
   //         // Pre-render metaAccounts array into HTML for the template
   //         const metaAccounts = params.metaAccounts;
   //         if (Array.isArray(metaAccounts) && metaAccounts.length > 0) {
-  //           let accountsHtml = `<div style="margin-top:6px;">`;
+  //           let accountsHtml = `<div class="acct-section">`;
   //           accountsHtml += `<div class="layer-header">META AD ACCOUNTS</div>`;
   //           for (const account of metaAccounts) {
   //             const id = account.Id || '';
@@ -557,7 +557,7 @@ export class EmailController {
   //             const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
   //             const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
   //             accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-  //             accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+  //             accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
   //             accountsHtml += `<tr>`;
   //             accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
   //             accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
@@ -621,7 +621,7 @@ export class EmailController {
   //       if (config.name === 'ns_temp_Notification_temp2') {
   //         const googleAccounts = params.googleAccounts;
   //         if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
-  //           let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
+  //           let gAccountsHtml = `<div class="acct-section"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
   //           for (const account of googleAccounts) {
   //             const id = account.Id || '';
   //             const last4 = id.slice(-4);
@@ -630,7 +630,7 @@ export class EmailController {
   //             const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
   //             const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
   //             gAccountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-  //             gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+  //             gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
   //             gAccountsHtml += `<tr>`;
   //             gAccountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
   //             gAccountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
@@ -661,8 +661,8 @@ export class EmailController {
   //         } else {
   //           // temp2: amber colored box
   //           let ihHtml = `<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:12px; margin-top:10px;">`;
-  //           ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
-  //           ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
+  //           ihHtml += `<div class="layer-header inventory-title" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
+  //           ihHtml += `<div class="highlight-content" style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
   //           ihHtml += `</div>`;
   //           params.inventoryHealthHtml = ihHtml;
   //         }
@@ -825,7 +825,7 @@ export class EmailController {
 
           const metaAccounts = params.metaAccounts;
           if (Array.isArray(metaAccounts) && metaAccounts.length > 0) {
-            let accountsHtml = `<div style="margin-top:6px;">`;
+            let accountsHtml = `<div class="acct-section">`;
             accountsHtml += `<div class="layer-header">META AD ACCOUNTS</div>`;
             for (const account of metaAccounts) {
               const id = account.Id || '';
@@ -835,7 +835,7 @@ export class EmailController {
               const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
               const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
               accountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-              accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+              accountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
               accountsHtml += `<tr>`;
               accountsHtml += `<td><div class="metric-label">Spend</div><div class="metric-value">${spend}</div></td>`;
               accountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
@@ -894,7 +894,7 @@ export class EmailController {
         if (isTemp2Variant) {
           const googleAccounts = params.googleAccounts;
           if (Array.isArray(googleAccounts) && googleAccounts.length > 0) {
-            let gAccountsHtml = `<div style="margin-top:6px;"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
+            let gAccountsHtml = `<div class="acct-section"><div class="layer-header">GOOGLE AD ACCOUNTS</div>`;
             for (const account of googleAccounts) {
               const id = account.Id || '';
               const last4 = id.slice(-4);
@@ -903,7 +903,7 @@ export class EmailController {
               const revenue = account.Revenue != null ? `₹${parseFloat(account.Revenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
               const spend = account.Spend != null ? `₹${parseFloat(account.Spend).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
               gAccountsHtml += `<table class="metrics-table" cellpadding="0" cellspacing="0">`;
-              gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
+              gAccountsHtml += `<tr><td colspan="3" style="padding:4px 3px 0 3px;"><div class="metric-value">${name} <span class="metric-label" style="font-size:11px;">(XXX${last4})</span></div></td></tr>`;
               gAccountsHtml += `<tr>`;
               gAccountsHtml += `<td><div class="metric-label">ROAS</div><div class="metric-value">${roas}</div></td>`;
               gAccountsHtml += `<td><div class="metric-label">Revenue</div><div class="metric-value">${revenue}</div></td>`;
@@ -932,8 +932,8 @@ export class EmailController {
             params.inventoryHealthHtml = ihHtml;
           } else {
             let ihHtml = `<div class="inventory">`;
-            ihHtml += `<div class="layer-header" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
-            ihHtml += `<div style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
+            ihHtml += `<div class="layer-header inventory-title" style="margin-bottom:5px;">INVENTORY HEALTH</div>`;
+            ihHtml += `<div class="highlight-content" style="white-space:pre-line; font-size:14px;">${String(inventoryHealth)}</div>`;
             ihHtml += `</div>`;
             params.inventoryHealthHtml = ihHtml;
           }
