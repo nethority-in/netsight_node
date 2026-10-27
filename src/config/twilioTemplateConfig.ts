@@ -70,6 +70,21 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   // 'pdf':"HX8e6b9057e4a1a58fcad2099c98385ae3",
   'view_report_pdf_img':"HXd16b0df543d7fab5edd4ad1b464c003b",
   // 'view_report_pdf_img_v2':"HX8ce6e580dbe228fc5cf3127ce0e09306",
+  //Neo Templates
+  'neo_ceo_daily_summary_button_v1':"HX1346f7d837c3f0b55322c74ad40d9cec",
+  'neo_ceo_weekly_summary_button_v1':"HXc27c4b3b7584f6d63f30170a7820b434",
+  'neo_ceo_monthly_summary_button_v1':"HXec74272b48fac4a4346b712b98411949",
+  'neo_executivesummaryweeklymonthly_v1':"HXb9d84374b44c31957620463b79437361",
+  'neo_executive_summary_daily_v1':"HX9fad078f5078adfaff5b42dceef09628",
+  'neo_view_report':"HXb01ce6eb376976462d88852d497c5cc1",
+  'neo_view_report_pdf_img_v1':"HXc82754d6bbdd3c90f864be734de0e785",
+  'neo_invitation_template':"HXf44e3ebbf8b46889d303502d5b644ffb",
+  'neo_trial_period_ended':"HXcf92f26616ba91b9c0a5cd50fe21ae83",
+  'neo_trial_period_ending':"HX356dca036cc6f4010ab08b2d657bdf65",
+  'neo_store_invitation':"HX4622f37d041d9e1aa51cebb5567e4780",
+  'neo_demo_onboarding_message_v1':"HXf951b95870a85c7225f346b33f0df49c",
+  'neo_welcome_login_v1':"HX037ef5117627f31e729fe6fed102d2b1",
+
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
