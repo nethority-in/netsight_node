@@ -73,7 +73,9 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   //Neo Templates
   'neo_ceo_daily_summary_button_v1':"HX1346f7d837c3f0b55322c74ad40d9cec",
   'neo_ceo_weekly_summary_button_v1':"HXc27c4b3b7584f6d63f30170a7820b434",
+  'neo_ceo_weekly_summary_button':"HX5b930dad06e1ffdef2b9a59c9ee56647",
   'neo_ceo_monthly_summary_button_v1':"HXec74272b48fac4a4346b712b98411949",
+  'neo_ceo_monthly_summary_button':"HX5ebfe27e28af464f5c6834666d34bad4",
   'neo_executivesummaryweeklymonthly_v1':"HXb9d84374b44c31957620463b79437361",
   'neo_executive_summary_daily_v1':"HX9fad078f5078adfaff5b42dceef09628",
   'neo_view_report':"HXb01ce6eb376976462d88852d497c5cc1",
