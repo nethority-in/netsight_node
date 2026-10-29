@@ -86,7 +86,7 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'neo_store_invitation':"HX4622f37d041d9e1aa51cebb5567e4780",
   'neo_demo_onboarding_message_v1':"HXf951b95870a85c7225f346b33f0df49c",
   'neo_welcome_login_v1':"HX037ef5117627f31e729fe6fed102d2b1",
-
+  'isight_alert':"HXc018b32f3326bdb80c873e948343b6e5",
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {

@@ -748,7 +748,7 @@ body {
 
         <p class="email-closing" style="margin-top: 24px">
           Regards,<br />
-          <span>Team Neo (formerly Netsights AI)</span>
+          <span>Team Neo (formerly Netsights)</span>
         </p>
       </div>
 
@@ -780,7 +780,7 @@ body {
           class="footer-copyright"
           style="margin-bottom: 8px; text-align: center"
         >
-           © ${new Date().getFullYear()} Neo (formerly Netsights AI). All rights reserved
+           © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
         </p>
 
         <!-- Links -->
@@ -1521,7 +1521,7 @@ CAMPAIGN PERFORMANCE
 </table>
 
 <p style="margin-bottom:8px; text-align:center;">
-   © ${new Date().getFullYear()} Neo (formerly Netsights AI). All rights reserved
+   © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
