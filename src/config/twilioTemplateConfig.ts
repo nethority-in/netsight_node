@@ -86,7 +86,10 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'neo_store_invitation':"HX4622f37d041d9e1aa51cebb5567e4780",
   'neo_demo_onboarding_message_v1':"HXf951b95870a85c7225f346b33f0df49c",
   'neo_welcome_login_v1':"HX037ef5117627f31e729fe6fed102d2b1",
-  'isight_alert':"HXc018b32f3326bdb80c873e948343b6e5",
+  'isight_alert':"HX3d0f499ee14f945540c736b7a6e2b1ff",
+  'neo_ceo_dailysummary':"HX279c4697964b300bbbdb08df25057851",
+  'neo_ceo_weeklysummary':"HX87f53e4bc1213b3c15b60ee6a848bea8",
+  'neo_ceo_monthlysummary':"HX6ffecd1953eb463c72608af2778cbefd",
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
