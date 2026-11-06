@@ -1,4 +1,4 @@
-
+﻿
 //   Twilio WhatsApp Template Configuration
 //   Maps template names to Twilio template IDs
 
@@ -99,5 +99,3 @@ export function getTwilioTemplateId(templateName: string): string | null {
 export function getAllTwilioTemplateMappings(): Record<string, string> {
   return { ...TWILIO_TEMPLATE_MAPPINGS };
 }
-
-

@@ -29,6 +29,38 @@ function getTwilioClient(): twilio.Twilio {
   return twilioClient;
 }
 
+// Used only as a fallback when Twilio rejects contentVariables (error 21656).
+// Keeps the list meaning: top N products, each name cut at a word boundary.
+// Removes trailing punctuation and dangling connector words (and, or, with, of...).
+function cleanTail(text: string): string {
+  const trailing = /[\s.,;:\-–—&+|/]+$/;
+  const dangling = /\s+(and|or|with|of|in|for|the|a|an|to|by|on|at|from|vs)$/i;
+  let out = text.replace(trailing, '');
+  while (dangling.test(out)) {
+    out = out.replace(dangling, '').replace(trailing, '');
+  }
+  return out;
+}
+
+function truncateTopProduct(value: string, maxItems = 3, maxLen = 25): string {
+  const items = value.split(/\s*,\s*/).map(s => s.trim()).filter(Boolean);
+  return items
+    .slice(0, maxItems)
+    .map(s => {
+      const hadEllipsis = /(\.{3}|…)\s*$/.test(s);
+      const clean = s.replace(/(\.{3}|…)\s*$/, '').trim();
+      let base = clean;
+      let wasCut = false;
+      if (clean.length > maxLen) {
+        base = clean.slice(0, maxLen).replace(/\s+\S*$/, '').trim() || clean.slice(0, maxLen);
+        wasCut = true;
+      }
+      base = cleanTail(base);
+      return wasCut || hadEllipsis ? `${base}...` : base;
+    })
+    .join(', ');
+}
+
 // Twilio API Response Types
 export interface TwilioMessageResponse {
   sid: string;
@@ -100,10 +132,6 @@ export class WhatsAppService {
       return { ok: false, message: fallback };
     }
   }
-
-
-
-
 
   // use
   static async sendTemplate(
@@ -329,7 +357,22 @@ export class WhatsAppService {
       });
 
       const client = getTwilioClient();
-      const message = await client.messages.create(messagePayload);
+      let message;
+      try {
+        message = await client.messages.create(messagePayload);
+      } catch (firstErr: any) {
+        // 21656 = invalid ContentVariables: retry once with a shorter TopProduct
+        if (firstErr?.code === 21656 && contentVariables.TopProduct) {
+          const shortTop = truncateTopProduct(contentVariables.TopProduct);
+          if (shortTop === contentVariables.TopProduct) throw firstErr;
+          console.warn('⚠️ Twilio 21656, retrying with truncated TopProduct:', shortTop);
+          contentVariables.TopProduct = shortTop;
+          messagePayload.contentVariables = JSON.stringify(contentVariables);
+          message = await client.messages.create(messagePayload);
+        } else {
+          throw firstErr;
+        }
+      }
 
       const envLabel = process.env.NODE_ENV === 'production' ? 'SERVER' : 'LOCAL';
       const logRequest = {
@@ -392,12 +435,6 @@ export class WhatsAppService {
       return errResponse;
     }
   }
-
-
-
-
-
-
 
   static async sendMediaTemplate(
     to: string,
@@ -1286,7 +1323,6 @@ export class WhatsAppService {
     }
   }
 
-
   // Send text message via Twilio WhatsApp API
 
   static async sendText(
@@ -1530,7 +1566,3 @@ export class WhatsAppService {
 }
 
 export default WhatsAppService;
-
-
-
-
