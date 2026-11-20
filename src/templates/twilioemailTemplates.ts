@@ -671,13 +671,13 @@ body {
 <!-- Header --> 
       <div class="header">
         <img
-          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          src="https://neo.nethority.com/neo-logo-light.png"
           alt="Neo Logo"
           class="logo-light"
           style="height: 46px"
         />
         <img
-          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          src="https://neo.nethority.com/neo-logo-dark.png"
           alt="Neo Logo"
           class="logo-dark"
           style="height: 46px"
@@ -748,7 +748,7 @@ body {
 
         <p class="email-closing" style="margin-top: 24px">
           Regards,<br />
-          <span>Team Neo (formerly Netsights)</span>
+          <span>Nethority Neo Team</span>
         </p>
       </div>
 
@@ -780,7 +780,7 @@ body {
           class="footer-copyright"
           style="margin-bottom: 8px; text-align: center"
         >
-           © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
+           © ${new Date().getFullYear()} Nethority Neo Team. All rights reserved
         </p>
 
         <!-- Links -->
@@ -1276,8 +1276,8 @@ display:inline-block !important;
 <div class="container">
 
 <div class="header">
-<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
-<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
+<img src="https://neo.nethority.com/neo-logo-light.png" alt="Neo Logo" class="logo-light" style="height:46px;">
+<img src="https://neo.nethority.com/neo-logo-dark.png" alt="Neo Logo" class="logo-dark" style="height:46px;">
 </div>
 
 <div class="grad-bar">&nbsp;</div>
@@ -1521,7 +1521,7 @@ CAMPAIGN PERFORMANCE
 </table>
 
 <p style="margin-bottom:8px; text-align:center;">
-   © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
+   © ${new Date().getFullYear()} Nethority Neo Team. All rights reserved
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">

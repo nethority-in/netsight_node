@@ -411,11 +411,27 @@ async function sendDlqAlert(
     .filter(Boolean)
     .join(" | ");
 
+  const meta = deriveMeta(jobType as NotificationJobType);
+
   await sendSystemAlert({
     title: "Notification job failed",
     source: jobType,
     reference: jobId,
     details,
+    // Extended fields for the detailed email alert (full WhatsApp number, all job info)
+    raw: {
+      jobId,
+      jobType,
+      attempts,
+      to: p.to,                                              // full unmasked number(s)
+      templateName,
+      errorCode: code,
+      errorHttpStatus: status,
+      errorMessage: msg,
+      errorHint: hint,
+      createdAt: (payload as any)?.createdAt,
+      endpoint: meta.endpoint,
+    },
   });
 }
 
@@ -888,6 +904,7 @@ export async function startNotificationConsumer(): Promise<void> {
   consumerChannel = ch;
   console.log(`RabbitMQ consumer started. queue=${cfg.queue}, dlq=${cfg.dlq}`);
 }
+
 
 
 
