@@ -77,13 +77,13 @@ function buildFileName(ext: string, hint?: string): string {
       .replace(/-+/g, '-')
       .slice(0, 40) || 'Report';
   }
-  return `Netsights-Report_${slug}_${datePart}_${shortId}.${ext}`;
+  return `Neo-Report_${slug}_${datePart}_${shortId}.${ext}`;
 }
 
 // Puppeteer's PDF header/footer templates render in an isolated context that does
 // NOT reliably load external images. So we fetch the logo once and cache it as a
 // base64 data URI — this always renders inside the header.
-const LOGO_URL = 'https://app.netsights.ai/images/neo-logo/neo-logo.svg';
+const LOGO_URL = 'https://neo.nethority.com/neo-logo-light.png';
 let cachedLogoDataUri: string | null = null;
 
 function fetchLogoDataUri(): Promise<string | null> {
@@ -136,11 +136,11 @@ function buildFooterTemplate(): string {
   return `
     <div style="width:100%; font-family:Arial,Helvetica,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; padding:0 12px; box-sizing:border-box;">
       <div style="border-top:1px solid #e5e7eb; padding-top:6px; text-align:center; color:#6b7280; font-size:9px; line-height:1.5;">
-        <div>&copy; ${new Date().getFullYear()} Team NEO (formerly Netsights AI).</div>
+        <div>© ${new Date().getFullYear()} Nethority Neo Team. All rights reserved</div>
         <div style="margin-top:2px;">
-          <a href="https://netsights.ai/support/" style="color:#5DBBB8; text-decoration:none;">Support</a>
+          <a href="https://neo.nethority.com/support" style="color:#5DBBB8; text-decoration:none;">Support</a>
           &nbsp;|&nbsp;
-          <a href="https://netsights.ai/contact-us/" style="color:#5DBBB8; text-decoration:none;">Contact Us</a>
+          <a href="https://neo.nethority.com/support" style="color:#5DBBB8; text-decoration:none;">Contact Us</a>
         </div>
         <div style="margin-top:2px;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
       </div>
@@ -245,7 +245,7 @@ export async function renderHtmlToPdf(html: string, fileNameHint?: string): Prom
 
         .account-block { break-inside: avoid; page-break-inside: avoid; }
 
-        a.footer-btn-link:hover, a[href*="netsights.ai"]:hover { background-color:#4da9a6 !important; color:#ffffff !important; }
+        a.footer-btn-link:hover, a[href*="nethority.com"]:hover { background-color:#4da9a6 !important; color:#ffffff !important; }
       </style>
     `;
     const htmlForPdf = html.includes('</head>') ? html.replace('</head>', printCss + '</head>') : printCss + html;
