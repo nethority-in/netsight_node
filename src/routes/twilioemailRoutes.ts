@@ -2,13 +2,13 @@
 import { EmailController } from '../controllers/twilioemailController.js';
 import { notificationRateLimiter } from '../middleware/rateLimit.js';
 import { duplicateMessageMiddleware } from '../middleware/duplicateMessage.js';
-import { authenticateToken } from '../middleware/auth.js';
+// import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
 // Auth: requires Authorization: Bearer <CUSTOM_TOKEN> on all routes in this file.
 // /signin and /dashboard are on separate route files and are NOT affected.
-router.use(authenticateToken);
+// router.use(authenticateToken);
 
 // Rate limiting & idempotency for send endpoints (abuse protection, duplicate send protection)
 router.use(notificationRateLimiter);

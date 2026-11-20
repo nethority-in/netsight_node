@@ -3,7 +3,7 @@ import { prisma, isDatabaseConnected } from "../config/prisma.js";
 import whatsappRoutes from "./whatsappRoutes.js";
 import emailRoutes from "./emailRoutes.js";
 import facebookRoutes from "./facebookRoutes.js";
-import { authenticateJWTOrApiSecret } from "../middleware/jwtAuth.js";
+// import { authenticateJWTOrApiSecret } from "../middleware/jwtAuth.js";
 import { ErrorHandler } from "../utils/errorHandler.js";
 import {
   appendNotificationLog,
@@ -13,7 +13,7 @@ import {
 const router: Router = express.Router();
 
 // Apply authentication: JWT (Bearer), CUSTOM_TOKEN (Bearer), or x-api-key (API_SECRET)
-router.use(authenticateJWTOrApiSecret);
+// router.use(authenticateJWTOrApiSecret);
 
 // Example API route - Test Prisma connection
 router.get("/test", async (_req: Request, res: Response) => {
