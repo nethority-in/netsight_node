@@ -9,8 +9,8 @@ dotenv.config();
 // Mailjet API Configuration
 const MAILJET_API_KEY = process.env.MAILJET_API_KEY;
 const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY;
-const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'no-reply@netsights.ai';
-const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Neo';
+const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'no-reply@nethority.co';
+const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'Nethority Neo';
 
 const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024; // 5MB per attachment
 

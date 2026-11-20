@@ -104,8 +104,8 @@ async function sendAlertEmail(input: SystemAlertInput): Promise<void> {
     const Mailjet = (await import("node-mailjet")).default;
     const apiKey = process.env.MAILJET_API_KEY;
     const secretKey = process.env.MAILJET_SECRET_KEY;
-    const fromAddress = process.env.MAIL_FROM_ADDRESS || "no-reply@netsights.ai";
-    const fromName = process.env.MAIL_FROM_NAME || "Neo";
+    const fromAddress = process.env.MAIL_FROM_ADDRESS || "no-reply@nethority.co";
+    const fromName = process.env.MAIL_FROM_NAME || "Nethority Neo";
 
     if (!apiKey || !secretKey) {
       console.error("[Alert Email] MAILJET_API_KEY / MAILJET_SECRET_KEY not set");
