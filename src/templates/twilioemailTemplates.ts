@@ -671,13 +671,13 @@ body {
 <!-- Header --> 
       <div class="header">
         <img
-          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          src="https://neo.nethority.com/neo-logo-light.png"
           alt="Neo Logo"
           class="logo-light"
           style="height: 46px"
         />
         <img
-          src="https://app.netsights.ai/images/neo-logo/neo-logo.svg"
+          src="https://neo.nethority.com/neo-logo-dark.png"
           alt="Neo Logo"
           class="logo-dark"
           style="height: 46px"
@@ -760,13 +760,13 @@ body {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
     <tr>
       <td style="padding-right: 8px;">
-        <a target="_blank" href="https://isight.netsights.ai/{{Url}}"
+        <a target="_blank" href="https://neo.nethority.com/{{Url}}"
           style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px; background-color:#6152f0; background-image:linear-gradient(135deg,#7b4df2 0%,#5b63f0 55%,#22a3ec 100%);">
           View Daily Report
         </a>
       </td>
       <td style="padding-left: 0px;">
-        <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="cta-ghost"
+        <a target="_blank" href="https://neo.nethority.com/{{ScaleUrl}}" class="cta-ghost"
           style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7b4df2; text-decoration:none; white-space:nowrap; border-radius:999px; background-color:#ffffff; border:1px solid #cfc4f6;">
           Visit Neo Intelligence
         </a>
@@ -780,7 +780,7 @@ body {
           class="footer-copyright"
           style="margin-bottom: 8px; text-align: center"
         >
-           © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
+           © ${new Date().getFullYear()} Nethority Neo Team. All rights reserved
         </p>
 
         <!-- Links -->
@@ -795,7 +795,7 @@ body {
             <td align="center">
               <a
                 target="_blank"
-                href="https://netsights.ai/support/"
+                href="https://neo.nethority.com/support-center"
                 class="footer-links"
                 style="text-decoration: none"
                 >Support</a
@@ -803,7 +803,7 @@ body {
               <span style="color: #d1d5db"> | </span>
               <a
                 target="_blank"
-                href="https://netsights.ai/contact-us/"
+                href="https://neo.nethority.com/support-center"
                 class="footer-links"
                 style="text-decoration: none"
                 >Contact Us</a
@@ -1276,8 +1276,8 @@ display:inline-block !important;
 <div class="container">
 
 <div class="header">
-<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-light" style="height:46px;">
-<img src="https://app.netsights.ai/images/neo-logo/neo-logo.svg" alt="Neo Logo" class="logo-dark" style="height:46px;">
+<img src="https://neo.nethority.com/neo-logo-light.png" alt="Neo Logo" class="logo-light" style="height:46px;">
+<img src="https://neo.nethority.com/neo-logo-dark.png" alt="Neo Logo" class="logo-dark" style="height:46px;">
 </div>
 
 <div class="grad-bar">&nbsp;</div>
@@ -1496,7 +1496,7 @@ CAMPAIGN PERFORMANCE
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="center" bgcolor="#6152F0" style="border-radius:999px; background-image:linear-gradient(135deg,#7B4DF2 0%,#5B63F0 55%,#22A3EC 100%);">
-          <a target="_blank" href="https://isight.netsights.ai/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px;">
+          <a target="_blank" href="https://neo.nethority.com/{{Url}}" class="footer-btn-link" style="display:inline-block; padding:10px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#ffffff !important; text-decoration:none; white-space:nowrap; border-radius:999px;">
             View Daily Report
           </a>
               </td>
@@ -1507,7 +1507,7 @@ CAMPAIGN PERFORMANCE
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="center" bgcolor="#FFFFFF" class="btn-ghost-cell" style="border-radius:999px; border:1px solid #CFC4F6;">
-          <a target="_blank" href="https://app.netsights.ai/{{ScaleUrl}}" class="footer-btn-link btn-ghost" style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7B4DF2; text-decoration:none; white-space:nowrap; border-radius:999px;">
+          <a target="_blank" href="https://neo.nethority.com/{{ScaleUrl}}" class="footer-btn-link btn-ghost" style="display:inline-block; padding:9px 18px; font-family:'Nunito Sans','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; line-height:20px; font-weight:700; color:#7B4DF2; text-decoration:none; white-space:nowrap; border-radius:999px;">
             Visit Neo Intelligence
           </a>
               </td>
@@ -1521,15 +1521,15 @@ CAMPAIGN PERFORMANCE
 </table>
 
 <p style="margin-bottom:8px; text-align:center;">
-   © ${new Date().getFullYear()} Neo (formerly Netsights). All rights reserved
+   © ${new Date().getFullYear()} Nethority Neo Team. All rights reserved
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
 <tr>
   <td align="center">
-    <a target="_blank" href="https://netsights.ai/support/" style="text-decoration:none;">Support</a>
+    <a target="_blank" href="https://neo.nethority.com/support-center" style="text-decoration:none;">Support</a>
     <span style="color:#d1d5db;"> | </span>
-    <a target="_blank" href="https://netsights.ai/contact-us/" style="text-decoration:none;">Contact Us</a>
+    <a target="_blank" href="https://neo.nethority.com/support-center" style="text-decoration:none;">Contact Us</a>
   </td>
 </tr>
 </table>
