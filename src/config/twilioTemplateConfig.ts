@@ -90,6 +90,10 @@ export const TWILIO_TEMPLATE_MAPPINGS: Record<string, string> = {
   'neo_ceo_dailysummary':"HX279c4697964b300bbbdb08df25057851",
   'neo_ceo_weeklysummary':"HX87f53e4bc1213b3c15b60ee6a848bea8",
   'neo_ceo_monthlysummary':"HX6ffecd1953eb463c72608af2778cbefd",
+  // new update with footer
+   'neo_ceo_dailysummary_v1':"HXa82d282b9d2bec802e33482e33375e18",
+   'neo_ceo_weeklysummary_v1':"HXd4a097837e6d92e03a1ba81bee4b943c",
+   'neo_ceo_monthlysummary_v1':"HXa17b3269570de7c73438fc5a660469de",
 };
 
 export function getTwilioTemplateId(templateName: string): string | null {
