@@ -795,7 +795,7 @@ body {
             <td align="center">
               <a
                 target="_blank"
-                href="https://neo.nethority.com/support/"
+                href="https://neo.nethority.com/support"
                 class="footer-links"
                 style="text-decoration: none"
                 >Support</a
@@ -803,7 +803,7 @@ body {
               <span style="color: #d1d5db"> | </span>
               <a
                 target="_blank"
-                href="https://neo.nethority.com/support/"
+                href="https://neo.nethority.com/support"
                 class="footer-links"
                 style="text-decoration: none"
                 >Contact Us</a
@@ -1527,9 +1527,9 @@ CAMPAIGN PERFORMANCE
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
 <tr>
   <td align="center">
-    <a target="_blank" href="https://neo.nethority.com/support/" style="text-decoration:none;">Support</a>
+    <a target="_blank" href="https://neo.nethority.com/support" style="text-decoration:none;">Support</a>
     <span style="color:#d1d5db;"> | </span>
-    <a target="_blank" href="https://neo.nethority.com/support/" style="text-decoration:none;">Contact Us</a>
+    <a target="_blank" href="https://neo.nethority.com/support" style="text-decoration:none;">Contact Us</a>
   </td>
 </tr>
 </table>
